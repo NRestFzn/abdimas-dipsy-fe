@@ -2,12 +2,11 @@ import { Button, Tag } from "antd";
 import { Eye } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
 
-// Sesuaikan interface dengan data 'submissions' di JSON response
 export interface SubmissionRow {
     submissionId: string;
     submissionDate: string;
     trueCount: string;
-    isMentalUnStable: number; // 1 = Tidak Stabil, 0 = Stabil
+    isMentalUnStable: number;
 }
 
 interface SubmissionColumnProps {
@@ -48,7 +47,7 @@ export const getSubmissionsColumns = ({
         align: 'center',
         render: (isUnstable: number) => {
             const color = isUnstable === 1 ? "error" : "success";
-            const text = isUnstable === 1 ? "Beresiko" : "Sehat";
+            const text = isUnstable === 1 ? "Beresiko" : "Stabil";
             
             return (
                 <Tag color={color} className="min-w-[80px] text-center py-1 text-sm">

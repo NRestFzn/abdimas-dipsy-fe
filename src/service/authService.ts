@@ -20,6 +20,7 @@ export interface RegisterData {
 	EducationId: string;
 	SalaryRangeId: string;
 	nik: string;
+	phoneNumber: number;
 }
 
 export interface AuthResponse {

@@ -27,7 +27,7 @@ function AdminMedis() {
         return adminMedisService.getAllQuestionnaires(params)
     }
 
-    const { data, isLoading, refetch } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["questionnaires", pagination.current, pagination.pageSize, debouncedSearch],
         queryFn: useGetAllQuestionnaire,
     });

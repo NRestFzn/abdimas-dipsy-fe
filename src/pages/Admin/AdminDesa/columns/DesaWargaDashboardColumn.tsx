@@ -35,7 +35,7 @@ export const getDesaWargaDashboardColumn = (): ColumnsType<DesaWargaDataRow> => 
         label = "Beresiko"
       } else {
         color = "success"
-        label = "Sehat"
+        label = "Stabil"
       }
 
       return (

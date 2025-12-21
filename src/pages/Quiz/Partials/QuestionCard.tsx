@@ -10,7 +10,7 @@ interface QuestionCardProps {
     onAnswer: (id: string, val: string) => void;
 }
 
-export const QuestionCard = ({ id, index, text, type, options, selectedAnswer, onAnswer }: QuestionCardProps) => {
+export const QuestionCard = ({ id, index, text,  options, selectedAnswer, onAnswer }: QuestionCardProps) => {
     const safeOptions = Array.isArray(options) && options.length > 0 ? options : ["Ya", "Tidak"];
 
     return (

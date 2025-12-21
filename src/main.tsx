@@ -28,6 +28,10 @@ import AdminMedisProfile from "./pages/Admin/AdminMedis/ProfileAdmin/ProfileAdmi
 import AdminDesaProfile from "./pages/Admin/AdminDesa/ProfileAdmin/ProfileAdmin";
 import ResidentLayout from "./layouts/Resident/MainLayout";
 import PreviewResident from "./pages/Admin/AdminDesa/KelolaWilayah/partials/PreviewResident";
+import { RoleGuard } from "./components/RoleGuard";
+import { ROLE_ID } from "./constants";
+import Unauthorized from "./pages/Fallbacks/Unauthorized";
+import NotFound from "./pages/Fallbacks/NotFound";
 
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
@@ -66,10 +70,7 @@ const DesaWargaDashboard = lazy(
     )
 );
 
-const HistorySection = lazy(() => import("./pages/HistorySection"));
 const Result = lazy(() => import("./pages/Result/Result"));
-
-const Admin = lazy(() => import("./pages/Admin"));
 const Quiz = lazy(() => import("./pages/Quiz/Quiz"));
 
 axios.defaults.withCredentials = true;
@@ -145,12 +146,32 @@ const router = createBrowserRouter([
     element: <Register />,
   },
   {
+    path: "/unauthorized",
+    element: (
+      <Suspense fallback={<Loading />}>
+        <Unauthorized />
+      </Suspense>
+    ),
+  },
+  {
+    path: "*",
+    element: (
+      <Suspense fallback={<Loading />}>
+        <NotFound />
+      </Suspense>
+    ),
+  },
+  {
     path: "/",
     element: <ProtectedLayout />,
     children: [
       {
         path: "/",
-        element: <ResidentLayout />,
+        element: (
+          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA]}>
+            <ResidentLayout />
+          </RoleGuard>
+        ),
         children: [
           {
             path: "/",
@@ -172,16 +193,16 @@ const router = createBrowserRouter([
             path: "/result/:id",
             element: <Result />,
           },
-          {
-            path: "/history",
-            element: <HistorySection />,
-          },
         ],
       },
       // Admin routes - Home page
       {
         path: "admin",
-        element: <AdminDesaLayout />,
+        element: (
+          <RoleGuard allowedRoleIds={[ROLE_ID.ADMIN_DESA]}>
+            <AdminDesaLayout />
+          </RoleGuard>
+        ),
         children: [
           {
             index: true,
@@ -231,14 +252,6 @@ const router = createBrowserRouter([
                   </Suspense>
                 ),
               },
-              {
-                path: "/admin/responden/:rwId/:rtId/:keluargaId/history",
-                element: (
-                  <Suspense fallback={<Loading />}>
-                    <HistorySection />
-                  </Suspense>
-                ),
-              },
             ],
           },
           // Kelola Wilayah Routes
@@ -277,9 +290,9 @@ const router = createBrowserRouter([
       {
         path: "/admin-medis",
         element: (
-          <Suspense fallback={<Loading />}>
+          <RoleGuard allowedRoleIds={[ROLE_ID.ADMIN_MEDIS]}>
             <AdminMediLayout />
-          </Suspense>
+          </RoleGuard>
         ),
         children: [
           {
@@ -335,33 +348,12 @@ const router = createBrowserRouter([
                 element: <MedisResult />,
               },
               {
-                path: "/admin-medis/responden/:rwId/:rtId/:keluargaId/history",
-                element: <HistorySection />,
-              },
-              {
                 path: "/admin-medis/responden/:rwId/:rtId/:keluargaId/history/tes",
                 element: <Result />,
-              },
-              {
-                path: "/admin-medis/responden/:rwId/:rtId/:keluargaId/:anggotaName",
-                element: <Admin />,
               },
             ],
           },
           // Kelola RW Routes
-          {
-            path: "kelola-rw",
-            children: [
-              {
-                path: "/admin-medis/kelola-rw/:rwId",
-                element: <Admin />,
-              },
-              {
-                path: "/admin-medis/kelola-rw/:rwId/:rtId",
-                element: <Admin />,
-              },
-            ],
-          },
           {
             path: "/admin-medis/kuisioner",
             element: <KuisionerDashboard />,

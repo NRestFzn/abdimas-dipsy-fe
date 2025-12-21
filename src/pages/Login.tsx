@@ -7,7 +7,7 @@ import { getErrorMessage } from "../utils/getErrorMessage";
 import { ROLE_ID } from "../constants";
 import type { LoginData } from "../service/authService";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -42,20 +42,29 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card 
-        className="w-full max-w-md shadow-lg rounded-2xl border-gray-100 overflow-hidden"
-        bodyStyle={{ padding: "40px 32px" }}
+      <Card
+        className="!w-full max-w-md shadow-lg rounded-2xl border-gray-100 overflow-hidden"
       >
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-             <img src="/icon.png" alt="Logo" className="w-16 h-16 object-contain" />
+            <img
+              src="/icon.png"
+              alt="Logo Desa Cibiru Wetan"
+              className="w-20 h-20 object-contain drop-shadow-sm"
+            />
           </div>
-          <Title level={3} className="!text-[#70B748] !mb-2">
-            Selamat Datang
+
+          <Title level={3} className="!text-[#70B748] !mb-1 !font-bold">
+            Desa Sehat Jiwa
           </Title>
-          <Text type="secondary">
-            Silakan masuk untuk mengakses layanan desa
+          <Text className="text-gray-500 font-medium block mb-4">
+            Desa Cibiru Wetan
           </Text>
+
+          <Paragraph type="secondary" className="text-sm px-2 leading-relaxed">
+            Platform deteksi dini dan pemantauan kesehatan mental untuk
+            mewujudkan warga desa yang sehat, bahagia, dan produktif.
+          </Paragraph>
         </div>
 
         {(error || formError) && (
@@ -83,9 +92,9 @@ export default function Login() {
               { type: "email", message: "Format email tidak valid" },
             ]}
           >
-            <Input 
-              prefix={<Mail className="text-gray-400" size={18} />} 
-              placeholder="nama@email.com" 
+            <Input
+              prefix={<Mail className="text-gray-400" size={18} />}
+              placeholder="nama@email.com"
               className="rounded-lg"
             />
           </Form.Item>
@@ -93,11 +102,13 @@ export default function Login() {
           <Form.Item
             name="password"
             label="Password"
-            rules={[{ required: true, message: "Mohon masukkan password Anda" }]}
+            rules={[
+              { required: true, message: "Mohon masukkan password Anda" },
+            ]}
           >
-            <Input.Password 
-              prefix={<Lock className="text-gray-400" size={18} />} 
-              placeholder="Masukkan password" 
+            <Input.Password
+              prefix={<Lock className="text-gray-400" size={18} />}
+              placeholder="Masukkan password"
               className="rounded-lg"
             />
           </Form.Item>
@@ -117,8 +128,8 @@ export default function Login() {
 
         <div className="text-center mt-4">
           <Text className="text-gray-500">Belum punya akun? </Text>
-          <Link 
-            to="/daftar" 
+          <Link
+            to="/daftar"
             className="!text-[#70B748] !hover:text-[#5a9639] font-semibold hover:underline"
           >
             Daftar disini
