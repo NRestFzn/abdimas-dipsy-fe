@@ -12,7 +12,7 @@ import {
     Tag,
     message
 } from "antd";
-import { Filter, Home } from "lucide-react";
+import { ArrowLeft, Filter, Home } from "lucide-react";
 import dayjs from "dayjs";
 
 import { adminMedisService } from "../../../../../service/adminMedisService";
@@ -168,7 +168,17 @@ export default function Submissions() {
     }
 
     return (
-        <div className="flex flex-col w-full gap-6">
+        <div className="flex flex-col w-full gap-6 p-5">
+            <div>
+                <Button
+                    type="default"
+                    onClick={() => navigate(-1)}
+                    className="flex items-center"
+                >
+                    <ArrowLeft size={18} />
+                    Kembali
+                </Button>
+            </div>
 
             {userData && (
                 <Spin spinning={loading.init}>

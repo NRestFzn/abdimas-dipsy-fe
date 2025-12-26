@@ -1,4 +1,4 @@
-import { Filter, Home } from "lucide-react";
+import { ArrowLeft, Filter, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import type { QuestionnaireSummary, SummarizeAllResponse } from "../../../../../types/adminMedisService";
@@ -170,18 +170,32 @@ export default function RwDashboard() {
 
     return (
         <div className="flex flex-col w-full h-full">
+
+            <div className="p-5">
+                <Button
+                    type="default"
+                    onClick={() => navigate(-1)}
+                    className="flex items-center"
+                >
+                    <ArrowLeft size={18} />
+                    Kembali
+                </Button>
+            </div>
+
             {summaryData && (
                 <Spin spinning={loading.loading}>
-                    <MentalHealthChart
-                        overallDepressionRate={summaryData.summarize.unStableMentalPercentage || 0}
-                        totalSubmit={summaryData.summarize.submitCount || 0}
-                        totalUser={summaryData.summarize.userCount || 0}
+                    <div className="p-5">
+                        <MentalHealthChart
+                            overallDepressionRate={summaryData.summarize.unStableMentalPercentage || 0}
+                            totalSubmit={summaryData.summarize.submitCount || 0}
+                            totalUser={summaryData.summarize.userCount || 0}
 
-                        perRwData={summaryData.perRw as any[]}
+                            perRwData={summaryData.perRw as any[]}
 
-                        title="Dashboard Kesehatan Mental RW"
-                        subtitle={`Laporan Wilayah ${questionnaireName}`}
-                    />
+                            title="Dashboard Kesehatan Mental RW"
+                            subtitle={`Laporan Wilayah ${questionnaireName}`}
+                        />
+                    </div>
                 </Spin>
             )}
 

@@ -187,9 +187,10 @@ export default function Kuisioner() {
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-4 mb-6 border-b border-gray-100 pb-4">
             <Button
-              icon={<ArrowLeft size={18} />}
               onClick={() => setSelectedQuestionnaire(null)}
+              className="flex items-center"
             >
+              <ArrowLeft size={18} />
               Kembali
             </Button>
             <div>

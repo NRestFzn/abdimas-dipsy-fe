@@ -11,7 +11,7 @@ import {
     Tag,
     message
 } from "antd";
-import { Home, Filter } from "lucide-react";
+import { Home, Filter, ArrowLeft } from "lucide-react";
 import dayjs from "dayjs";
 import type { RWSummary } from "../../../../../types/adminDesaService";
 import { adminDesaService } from "../../../../../service/adminDesaService";
@@ -169,18 +169,31 @@ export default function DesaRtDashboard() {
     return (
         <div className="flex flex-col w-full h-full">
 
+            <div className="p-5">
+                <Button
+                    type="default"
+                    onClick={() => navigate(-1)}
+                    className="flex items-center"
+                >
+                    <ArrowLeft size={18} />
+                    Kembali
+                </Button>
+            </div>
+
             {summaryData && (
                 <Spin spinning={loading.init}>
-                    <MentalHealthChart
-                        overallDepressionRate={summaryData?.summarize?.unStableMentalPercentage || 0}
-                        totalSubmit={summaryData?.summarize?.submitCount || 0}
-                        totalUser={summaryData?.summarize?.userCount || 0}
+                    <div className="p-5">
+                        <MentalHealthChart
+                            overallDepressionRate={summaryData?.summarize?.unStableMentalPercentage || 0}
+                            totalSubmit={summaryData?.summarize?.submitCount || 0}
+                            totalUser={summaryData?.summarize?.userCount || 0}
 
-                        perRtData={summaryData?.perRt as any[]}
+                            perRtData={summaryData?.perRt as any[]}
 
-                        title={`Statistik Kesehatan Mental RT - ${rwName}`}
-                        subtitle={`Persentase Kondisi Mental Warga di Semua RT - ${rwName}`}
-                    />
+                            title={`Statistik Kesehatan Mental RT - ${rwName}`}
+                            subtitle={`Persentase Kondisi Mental Warga di Semua RT - ${rwName}`}
+                        />
+                    </div>
                 </Spin>)
             }
 

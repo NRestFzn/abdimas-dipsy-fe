@@ -21,13 +21,13 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
 
     const { data: rwList } = useQuery({
         queryKey: ["rw-list"],
-        queryFn: adminDesaService.getAllRW,
+        queryFn: () => adminDesaService.getAllRW(),
         enabled: open
     });
 
     const { data: rtList } = useQuery({
         queryKey: ["rt-list", selectedRW],
-        queryFn: () => selectedRW ? adminDesaService.getRT(selectedRW) : null,
+        queryFn: () => selectedRW ? adminDesaService.getRT({ order: "[['createdAt', 'desc']]" }, selectedRW) : null,
         enabled: !!selectedRW
     });
 
@@ -91,6 +91,7 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
             onCancel={onClose}
             footer={null}
             width={800}
+            style={{ top: 20 }}
             centered
         >
             {isFetchingDetail ? (
@@ -99,30 +100,32 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
                 <Form form={form} layout="vertical" onFinish={handleSubmit}>
 
                     <h3 className="font-bold text-gray-700 mb-4 border-b pb-2">Informasi Akun</h3>
-                    <Row gutter={16}>
-                        <Col span={12}>
+                    
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Nama Lengkap" name="fullname" rules={[{ required: true }]}>
                                 <Input />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Email" name="email" rules={[{ required: true, type: "email" }]}>
                                 <Input />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Nomor Telepon" name="phoneNumber" rules={[{ required: true }]}>
-                                <Input />
+                                <Input style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                     </Row>
-                    <Row gutter={16}>
-                        <Col span={12}>
+                    
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Password Baru (Opsional)" name="password">
                                 <Input.Password placeholder="Kosongkan jika tidak diubah" />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item
                                 label="Konfirmasi Password"
                                 name="confirmPassword"
@@ -144,24 +147,25 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
                         </Col>
                     </Row>
 
-                    <h3 className="font-bold text-gray-700 mb-4 border-b pb-2 mt-4">Data Kependudukan</h3>
-                    <Row gutter={16}>
-                        <Col span={12}>
+                    <h3 className="font-bold text-gray-700 mb-4 border-b pb-2 mt-6">Data Kependudukan</h3>
+                    
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="NIK" name="nik" rules={[{ required: true }]}>
-                                <Input />
+                                <Input style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Jenis Kelamin" name="gender" rules={[{ required: true }]}>
                                 <Select options={[{ label: "Laki-laki", value: "m" }, { label: "Perempuan", value: "f" }]} />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Tanggal Lahir" name="birthDate" rules={[{ required: true }]}>
-                                <DatePicker className="w-full" format="DD MMMM YYYY" />
+                                <DatePicker className="w-full" style={{ width: '100%' }} format="DD MMMM YYYY" />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Status Pernikahan" name="MarriageStatusId" rules={[{ required: true }]}>
                                 <Select
                                     loading={marriageStatuses.isLoading}
@@ -169,12 +173,12 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
                                 />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Pekerjaan" name="profession" rules={[{ required: true }]}>
                                 <Input />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Pendidikan" name="EducationId" rules={[{ required: true }]}>
                                 <Select
                                     loading={educations.isLoading}
@@ -182,7 +186,7 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
                                 />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Rentang Gaji" name="SalaryRangeId" rules={[{ required: true }]}>
                                 <Select
                                     loading={salaryRanges.isLoading}
@@ -195,9 +199,10 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
                         </Col>
                     </Row>
 
-                    <h3 className="font-bold text-gray-700 mb-4 border-b pb-2 mt-4">Wilayah Domisili</h3>
-                    <Row gutter={16}>
-                        <Col span={12}>
+                    <h3 className="font-bold text-gray-700 mb-4 border-b pb-2 mt-6">Wilayah Domisili</h3>
+                    
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Rukun Warga (RW)" name="RukunWargaId" rules={[{ required: true }]}>
                                 <Select
                                     onChange={(val) => {
@@ -208,7 +213,7 @@ export default function EditResidentModal({ open, onClose, residentId }: EditRes
                                 />
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} md={12}>
                             <Form.Item label="Rukun Tetangga (RT)" name="RukunTetanggaId" rules={[{ required: true }]}>
                                 <Select
                                     disabled={!selectedRW}

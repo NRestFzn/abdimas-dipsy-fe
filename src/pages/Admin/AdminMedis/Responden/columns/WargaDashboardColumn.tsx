@@ -77,7 +77,7 @@ export const getWargaMedisColumns = ({ onSeeDetail }: MedisColumnProps): Columns
                 label = "Beresiko"
             } else {
                 color = "success"
-                label = "Sehat"
+                label = "Stabil"
             }
 
             return (

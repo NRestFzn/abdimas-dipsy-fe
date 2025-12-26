@@ -34,13 +34,13 @@ export default function ResidentTab() {
 
     const { data: rwList } = useQuery({
         queryKey: ["rw-list"],
-        queryFn: adminDesaService.getAllRW,
+        queryFn: () => adminDesaService.getAllRW({order: "[['createdAt', 'desc']]"}),
         staleTime: 1000 * 60 * 5
     });
 
     const { data: rtListFilter } = useQuery({
         queryKey: ["rt-list-filter", filterRW],
-        queryFn: () => filterRW ? adminDesaService.getRT(filterRW) : null,
+        queryFn: () => filterRW ? adminDesaService.getRT({order: "[['createdAt', 'desc']]"}, filterRW) : null,
         enabled: !!filterRW,
         staleTime: 1000 * 60 * 5
     });

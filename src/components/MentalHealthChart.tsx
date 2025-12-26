@@ -263,7 +263,7 @@ export default function MentalHealthChart({
 	};
 
 	return (
-		<div className="flex flex-col gap-6 mb-6 p-5">
+		<div className="flex flex-col gap-6 mb-6">
 			<div>
 				<h2 className="text-xl font-bold text-gray-800">{title}</h2>
 				<p className="text-gray-500">{subtitle}</p>

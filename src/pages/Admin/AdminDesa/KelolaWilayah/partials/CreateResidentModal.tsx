@@ -32,13 +32,13 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
     });
     const { data: rwList } = useQuery({
         queryKey: ["rw-list"],
-        queryFn: adminDesaService.getAllRW,
+        queryFn: () => adminDesaService.getAllRW(),
         staleTime: 1000 * 60 * 5
     });
 
     const { data: rtList, isLoading: loadingRT } = useQuery({
         queryKey: ["rt-list-form", selectedRW],
-        queryFn: () => selectedRW ? adminDesaService.getRT(selectedRW) : null,
+        queryFn: () => selectedRW ? adminDesaService.getRT({ order: "[['createdAt', 'desc']]" }, selectedRW) : null,
         enabled: !!selectedRW,
     });
 
@@ -79,59 +79,63 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
             onCancel={handleCancel}
             onOk={() => form.submit()}
             width={800}
+            style={{ top: 20 }}
             confirmLoading={createMutation.isPending}
             okText="Simpan"
             cancelText="Batal"
             okButtonProps={{ className: "!bg-[#70B748] !hover:bg-[#5a9639]" }}
+            destroyOnClose
         >
             <Form form={form} layout="vertical" onFinish={handleCreate}>
-                <Row gutter={16}>
-                    <Col span={12}>
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} md={12}>
                         <Form.Item label="Nama Lengkap" name="fullname" rules={[{ required: true }]}>
                             <Input placeholder="Nama sesuai KTP" />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                         <Form.Item label="NIK" name="nik" rules={[{ required: true, len: 16, message: "NIK harus 16 digit" }]}>
-                            <Input placeholder="16 digit NIK" maxLength={16} />
+                            <Input placeholder="16 digit NIK" maxLength={16} style={{ width: '100%' }} />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Row gutter={16}>
-                    <Col span={12}>
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} md={12}>
                         <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}>
                             <Input placeholder="email@contoh.com" />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                         <Form.Item label="Nomor Telepon" name="phoneNumber" rules={[{ required: true }]}>
-                            <Input placeholder="089147823524" />
+                            <Input placeholder="089147823524" style={{ width: '100%' }} />
                         </Form.Item>
                     </Col>
-
                 </Row>
 
-                <Row gutter={16}>
-                    <Col span={12}>
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item label="Tanggal Lahir" name="birthDate" rules={[{ required: true }]}>
-                            <DatePicker className="w-full" format="YYYY-MM-DD" placeholder="Pilih tanggal" />
+                            <DatePicker className="w-full" style={{ width: '100%' }} format="YYYY-MM-DD" placeholder="Pilih tanggal" />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item label="Jenis Kelamin" name="gender" rules={[{ required: true }]}>
-                            <Select options={[{ label: "Laki-laki", value: "m" }, { label: "Perempuan", value: "f" }]} placeholder="Pilih Gender" />
+                            <Select placeholder="Pilih Gender">
+                                <Select.Option value="m">Laki-laki</Select.Option>
+                                <Select.Option value="f">Perempuan</Select.Option>
+                            </Select>
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} sm={24} md={8}>
                         <Form.Item label="Pekerjaan" name="profession" rules={[{ required: true }]}>
                             <Input placeholder="Contoh: Wiraswasta" />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Row gutter={16}>
-                    <Col span={12}>
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} md={12}>
                         <Form.Item label="RW" name="RukunWargaId" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Pilih RW"
@@ -143,7 +147,7 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
                             />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                         <Form.Item label="RT" name="RukunTetanggaId" rules={[{ required: true }]}>
                             <Select
                                 placeholder={loadingRT ? "Memuat RT..." : "Pilih RT"}
@@ -155,8 +159,8 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
                     </Col>
                 </Row>
 
-                <Row gutter={16}>
-                    <Col span={8}>
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item label="Pendidikan" name="EducationId" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Pilih"
@@ -164,7 +168,7 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
                             />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item label="Status Nikah" name="MarriageStatusId" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Pilih"
@@ -172,7 +176,7 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
                             />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} sm={24} md={8}>
                         <Form.Item label="Pendapatan" name="SalaryRangeId" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Pilih"

@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Button,
   Card,
   Empty,
   Select,
   Table,
   Spin,
   DatePicker,
-  Space,
+  Pagination,
+  Badge,
+  Button,
 } from "antd";
-import { Loader2 } from "lucide-react";
+import { Filter, HistoryIcon, Loader2 } from "lucide-react";
 import dayjs from "dayjs";
 
 import { useQuestionnaire } from "../../hooks/useQuestionnaire";
@@ -18,20 +19,12 @@ import { useAuth } from "../../context/AuthContext";
 
 import { questionnaireService } from "../../service/questionnaireService";
 
-import type { ColumnsType } from "antd/es/table";
-import { QuestionnaireCard, WelcomeBanner } from "./partials/HomeComponent";
+import { QuestionnaireCard, WelcomeHeader } from "./partials/HomeComponent";
+import type { HistoryData } from "../../types/wargaType";
+import { getHistoryColumn } from "./columns/HistoryColumn";
+import { MobileFilterDrawer } from "./partials/MobileFilterDrawer";
 
 const { RangePicker } = DatePicker;
-
-interface HistoryData {
-  id: string;
-  createdAt: string;
-  score?: number;
-  questionnaire: {
-    id: string;
-    title: string;
-  };
-}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -45,9 +38,19 @@ export default function Home() {
 
   const [history, setHistory] = useState<HistoryData[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  })
 
   const [selectedQuizFilter, setSelectedQuizFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+
+  const handleResetFilter = () => {
+    setSelectedQuizFilter("all");
+    setDateRange(null);
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -129,58 +132,18 @@ export default function Home() {
     return filtered;
   };
 
-  const historyColumns: ColumnsType<HistoryData> = [
-    {
-      title: "No",
-      width: 60,
-      align: "center",
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: "Judul Kuisioner",
-      dataIndex: ["questionnaire", "title"],
-      key: "title",
-      render: (text) => (
-        <span className="font-medium text-gray-700">{text}</span>
-      ),
-    },
-    {
-      title: "Tanggal Pengerjaan",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => (
-        <div className="flex flex-col">
-          <span className="text-gray-700">
-            {dayjs(date).format("DD MMMM YYYY")}
-          </span>
-          <span className="text-xs text-gray-400">
-            {dayjs(date).format("HH:mm")} WIB
-          </span>
-        </div>
-      ),
-    },
-    {
-      title: "Aksi",
-      key: "action",
-      align: "center",
-      width: 120,
-      render: (_, record) => (
-        <Button
-          size="small"
-          className="bg-[#70B748] hover:bg-[#5a9639] text-white border-none"
-          onClick={() => handleViewResult(record.id)}
-        >
-          Lihat Hasil
-        </Button>
-      ),
-    },
-  ];
-
   const filteredHistoryData = getFilteredHistory();
 
   const publishedQuestionnaires = Array.isArray(questionnaires)
     ? questionnaires.filter((q) => q.status === "publish")
     : [];
+
+  const wargaHistoryColumn = getHistoryColumn({
+    onSee: (id: string) => handleViewResult(id),
+    pagination
+  })
+
+  const activeFilterCount = (selectedQuizFilter !== "all" ? 1 : 0) + (dateRange ? 1 : 0);
 
   if (quizLoading) {
     return (
@@ -195,27 +158,30 @@ export default function Home() {
     );
   }
 
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 font-sans">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <WelcomeBanner fullname={user?.fullname || "User"} />
+        <WelcomeHeader fullname={user?.fullname || "User"} />
 
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <span className="w-1 h-6 bg-[#70B748] rounded-full block"></span>
-              Daftar Kuisioner Tersedia
-            </h2>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-[#70B748] rounded-full block"></span>
+              <h2 className="text-xl font-bold text-gray-800">
+                Daftar Kuesioner
+              </h2>
+            </div>
           </div>
 
           {publishedQuestionnaires.length === 0 ? (
             <Empty
               description={
                 <span className="text-gray-500">
-                  Belum ada kuisioner yang tersedia saat ini.
+                  Belum ada kuesioner yang tersedia saat ini.
                 </span>
               }
-              className="bg-white p-10 rounded-xl border border-gray-100 shadow-sm"
+              className="bg-white p-10 rounded-2xl border border-gray-100 shadow-sm"
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -237,23 +203,26 @@ export default function Home() {
 
         <section>
           <Card
-            className="shadow-sm border-gray-200 rounded-xl overflow-hidden"
+            className="shadow-sm border-gray-200 rounded-2xl overflow-hidden !p-0"
+            bodyStyle={{ padding: 0 }}
             title={
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-1 h-6 bg-orange-400 rounded-full block"></span>
-                  <span className="text-xl font-bold text-gray-800">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-orange-50 p-2 rounded-lg text-orange-500">
+                    <HistoryIcon size={20} />
+                  </div>
+                  <span className="text-lg font-bold text-gray-800">
                     Riwayat Pengerjaan
                   </span>
                 </div>
 
-                <Space wrap>
+                <div className="hidden md:flex gap-3">
                   <Select
-                    defaultValue="all"
+                    value={selectedQuizFilter}
                     className="w-48"
                     onChange={setSelectedQuizFilter}
                     options={[
-                      { value: "all", label: "Semua Kuisioner" },
+                      { value: "all", label: "Semua Kuesioner" },
                       ...(questionnaires || []).map((q) => ({
                         value: q.id,
                         label: q.title,
@@ -261,36 +230,75 @@ export default function Home() {
                     ]}
                   />
                   <RangePicker
+                    className="w-64"
                     onChange={(dates, dateStrings) => {
                       if (dates) setDateRange(dateStrings as [string, string]);
                       else setDateRange(null);
                     }}
-                    className="w-64"
                   />
-                </Space>
+                </div>
+
+                <div className="md:hidden w-full">
+                  <Badge count={activeFilterCount} offset={[-5, 5]}>
+                    <Button
+                      block
+                      icon={<Filter size={16} />}
+                      onClick={() => setIsFilterDrawerOpen(true)}
+                    >
+                      Filter Data
+                    </Button>
+                  </Badge>
+                </div>
               </div>
             }
           >
-            <Table<HistoryData>
-              columns={historyColumns}
-              dataSource={filteredHistoryData}
-              rowKey="id"
-              loading={historyLoading}
-              pagination={{
-                pageSize: 5,
-                showTotal: (total) => `Total ${total} riwayat`,
-              }}
-              locale={{
-                emptyText: (
-                  <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="Belum ada riwayat pengerjaan"
-                  />
-                ),
-              }}
-            />
+            <div className="overflow-x-auto">
+              <Table<HistoryData>
+                columns={wargaHistoryColumn}
+                dataSource={filteredHistoryData}
+                rowKey="id"
+                loading={historyLoading}
+                pagination={false}
+                scroll={{ x: 800 }}
+                rowClassName="hover:bg-gray-50"
+                locale={{
+                  emptyText: (
+                    <div className="py-10">
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="Belum ada riwayat pengerjaan"
+                      />
+                    </div>
+                  ),
+                }}
+              />
+            </div>
+
+            <div className="p-4 border-t border-gray-100 flex justify-end bg-white">
+              <Pagination
+                current={pagination.current}
+                pageSize={pagination.pageSize}
+                total={filteredHistoryData?.length || 0}
+                onChange={(page, pageSize) => {
+                  setPagination({ current: page, pageSize: pageSize });
+                }}
+                showSizeChanger
+                size="small"
+              />
+            </div>
           </Card>
         </section>
+
+        <MobileFilterDrawer
+          open={isFilterDrawerOpen}
+          onClose={() => setIsFilterDrawerOpen(false)}
+          questionnaires={questionnaires}
+          selectedQuizFilter={selectedQuizFilter}
+          setSelectedQuizFilter={setSelectedQuizFilter}
+          setDateRange={setDateRange}
+          onReset={handleResetFilter}
+        />
+
       </main>
     </div>
   );

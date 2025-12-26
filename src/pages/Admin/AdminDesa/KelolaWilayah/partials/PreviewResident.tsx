@@ -8,6 +8,7 @@ import {
     Skeleton,
     Divider,
     Result,
+    Grid,
 } from "antd";
 import {
     ArrowLeft,
@@ -27,10 +28,16 @@ import "dayjs/locale/id";
 import { adminDesaService } from "../../../../../service/adminDesaService";
 import { getImageUrl } from "../../../../../utils/imageHelper";
 
+const { useBreakpoint } = Grid;
+
 export default function PreviewResident() {
     const navigate = useNavigate();
     const params = useParams<{ residentId: string }>();
     const questionnaireId = params?.residentId?.split("=")?.[1] as string
+
+    const screens = useBreakpoint();
+    const descriptionLayout = screens.md ? "horizontal" : "vertical";
+    const labelStyle = screens.md ? { width: "180px", color: "#6b7280" } : { color: "#6b7280" };
 
     const {
         data: response,
@@ -95,8 +102,7 @@ export default function PreviewResident() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-
+            <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
                 <div className="flex justify-between items-center mb-6">
                     <Button
                         type="text"
@@ -110,8 +116,8 @@ export default function PreviewResident() {
 
                 <div className="flex flex-col gap-6">
 
-                    <Card className="shadow-sm border-gray-200 rounded-2xl overflow-hidden">
-                        <div className="flex flex-col items-center py-8 bg-gradient-to-b from-white to-gray-50">
+                    <Card className="shadow-sm border-gray-200 rounded-2xl overflow-hidden" bodyStyle={{ padding: 0 }}>
+                        <div className="flex flex-col items-center py-8 px-4 bg-gradient-to-b from-white to-gray-50">
                             <div className="relative group mb-4">
                                 <Avatar
                                     size={128}
@@ -126,10 +132,12 @@ export default function PreviewResident() {
                                 </div>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-800 mb-1 text-center">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 text-center break-words max-w-full px-2">
                                 {profile.fullname}
                             </h2>
-                            <p className="text-gray-500 mb-4 font-medium">{profile.email}</p>
+                            <p className="text-gray-500 mb-4 font-medium text-sm sm:text-base break-all text-center">
+                                {profile.email}
+                            </p>
 
                             <Tag
                                 color="green"
@@ -141,12 +149,12 @@ export default function PreviewResident() {
 
                         <Divider className="my-0" />
 
-                        <div className="grid grid-cols-2 divide-x divide-gray-100 bg-white">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 bg-white">
                             <div className="p-4 text-center">
                                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
                                     No Induk Kependudukan
                                 </p>
-                                <p className="font-mono font-medium text-gray-700">
+                                <p className="font-mono font-medium text-gray-700 text-sm sm:text-base">
                                     {profile.userDetail?.nik || "-"}
                                 </p>
                             </div>
@@ -154,7 +162,7 @@ export default function PreviewResident() {
                                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
                                     Terdaftar Sejak
                                 </p>
-                                <p className="font-medium text-gray-700">
+                                <p className="font-medium text-gray-700 text-sm sm:text-base">
                                     {profile.userDetail?.createdAt
                                         ? dayjs(profile.userDetail.createdAt)
                                             .locale("id")
@@ -165,12 +173,11 @@ export default function PreviewResident() {
                         </div>
                     </Card>
 
-                    {/* --- KARTU 2: INFORMASI PRIBADI --- */}
                     <Card
                         title={
                             <div className="flex items-center gap-2">
                                 <div className="w-1 h-5 bg-[#70B748] rounded-full"></div>
-                                <span className="text-gray-800 font-bold">Informasi Pribadi</span>
+                                <span className="text-gray-800 font-bold text-base">Informasi Pribadi</span>
                             </div>
                         }
                         className="shadow-sm border-gray-200 rounded-2xl"
@@ -178,8 +185,8 @@ export default function PreviewResident() {
                     >
                         <Descriptions
                             column={1}
-                            layout="horizontal"
-                            labelStyle={{ width: "180px", color: "#6b7280" }}
+                            layout={descriptionLayout}
+                            labelStyle={labelStyle}
                             contentStyle={{ fontWeight: 500, color: "#374151" }}
                         >
                             <Descriptions.Item label="Jenis Kelamin">
@@ -187,31 +194,30 @@ export default function PreviewResident() {
                             </Descriptions.Item>
                             <Descriptions.Item label="Tanggal Lahir">
                                 <div className="flex items-center gap-2">
-                                    <Calendar size={16} className="text-[#70B748]" />
+                                    <Calendar size={16} className="text-[#70B748] shrink-0" />
                                     {dayjs(profile.birthDate).locale("id").format("DD MMMM YYYY")}
                                 </div>
                             </Descriptions.Item>
                             <Descriptions.Item label="Nomor Telepon">
                                 <div className="flex items-center gap-2">
-                                    <Phone size={16} className="text-[#70B748]" />
+                                    <Phone size={16} className="text-[#70B748] shrink-0" />
                                     {profile.userDetail?.phoneNumber || "-"}
                                 </div>
                             </Descriptions.Item>
                             <Descriptions.Item label="Status Pernikahan">
                                 <div className="flex items-center gap-2">
-                                    <Heart size={16} className="text-[#70B748]" />
+                                    <Heart size={16} className="text-[#70B748] shrink-0" />
                                     {profile.userDetail?.marriageStatus?.name || "-"}
                                 </div>
                             </Descriptions.Item>
                         </Descriptions>
                     </Card>
 
-                    {/* --- KARTU 3: DOMISILI & PEKERJAAN --- */}
                     <Card
                         title={
                             <div className="flex items-center gap-2">
                                 <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
-                                <span className="text-gray-800 font-bold">Domisili & Pekerjaan</span>
+                                <span className="text-gray-800 font-bold text-base">Domisili & Pekerjaan</span>
                             </div>
                         }
                         className="shadow-sm border-gray-200 rounded-2xl"
@@ -219,13 +225,13 @@ export default function PreviewResident() {
                     >
                         <Descriptions
                             column={1}
-                            layout="horizontal"
-                            labelStyle={{ width: "180px", color: "#6b7280" }}
+                            layout={descriptionLayout} // Responsive Layout
+                            labelStyle={labelStyle}    // Responsive Label Width
                             contentStyle={{ fontWeight: 500, color: "#374151" }}
                         >
                             <Descriptions.Item label="Wilayah Tinggal">
                                 <div className="flex items-center gap-2">
-                                    <MapPin size={16} className="text-blue-500" />
+                                    <MapPin size={16} className="text-blue-500 shrink-0" />
                                     <span>
                                         RW {String(profile.userDetail?.rukunWarga?.name || 0).padStart(2, "0")}{" "}
                                         / RT {String(profile.userDetail?.rukunTetangga?.name || 0).padStart(2, "0")}
@@ -234,19 +240,19 @@ export default function PreviewResident() {
                             </Descriptions.Item>
                             <Descriptions.Item label="Pendidikan Terakhir">
                                 <div className="flex items-center gap-2">
-                                    <GraduationCap size={16} className="text-blue-500" />
+                                    <GraduationCap size={16} className="text-blue-500 shrink-0" />
                                     {profile.userDetail?.education?.name || "-"}
                                 </div>
                             </Descriptions.Item>
                             <Descriptions.Item label="Pekerjaan">
                                 <div className="flex items-center gap-2">
-                                    <Briefcase size={16} className="text-blue-500" />
+                                    <Briefcase size={16} className="text-blue-500 shrink-0" />
                                     {profile.userDetail?.profession || "-"}
                                 </div>
                             </Descriptions.Item>
                             <Descriptions.Item label="Rentang Pendapatan">
                                 <div className="flex items-center gap-2">
-                                    <CreditCard size={16} className="text-blue-500" />
+                                    <CreditCard size={16} className="text-blue-500 shrink-0" />
                                     {profile.userDetail?.salaryRange
                                         ? `${formatCurrency(profile.userDetail.salaryRange.minRange)} - ${formatCurrency(profile.userDetail.salaryRange.maxRange)}`
                                         : "-"}

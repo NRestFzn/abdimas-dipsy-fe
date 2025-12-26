@@ -1,4 +1,4 @@
-import type { Education, MarriageStatus, MasterDataResponse } from "../types/adminDesaService";
+import type { Education, GetParams, MarriageStatus, MasterDataResponse } from "../types/adminDesaService";
 import { api } from "./api";
 
 export interface MasterData {
@@ -38,22 +38,22 @@ export const masterDataService = {
 		return response.data.data;
 	},
 
-	getSalaryRanges: async (): Promise<SalaryRange[]> => {
-		const response = await api.get("/v1/salary-range");
+	getSalaryRanges: async (params: GetParams): Promise<SalaryRange[]> => {
+		const response = await api.get("/v1/salary-range", { params });
 		return response.data.data;
 	},
 
 	async getEducationList() {
-        const response = await api.get<MasterDataResponse<Education>>("/v1/education");
-        return response.data.data;
-    },
-    async getMarriageStatusList() {
-        const response = await api.get<MasterDataResponse<MarriageStatus>>("/v1/marriage-status");
-        return response.data.data;
-    },
-    async getSalaryRangeList() {
-        const response = await api.get<MasterDataResponse<SalaryRange>>("/v1/salary-range");
-        return response.data.data;
-    },
+		const response = await api.get<MasterDataResponse<Education>>("/v1/education");
+		return response.data.data;
+	},
+	async getMarriageStatusList() {
+		const response = await api.get<MasterDataResponse<MarriageStatus>>("/v1/marriage-status");
+		return response.data.data;
+	},
+	async getSalaryRangeList() {
+		const response = await api.get<MasterDataResponse<SalaryRange>>("/v1/salary-range");
+		return response.data.data;
+	},
 
 };

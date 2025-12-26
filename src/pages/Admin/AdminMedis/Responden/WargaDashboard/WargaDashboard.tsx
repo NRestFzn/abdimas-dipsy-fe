@@ -10,7 +10,7 @@ import {
     Table,
     Tag
 } from "antd";
-import { Filter, Home } from "lucide-react";
+import { ArrowLeft, Filter, Home } from "lucide-react";
 import dayjs from "dayjs";
 
 import { adminMedisService } from "../../../../../service/adminMedisService";
@@ -175,18 +175,31 @@ export default function WargaDashboard() {
     return (
         <div className="flex flex-col w-full h-full">
 
+            <div className="p-5">
+                <Button
+                    type="default"
+                    onClick={() => navigate(-1)}
+                    className="flex items-center"
+                >
+                    <ArrowLeft size={18} />
+                    Kembali
+                </Button>
+            </div>
+
             {summaryData && (
                 <Spin spinning={loading.loading}>
-                    <MentalHealthChart
-                        overallDepressionRate={summaryData?.summarize?.unStableMentalPercentage || 0}
-                        totalSubmit={summaryData?.summarize?.submitCount || 0}
-                        totalUser={summaryData?.summarize?.userCount || 0}
+                    <div className="p-5">
+                        <MentalHealthChart
+                            overallDepressionRate={summaryData?.summarize?.unStableMentalPercentage || 0}
+                            totalSubmit={summaryData?.summarize?.submitCount || 0}
+                            totalUser={summaryData?.summarize?.userCount || 0}
 
-                        usersData={summaryData?.users as any[]}
+                            usersData={summaryData?.users as any[]}
 
-                        title={`Statistik Kesehatan Mental Warga - ${names.rt}`}
-                        subtitle={`Persentase Kondisi Mental Warga di ${names.rw} ${names.rt}`}
-                    />
+                            title={`Statistik Kesehatan Mental Warga - ${names.rt}`}
+                            subtitle={`Persentase Kondisi Mental Warga di ${names.rw} ${names.rt}`}
+                        />
+                    </div>
                 </Spin>
             )}
 

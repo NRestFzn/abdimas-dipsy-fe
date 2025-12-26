@@ -6,26 +6,41 @@ import duration from "dayjs/plugin/duration";
 
 dayjs.extend(duration);
 
-interface WelcomeBannerProps {
+interface WelcomeHeaderProps {
   fullname: string;
 }
 
-export const WelcomeBanner = ({ fullname }: WelcomeBannerProps) => {
-  return (
-    <div className="bg-gradient-to-r from-[#70B748] to-[#5a9639] rounded-2xl p-6 sm:p-10 text-white shadow-lg mb-8 relative overflow-hidden">
-      <div className="relative z-10">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-          Selamat Datang, {fullname}! 👋
-        </h1>
-        <p className="text-white/90 text-base sm:text-lg max-w-2xl">
-          Mari jaga kesehatan mental kita bersama. Silakan pilih kuisioner yang
-          tersedia di bawah ini untuk memulai pengecekan mandiri.
-        </p>
-      </div>
+export const WelcomeHeader = ({ fullname }: WelcomeHeaderProps) => {
+  const currentHour = new Date().getHours();
+  let greeting = "Selamat Pagi";
+  if (currentHour >= 11 && currentHour < 15) greeting = "Selamat Siang";
+  else if (currentHour >= 15 && currentHour < 18) greeting = "Selamat Sore";
+  else if (currentHour >= 18) greeting = "Selamat Malam";
 
-      {/* Decorative Circles */}
-      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-      <div className="absolute bottom-0 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+  const firstName = fullname?.split(" ")[0] || "Warga";
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#70B748] to-[#5a9e36] text-white shadow-lg mb-10 transition-all hover:shadow-xl">
+      <div className="absolute -top-10 -right-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-20 left-10 w-32 h-32 bg-yellow-300 opacity-20 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div className="relative z-10 px-6 py-8 sm:px-10 sm:py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-3 opacity-90">
+            <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm border border-white/10 shadow-sm">
+              {dayjs().locale("id").format("dddd, D MMMM YYYY")}
+            </span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-white">
+            {greeting}, {firstName}! 👋
+          </h1>
+
+          <p className="text-green-50 max-w-2xl text-sm sm:text-base leading-relaxed opacity-95 font-medium">
+            Bagaimana kabarmu hari ini? Yuk, luangkan waktu sejenak untuk mengecek kondisi kesehatan mentalmu. Kami siap mendengarkan.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
@@ -71,21 +86,18 @@ export const QuestionnaireCard = ({
       } else if (dur.asMonths() >= 1) {
         const daysLeft = Math.floor(dur.asDays() % 30);
         setTimerString(
-          `${Math.floor(dur.asMonths())} Bulan ${
-            daysLeft > 0 ? `${daysLeft} Hari` : ""
+          `${Math.floor(dur.asMonths())} Bulan ${daysLeft > 0 ? `${daysLeft} Hari` : ""
           }`
         );
       } else if (dur.asWeeks() >= 1) {
         const daysLeft = Math.floor(dur.asDays() % 7);
         setTimerString(
-          `${Math.floor(dur.asWeeks())} Minggu ${
-            daysLeft > 0 ? `${daysLeft} Hari` : ""
+          `${Math.floor(dur.asWeeks())} Minggu ${daysLeft > 0 ? `${daysLeft} Hari` : ""
           }`
         );
       } else if (dur.asDays() >= 1) {
         setTimerString(
-          `${Math.floor(dur.asDays())} Hari ${
-            dur.hours() > 0 ? `${dur.hours()} Jam` : ""
+          `${Math.floor(dur.asDays())} Hari ${dur.hours() > 0 ? `${dur.hours()} Jam` : ""
           }`
         );
       } else {
@@ -112,9 +124,8 @@ export const QuestionnaireCard = ({
   return (
     <Card
       hoverable
-      className={`h-full flex flex-col border-gray-200 transition-all duration-300 group ${
-        disabled ? "hover:border-[#70B748]" : "opacity-80 bg-gray-50"
-      }`}
+      className={`h-full flex flex-col border-gray-200 transition-all duration-300 group ${disabled ? "hover:border-[#70B748]" : "opacity-80 bg-gray-50"
+        }`}
       bodyStyle={{
         display: "flex",
         flexDirection: "column",
@@ -124,16 +135,14 @@ export const QuestionnaireCard = ({
     >
       <div className="flex items-start justify-between mb-4">
         <div
-          className={`p-3 rounded-lg transition-colors duration-300 ${
-            disabled ? "bg-green-50 group-hover:bg-[#70B748]" : "bg-gray-200"
-          }`}
+          className={`p-3 rounded-lg transition-colors duration-300 ${disabled ? "bg-green-50 group-hover:bg-[#70B748]" : "bg-gray-200"
+            }`}
         >
           <FileText
-            className={`w-6 h-6 transition-colors ${
-              disabled
+            className={`w-6 h-6 transition-colors ${disabled
                 ? "text-[#70B748] group-hover:text-white"
                 : "text-gray-500"
-            }`}
+              }`}
           />
         </div>
 
@@ -161,11 +170,10 @@ export const QuestionnaireCard = ({
         type="primary"
         size="large"
         disabled={!disabled}
-        className={`border-none h-10 font-medium !flex items-center justify-center gap-2 ${
-          disabled
+        className={`border-none h-10 font-medium !flex items-center justify-center gap-2 ${disabled
             ? "!bg-[#70B748] !hover:bg-[#5a9639]"
             : "!bg-gray-300 !text-gray-600 cursor-not-allowed"
-        }`}
+          }`}
         onClick={() => onStart(id)}
       >
         {disabled ? (

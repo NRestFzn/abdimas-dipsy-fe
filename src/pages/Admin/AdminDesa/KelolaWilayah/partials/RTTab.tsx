@@ -17,12 +17,12 @@ export default function RTTab() {
 
     const { data: rwList } = useQuery({
         queryKey: ["list-rw"],
-        queryFn: adminDesaService.getAllRW
+        queryFn: () => adminDesaService.getAllRW()
     });
 
     const { data: rtData, isLoading, isFetching } = useQuery({
         queryKey: ["list-rt", selectedRW],
-        queryFn: () => selectedRW ? adminDesaService.getRT(selectedRW) : null,
+        queryFn: () => selectedRW ? adminDesaService.getRT({ order: "[['createdAt', 'desc']]" }, selectedRW) : null,
         enabled: !!selectedRW
     });
 
@@ -73,22 +73,25 @@ export default function RTTab() {
     const tableLoading = isLoading || isFetching || deleteMutation.isPending;
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-3 w-full max-w-md">
+        <div className="space-y-4 md:space-y-6">
+
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
+                <div className="w-full md:max-w-md">
                     <Select
-                        className="flex-1"
+                        className="w-full"
                         placeholder="Pilih RW untuk melihat RT"
                         onChange={setSelectedRW}
                         value={selectedRW}
                         options={rwList?.data?.map((rw: any) => ({ label: `RW ${rw.name}`, value: rw.id }))}
                         loading={!rwList}
+                        size="large"
                     />
                 </div>
+
                 <Button
                     type="primary"
                     icon={<Plus size={16} />}
-                    className="!bg-[#70B748] !hover:bg-[#5a9639]"
+                    className="!bg-[#70B748] !hover:bg-[#5a9639] w-full md:w-auto flex justify-center items-center h-10" // Full width btn on mobile
                     onClick={() => setIsModalOpen(true)}
                     disabled={!selectedRW}
                 >
@@ -96,16 +99,23 @@ export default function RTTab() {
                 </Button>
             </div>
 
-            <Table<RukunTetangga>
-                columns={columns}
-                dataSource={dataSource}
-                rowKey="id"
-                loading={tableLoading}
-                pagination={{ pageSize: 10 }}
-                locale={{
-                    emptyText: selectedRW ? "Belum ada data RT di RW ini" : "Silakan pilih RW terlebih dahulu di atas"
-                }}
-            />
+            <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+                <Table<RukunTetangga>
+                    columns={columns}
+                    dataSource={dataSource}
+                    rowKey="id"
+                    loading={tableLoading}
+                    pagination={{
+                        pageSize: 10,
+                        responsive: true,
+                        showSizeChanger: false
+                    }}
+                    scroll={{ x: 600 }}
+                    locale={{
+                        emptyText: selectedRW ? "Belum ada data RT di RW ini" : "Silakan pilih RW terlebih dahulu di atas"
+                    }}
+                />
+            </div>
 
             <Modal
                 title="Tambah RT Baru"
@@ -116,17 +126,21 @@ export default function RTTab() {
                 okText="Simpan"
                 cancelText="Batal"
                 okButtonProps={{ className: "!bg-[#70B748] !hover:bg-[#5a9639]" }}
+                centered
             >
                 <Form form={form} layout="vertical" onFinish={(vals) => createMutation.mutate({ ...vals, rwId: selectedRW! })}>
-                    <p className="mb-4 text-gray-500 text-sm">
-                        Menambahkan RT ke dalam <b>RW {rwList?.data?.find((r: any) => r.id === selectedRW)?.name}</b>
-                    </p>
+                    <div className="bg-gray-50 p-3 rounded-md mb-4 border border-gray-100">
+                        <p className="text-gray-500 text-sm">
+                            Menambahkan RT ke dalam <br className="md:hidden" />
+                            <span className="font-semibold text-gray-700">RW {rwList?.data?.find((r: any) => r.id === selectedRW)?.name}</span>
+                        </p>
+                    </div>
                     <Form.Item
                         label="Nomor RT (Angka)"
                         name="count"
                         rules={[{ required: true, message: "Wajib diisi" }]}
                     >
-                        <InputNumber min={1} className="!w-full" placeholder="Contoh: 3" />
+                        <InputNumber min={1} className="!w-full" placeholder="Contoh: 3" size="large" />
                     </Form.Item>
                 </Form>
             </Modal>
@@ -144,10 +158,10 @@ export default function RTTab() {
                     <Button key="cancel" onClick={() => setIsDeleteModalOpen(false)}>
                         Batal
                     </Button>,
-                    <Button 
-                        key="delete" 
-                        type="primary" 
-                        danger 
+                    <Button
+                        key="delete"
+                        type="primary"
+                        danger
                         loading={deleteMutation.isPending}
                         onClick={confirmDelete}
                     >
@@ -158,8 +172,8 @@ export default function RTTab() {
             >
                 {selectedRT && (
                     <div className="flex flex-col gap-4 py-2">
-                        <p className="text-gray-600">
-                            Apakah Anda yakin ingin menghapus 
+                        <p className="text-gray-600 leading-relaxed">
+                            Apakah Anda yakin ingin menghapus
                             <span className="font-bold text-gray-800"> RT {selectedRT.name}</span>?
                         </p>
 

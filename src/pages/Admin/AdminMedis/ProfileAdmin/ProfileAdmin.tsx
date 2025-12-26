@@ -10,7 +10,7 @@ import {
   Descriptions,
   Result,
 } from "antd";
-import { Mail, Edit, ShieldCheck, ArrowLeft, Heart } from "lucide-react";
+import { Mail, Edit, ShieldCheck, ArrowLeft } from "lucide-react";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 import { adminMedisService } from "../../../../service/adminMedisService";
@@ -75,23 +75,9 @@ export default function AdminProfile() {
 
   const data = response?.data;
   const profilePictureUrl = getImageUrl(data.profilePicture);
-  const role = data?.role?.name
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-center">
-          <div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate("/admin-medis/responden")}
-          >
-            <Heart className="fill-[#70B748] text-[#70B748] w-8 h-8" />
-            <span className="text-lg font-bold text-[#70B748] hidden sm:block capitalize">
-              Tes Kesehatan Mental - {role}
-            </span>
-          </div>
-        </div>
-      </header>
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <Button

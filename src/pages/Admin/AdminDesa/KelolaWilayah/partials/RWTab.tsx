@@ -18,7 +18,7 @@ export default function RWTab() {
 
     const { data: rwList, isLoading } = useQuery({
         queryKey: ["list-rw"],
-        queryFn: adminDesaService.getAllRW
+        queryFn: () => adminDesaService.getAllRW()
     });
 
     const createMutation = useMutation({

@@ -1,21 +1,26 @@
 import { useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import MainLayout from '../MainLayout';
 import AdminSideBar from "../../../components/admin/AdminSidebar";
-import { Layout, Grid, Drawer, Button } from "antd"; // Import Grid & Drawer
-import { PanelLeftClose, PanelLeftOpen, Menu, Heart } from "lucide-react"; // Import Menu Icon
+import { Layout, Grid, Drawer, Button } from "antd";
+import { PanelLeftClose, PanelLeftOpen, Menu, Heart } from "lucide-react";
 
 const { Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
 
 function AdminMediLayout() {
+    const location = useLocation();
     const screens = useBreakpoint();
     const isMobile = screens.md === false;
+
+    const hideSiderRoutes = ["/admin-medis/profile", "/admin/profile"];
 
     const headerTitle = "Tes Kesehatan Mental - Medis"
 
     const [responsiveSidebar, setResponsiveSidebar] = useState(false);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+    const shouldHideSider = hideSiderRoutes.some(route => location.pathname.startsWith(route));
 
     return (
         <MainLayout
@@ -28,7 +33,7 @@ function AdminMediLayout() {
                 />
             ) : null}
         >
-            {!isMobile && (
+            {!isMobile &&!shouldHideSider && (
                 <Sider
                     trigger={null}
                     width={260}

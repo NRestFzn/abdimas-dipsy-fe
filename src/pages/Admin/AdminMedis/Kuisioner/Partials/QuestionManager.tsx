@@ -58,7 +58,7 @@ const AddQuestionForm = ({ questionnaireId, onAdd, disabled }: AddQuestionFormPr
     };
 
     return (
-        <div className="p-4 bg-white border border-gray-200 rounded-lg">
+        <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
             <h3 className="font-medium text-zinc-700 mb-3">Tambah Pertanyaan Baru</h3>
             <div className="flex flex-col gap-3">
                 <Input
@@ -67,39 +67,40 @@ const AddQuestionForm = ({ questionnaireId, onAdd, disabled }: AddQuestionFormPr
                     onChange={(e) => setNewQuestion(prev => ({ ...prev, questionText: e.target.value }))}
                     disabled={disabled || isAdding}
                 />
-                <div className="flex gap-3">
-                    <Select
-                        value={newQuestion.questionType}
-                        onChange={(val) => setNewQuestion(prev => ({ ...prev, questionType: val }))}
-                        className="flex-1"
-                        disabled={disabled || isAdding}
-                        options={[
-                            { value: 'radio', label: 'Radio (Ya/Tidak)' },
-                            { value: 'checkbox', label: 'Checkbox' },
-                            { value: 'text', label: 'Text' },
-                        ]}
-                    />
-                    <Select
-                        value={newQuestion.status}
-                        onChange={(val) => setNewQuestion(prev => ({ ...prev, status: val }))}
-                        className="w-32"
-                        disabled={disabled || isAdding}
-                        options={[
-                            { value: 'draft', label: 'Draft' },
-                            { value: 'publish', label: 'Publish' },
-                        ]}
-                    />
+
+                <div className="flex flex-col md:flex-row gap-3">
+                    <div className="flex gap-3 flex-1">
+                        <Select
+                            value={newQuestion.questionType}
+                            onChange={(val) => setNewQuestion(prev => ({ ...prev, questionType: val }))}
+                            className="flex-1 md:flex-none md:w-48"
+                            disabled={disabled || isAdding}
+                            options={[
+                                { value: 'radio', label: 'Radio (Ya/Tidak)' },
+                                { value: 'checkbox', label: 'Checkbox' },
+                                { value: 'text', label: 'Text' },
+                            ]}
+                        />
+                        <Select
+                            value={newQuestion.status}
+                            onChange={(val) => setNewQuestion(prev => ({ ...prev, status: val }))}
+                            className="flex-1 md:flex-none md:w-32"
+                            disabled={disabled || isAdding}
+                            options={[
+                                { value: 'draft', label: 'Draft' },
+                                { value: 'publish', label: 'Publish' },
+                            ]}
+                        />
+                    </div>
                     <Button
                         type="primary"
-                        className="flex items-center gap-x-2 !bg-[#70B748] !hover:bg-[#5a9639]"
+                        className="flex items-center justify-center gap-x-2 !bg-[#70B748] !hover:bg-[#5a9639] w-full md:w-auto"
                         onClick={handleSubmit}
                         loading={isAdding}
                         disabled={disabled}
                     >
                         <Plus size={16} />
-                        <p>
-                            Tambah
-                        </p>
+                        <span>Tambah</span>
                     </Button>
                 </div>
             </div>
@@ -141,18 +142,20 @@ const EditQuestionModal = ({ open, question, onCancel, onSave, loading }: EditQu
             cancelText="Batal"
             okButtonProps={{ className: "!bg-[#70B748] !hover:bg-[#5a9639]" }}
             destroyOnClose
+            width={600}
         >
             {localQuestion && (
-                <div className="flex flex-col gap-4 pt-2">
+                <div className="flex flex-col gap-4 pt-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Pertanyaan</label>
-                        <Input
+                        <Input.TextArea
+                            rows={2}
                             value={localQuestion.questionText}
                             onChange={(e) => setLocalQuestion(prev => prev ? ({ ...prev, questionText: e.target.value }) : null)}
                             placeholder="Tulis pertanyaan..."
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
                             <Select
@@ -389,7 +392,7 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
     const currentQuestions = questions.slice(startIndex, endIndex);
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-6 pb-20">
 
             <AddQuestionForm
                 questionnaireId={questionnaireId}
@@ -403,16 +406,16 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                 <Empty description="Belum ada pertanyaan" />
             ) : (
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <span className="text-xs text-gray-500 font-medium">
                             Total: {questions.length} Pertanyaan
                         </span>
-                        <span className="text-xs text-gray-400 italic">
+                        <span className="text-xs text-gray-400 italic hidden sm:inline">
                             Drag icon grip untuk mengubah urutan
                         </span>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {currentQuestions.map((q, index) => {
                             const globalIndex = startIndex + index;
 
@@ -424,55 +427,63 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                                     onDragOver={(e) => handleDragOver(e, globalIndex)}
                                     onDragEnd={handleDragEnd}
                                     className={`
-                                        flex items-center gap-3 p-3 bg-white border rounded-md transition-all
-                                        ${draggedItem === globalIndex ? 'border-[#70B748] bg-green-50 shadow-md' : 'border-gray-200 hover:border-gray-300'}
-                                        ${isSavingOrder ? 'opacity-50 cursor-not-allowed' : 'cursor-default'}
-                                    `}
+                                            group relative flex items-start gap-3 p-3 bg-white border rounded-lg transition-all
+                                            ${draggedItem === globalIndex ? 'border-[#70B748] bg-green-50 shadow-md z-10' : 'border-gray-200 hover:border-gray-300'}
+                                            ${isSavingOrder ? 'opacity-50 cursor-not-allowed' : 'cursor-default'}
+                                        `}
                                 >
                                     <div
-                                        className="cursor-move text-gray-400 hover:text-gray-600 p-1"
+                                        className="cursor-move text-gray-400 hover:text-gray-600 p-1 mt-0.5 shrink-0"
                                         title="Drag untuk pindah posisi"
                                     >
                                         <GripVertical size={20} />
                                     </div>
 
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xs font-bold text-gray-500 w-8">#{globalIndex + 1}</span>
-                                            <span className="text-sm font-medium text-gray-800">{q.questionText}</span>
+                                    <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-y-2 gap-x-4">
+
+                                        <div className="flex gap-2">
+                                            <span className="text-xs font-bold text-gray-500 min-w-[20px] pt-1 shrink-0">
+                                                #{globalIndex + 1}
+                                            </span>
+                                            <span className="text-sm font-medium text-gray-800 break-words leading-relaxed">
+                                                {q.questionText}
+                                            </span>
                                         </div>
-                                        <div className="flex gap-2 ml-10">
-                                            <Tag className="text-xs m-0">{q.questionType}</Tag>
+
+                                        <div className="flex items-center gap-2 shrink-0 sm:self-start ml-7 sm:ml-0">
+                                            <Tag className="text-xs m-0 h-fit bg-gray-50 border-gray-200 text-gray-500">
+                                                {q.questionType}
+                                            </Tag>
                                             {q.status === 'publish' ? (
-                                                <Tag color="success" className="text-xs m-0">Published</Tag>
+                                                <Tag color="success" className="text-xs m-0 h-fit">Published</Tag>
                                             ) : (
-                                                <Tag color="warning" className="text-xs m-0">Draft</Tag>
+                                                <Tag color="warning" className="text-xs m-0 h-fit">Draft</Tag>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1 shrink-0 ml-auto sm:ml-0">
                                         <Dropdown
                                             trigger={['click']}
                                             menu={{
                                                 items: [
                                                     {
                                                         key: 'edit',
-                                                        label: 'Edit Pertanyaan',
+                                                        label: 'Edit',
                                                         icon: <Edit size={14} />,
                                                         onClick: () => openEditModal(q)
                                                     },
                                                     { type: 'divider' },
                                                     {
                                                         key: 'publish',
-                                                        label: 'Set as Publish',
+                                                        label: 'Set Publish',
                                                         icon: <CheckCircle size={14} className="text-green-500" />,
                                                         disabled: q.status === 'publish',
                                                         onClick: () => handleChangeStatus(q.id, 'publish')
                                                     },
                                                     {
                                                         key: 'draft',
-                                                        label: 'Set as Draft',
+                                                        label: 'Set Draft',
                                                         icon: <XCircle size={14} className="text-yellow-500" />,
                                                         disabled: q.status === 'draft',
                                                         onClick: () => handleChangeStatus(q.id, 'draft')
@@ -483,23 +494,25 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                                             <Button
                                                 size="small"
                                                 icon={<MoreHorizontal size={16} />}
+                                                className="border-gray-200 text-gray-500"
                                             />
                                         </Dropdown>
 
                                         <Popconfirm
-                                            title="Hapus Pertanyaan"
-                                            description="Yakin ingin menghapus pertanyaan ini?"
+                                            title="Hapus"
+                                            description="Hapus pertanyaan ini?"
                                             onConfirm={() => handleDelete(q.id)}
                                             okText="Ya"
                                             cancelText="Batal"
                                             okButtonProps={{ danger: true }}
+                                            placement="topRight"
                                         >
                                             <Button
                                                 type="text"
                                                 danger
                                                 size="small"
                                                 icon={<Trash2 size={16} />}
-                                                className="flex items-center justify-center"
+                                                className="hidden sm:flex items-center justify-center hover:bg-red-50"
                                             />
                                         </Popconfirm>
                                     </div>
@@ -518,22 +531,23 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                                 setPageSize(size);
                             }}
                             showSizeChanger
-                            pageSizeOptions={['10', '20', '50', '100']}
-                            showTotal={(total) => `Total ${total} pertanyaan`}
+                            size="small" // Smaller size for mobile
+                            pageSizeOptions={['10', '20', '50']}
+                            showTotal={(total) => <span className="text-xs">Total {total}</span>}
                         />
                     </div>
                 </div>
             )}
 
             {isOrderDirty && (
-                <div className="sticky bottom-4 z-10 flex justify-center animate-in fade-in slide-in-from-bottom-4">
-                    <div className="bg-white p-2 rounded-full shadow-lg border border-gray-200 flex items-center gap-3 pr-4">
-                        <span className="text-sm text-gray-600 ml-3">
-                            Urutan telah berubah
+                <div className="fixed bottom-6 left-0 right-0 px-4 z-50 flex justify-center animate-in fade-in slide-in-from-bottom-4">
+                    <div className="bg-white p-3 rounded-xl shadow-xl border border-gray-200 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto max-w-md">
+                        <span className="text-sm text-gray-600 font-medium">
+                            Urutan berubah
                         </span>
                         <Button
                             type="primary"
-                            className="!bg-[#70B748] !hover:bg-[#5a9639] h-9"
+                            className="!bg-[#70B748] !hover:bg-[#5a9639] h-9 w-full sm:w-auto"
                             icon={<Save size={16} />}
                             loading={isSavingOrder}
                             onClick={handleSaveOrder}

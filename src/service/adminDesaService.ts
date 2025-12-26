@@ -3,6 +3,7 @@ import type {
 	AdminProfile,
 	ApiResponse,
 	CreateResidentPayload,
+	GetParams,
 	GetPublicQuestionnaireParams,
 	QueryParams,
 	Questionnaire,
@@ -88,8 +89,8 @@ export const adminDesaService = {
 		return response;
 	},
 
-	async getRT(rwId: string) {
-		const response = await api.get<RtResponse>(`/v1/rukun-warga/${rwId}`);
+	async getRT(params?: GetParams, rwId?: string) {
+		const response = await api.get<RtResponse>(`/v1/rukun-warga/${rwId}`, { params });
 
 		return response.data;
 	},
@@ -177,8 +178,8 @@ export const adminDesaService = {
 		return response.data;
 	},
 
-	async getAllRW(): Promise<GetAllRWResponse> {
-		const response = await api.get<GetAllRWResponse>("/v1/rukun-warga");
+	async getAllRW(params?: GetParams): Promise<GetAllRWResponse> {
+		const response = await api.get<GetAllRWResponse>("/v1/rukun-warga", { params });
 		return response.data;
 	},
 
@@ -200,19 +201,19 @@ export const adminDesaService = {
 	},
 
 	async getResidentDetail(id: string) {
-        const response = await api.get(`/v1/resident/${id}`);
-        return response.data;
-    },
+		const response = await api.get(`/v1/resident/${id}`);
+		return response.data;
+	},
 
-    async updateResident(id: string, payload: UpdateResidentPayload) {
-        const response = await api.put(`/v1/resident/${id}`, payload);
-        return response.data;
-    },
+	async updateResident(id: string, payload: UpdateResidentPayload) {
+		const response = await api.put(`/v1/resident/${id}`, payload);
+		return response.data;
+	},
 
-    async deleteResident(id: string) {
-        const response = await api.delete(`/v1/resident/${id}`);
-        return response.data;
-    },
+	async deleteResident(id: string) {
+		const response = await api.delete(`/v1/resident/${id}`);
+		return response.data;
+	},
 
 	async updateProfilePicture(file: File) {
 		const formData = new FormData();

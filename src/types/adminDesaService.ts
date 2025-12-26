@@ -182,6 +182,10 @@ export interface RTSummary {
 	}>;
 }
 
+export interface GetParams {
+	order: string
+}
+
 export interface Education {
     id: string;
     name: string;

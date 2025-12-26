@@ -24,7 +24,7 @@ export const useMasterData = () => {
 
 	const salaryRanges = useQuery({
 		queryKey: ["salaryRanges"],
-		queryFn: masterDataService.getSalaryRanges,
+		queryFn: () => masterDataService.getSalaryRanges({ order: '[["createdAt", "desc"]]' }),
 	});
 
 	return {

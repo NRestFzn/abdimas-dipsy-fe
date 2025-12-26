@@ -10,7 +10,7 @@ import {
   Tag,
   message
 } from "antd";
-import { Home, Filter } from "lucide-react";
+import { Home, Filter, ArrowLeft } from "lucide-react";
 import type { SummarizeAllResponse } from "../../../../../types/adminDesaService";
 import { adminDesaService } from "../../../../../service/adminDesaService";
 import { getDesaRwDashboardColumn, type DesaRWDataRow } from "../../columns/DesaRwDashboardColumn";
@@ -155,15 +155,28 @@ export default function DesaRwDashboard() {
 
   return (
     <div className="flex flex-col w-full h-full">
+      <div className="p-5">
+        <Button
+          type="default"
+          onClick={() => navigate(-1)}
+          className="flex items-center"
+        >
+          <ArrowLeft size={18} />
+          Kembali
+        </Button>
+      </div>
+
       {summaryData && (
-        <MentalHealthChart
-          overallDepressionRate={summaryData.summarize.unStableMentalPercentage || 0}
-          totalSubmit={summaryData.summarize.submitCount || 0}
-          totalUser={summaryData.summarize.userCount || 0}
-          perRwData={summaryData.perRw as any[]}
-          title="Dashboard Kesehatan Mental RW"
-          subtitle={`Laporan Wilayah ${questionnaireName}`}
-        />
+        <div className="p-5">
+          <MentalHealthChart
+            overallDepressionRate={summaryData.summarize.unStableMentalPercentage || 0}
+            totalSubmit={summaryData.summarize.submitCount || 0}
+            totalUser={summaryData.summarize.userCount || 0}
+            perRwData={summaryData.perRw as any[]}
+            title="Dashboard Kesehatan Mental RW"
+            subtitle={`Laporan Wilayah ${questionnaireName}`}
+          />
+        </div>
       )}
 
       <div className="bg-gray-100 p-6 flex flex-col gap-y-5 h-full">

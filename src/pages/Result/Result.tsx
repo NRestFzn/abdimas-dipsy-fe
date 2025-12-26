@@ -1,9 +1,18 @@
 import {useNavigate, useParams} from 'react-router';
 import {useEffect, useState} from 'react';
 import {questionnaireService} from '../../service/questionnaireService';
-import {ArrowLeft, FileHeart} from 'lucide-react';
-import {Button, Card, Empty, Spin, Table} from 'antd';
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  RefreshCcw,
+} from 'lucide-react';
+import {Button, Card, Empty, Spin, Table, Tag, Typography} from 'antd';
 import {getUserResultColumns} from './columns/ResultColumn';
+import ResultPieChart from '../../components/Charts/ResultPieChart';
+
+const {Title, Text, Paragraph} = Typography;
 
 interface QuestionnaireQuestion {
   questionText: string;
@@ -60,7 +69,7 @@ export default function Result() {
           }
         } catch (error) {
           console.error('Error fetching questionnaire:', error);
-          setLoading(false); // Jika error, matikan loading
+          setLoading(false);
         }
       };
 
@@ -103,197 +112,6 @@ export default function Result() {
     })
   );
 
-  const PieChart = ({
-    yaCount,
-    tidakCount,
-  }: {
-    yaCount: number;
-    tidakCount: number;
-  }) => {
-    const total = yaCount + tidakCount;
-    const yaPercentage = total > 0 ? (yaCount / total) * 100 : 0;
-    const tidakPercentage = total > 0 ? (tidakCount / total) * 100 : 0;
-
-    const radius = 140;
-    const centerX = 150;
-    const centerY = 150;
-
-    const getCoordinatesForPercent = (percent: number) => {
-      const x = Math.cos(2 * Math.PI * percent);
-      const y = Math.sin(2 * Math.PI * percent);
-      return [x, y];
-    };
-
-    const [yaStartX, yaStartY] = getCoordinatesForPercent(0);
-    const [yaEndX, yaEndY] = getCoordinatesForPercent(yaPercentage / 100);
-    const yaLargeArcFlag = yaPercentage > 50 ? 1 : 0;
-    const yaPathData = [
-      `M ${centerX} ${centerY}`,
-      `L ${centerX + yaStartX * radius} ${centerY + yaStartY * radius}`,
-      `A ${radius} ${radius} 0 ${yaLargeArcFlag} 1 ${
-        centerX + yaEndX * radius
-      } ${centerY + yaEndY * radius}`,
-      'Z',
-    ].join(' ');
-
-    const [tidakStartX, tidakStartY] = getCoordinatesForPercent(
-      yaPercentage / 100
-    );
-    const [tidakEndX, tidakEndY] = getCoordinatesForPercent(1);
-    const tidakLargeArcFlag = tidakPercentage > 50 ? 1 : 0;
-    const tidakPathData = [
-      `M ${centerX} ${centerY}`,
-      `L ${centerX + tidakStartX * radius} ${centerY + tidakStartY * radius}`,
-      `A ${radius} ${radius} 0 ${tidakLargeArcFlag} 1 ${
-        centerX + tidakEndX * radius
-      } ${centerY + tidakEndY * radius}`,
-      'Z',
-    ].join(' ');
-
-    const yaLabelAngle =
-      (((yaPercentage / 100) * 360) / 2) * (Math.PI / 180) - Math.PI / 2;
-    const tidakLabelAngle =
-      ((yaPercentage / 100) * 360 + ((tidakPercentage / 100) * 360) / 2) *
-        (Math.PI / 180) -
-      Math.PI / 2;
-
-    const labelOffset = radius + 20;
-
-    const yaLabelX = centerX + Math.cos(yaLabelAngle) * labelOffset;
-    const yaLabelY = centerY + Math.sin(yaLabelAngle) * labelOffset;
-    const tidakLabelX = centerX + Math.cos(tidakLabelAngle) * labelOffset;
-    const tidakLabelY = centerY + Math.sin(tidakLabelAngle) * labelOffset;
-
-    const getLabelStyles = (x: number, y: number) => {
-      const isVertical = Math.abs(x - centerX) < 20;
-      const isTop = y < centerY;
-      const isLeft = x < centerX;
-
-      let containerStyle: React.CSSProperties = {
-        position: 'absolute',
-        left: `${x}px`,
-        top: `${y}px`,
-        zIndex: 20,
-      };
-
-      let arrowStyle: React.CSSProperties = {
-        position: 'absolute',
-        width: '8px',
-        height: '8px',
-        backgroundColor: '#1f2937',
-        transform: 'rotate(45deg)',
-      };
-
-      if (isVertical) {
-        containerStyle.transform = 'translate(-50%, 0)';
-        if (isTop) {
-          containerStyle.transform = 'translate(-50%, -100%)';
-          containerStyle.marginTop = '-10px';
-          arrowStyle.bottom = '-4px';
-          arrowStyle.left = '50%';
-          arrowStyle.marginLeft = '-4px';
-        } else {
-          containerStyle.marginTop = '10px';
-          arrowStyle.top = '-4px';
-          arrowStyle.left = '50%';
-          arrowStyle.marginLeft = '-4px';
-        }
-      } else {
-        containerStyle.top = `${y - 20}px`;
-        if (isLeft) {
-          containerStyle.transform = 'translate(-100%, 0)';
-          containerStyle.marginLeft = '-10px';
-          arrowStyle.right = '-4px';
-          arrowStyle.top = '50%';
-          arrowStyle.marginTop = '-4px';
-        } else {
-          containerStyle.marginLeft = '10px';
-          arrowStyle.left = '-4px';
-          arrowStyle.top = '50%';
-          arrowStyle.marginTop = '-4px';
-        }
-      }
-
-      return {containerStyle, arrowStyle};
-    };
-
-    const yaStyles = getLabelStyles(yaLabelX, yaLabelY);
-    const tidakStyles = getLabelStyles(tidakLabelX, tidakLabelY);
-
-    return (
-      <div className="relative w-[300px] h-[300px] z-10">
-        <svg width="300" height="300" className="transform -rotate-90">
-          {yaPercentage === 100 ? (
-            <circle
-              cx={centerX}
-              cy={centerY}
-              r={radius}
-              fill="#70B748"
-              stroke="white"
-              strokeWidth="2"
-            />
-          ) : (
-            yaCount > 0 && (
-              <path
-                d={yaPathData}
-                fill="#70B748"
-                stroke="white"
-                strokeWidth="2"
-              />
-            )
-          )}
-
-          {tidakPercentage === 100 ? (
-            <circle
-              cx={centerX}
-              cy={centerY}
-              r={radius}
-              fill="#439017"
-              stroke="white"
-              strokeWidth="2"
-            />
-          ) : (
-            tidakCount > 0 && (
-              <path
-                d={tidakPathData}
-                fill="#439017"
-                stroke="white"
-                strokeWidth="2"
-              />
-            )
-          )}
-
-          <circle cx={centerX} cy={centerY} r="8" fill="white" />
-        </svg>
-
-        {yaCount > 0 && (
-          <div
-            className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm font-semibold shadow-md"
-            style={yaStyles.containerStyle}
-          >
-            <div className="text-center">
-              <div>Ya</div>
-              <div className="text-lg">{yaCount}</div>
-            </div>
-            <div style={yaStyles.arrowStyle} />
-          </div>
-        )}
-        {tidakCount > 0 && (
-          <div
-            className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm font-semibold shadow-md"
-            style={tidakStyles.containerStyle}
-          >
-            <div className="text-center">
-              <div>Tidak</div>
-              <div className="text-lg">{tidakCount}</div>
-            </div>
-            <div style={tidakStyles.arrowStyle} />
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const columns = getUserResultColumns();
 
   if (loading) {
@@ -316,93 +134,126 @@ export default function Result() {
     );
   }
 
-  return (
-    <div className="relative min-h-screen bg-gray-50 pb-20 overflow-hidden px-5">
-      <img
-        className="absolute z-5 -bottom-10 sm:-bottom-20 -right-20 w-[250px] lg:w-[500px] opacity-40 pointer-events-none"
-        src={`${isUnstable ? '/berat.png' : '/ringan.png'}`}
-        alt=""
-      />
-      <img
-        className="absolute z-5 -bottom-5 sm:-bottom-10 -left-10 w-[150px] lg:w-[300px] scale-x-[-1] opacity-40 pointer-events-none"
-        src={`${isUnstable ? '/berat.png' : '/ringan.png'}`}
-        alt=""
-      />
+  const statusColor = isUnstable ? 'text-red-500' : 'text-[#70B748]';
+  const statusBg = isUnstable
+    ? 'bg-red-50 border-red-100'
+    : 'bg-green-50 border-green-100';
+  const StatusIcon = isUnstable ? AlertCircle : CheckCircle2;
 
-      <div className="pt-6 px-6 sm:px-10 lg:px-0 max-w-6xl mx-auto z-50 relative">
-        <Button
-          onClick={() => navigate('/')}
-          icon={<ArrowLeft size={18} />}
-          className="bg-white !hover:text-green-500 border border-gray-200 shadow-sm"
-          shape="round"
-          size="large"
-        >
-          Kembali ke Beranda
-        </Button>
+  return (
+    <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
+      <div className="bg-transparent pt-6 pb-2">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <Button
+            type="text"
+            onClick={() => navigate('/')}
+            className="hover:bg-gray-200 font-medium text-gray-600 pl-0 flex items-center"
+          >
+            <ArrowLeft size={18} />
+            Kembali ke Beranda
+          </Button>
+        </div>
       </div>
 
-      <section className="relative z-10 flex flex-col lg:grid grid-cols-12 items-center px-5 sm:px-10 lg:px-0 py-10 gap-10 lg:gap-0 max-w-6xl mx-auto">
-        <div className="w-full flex flex-col items-start col-start-1 col-end-13 lg:col-start-1 lg:col-end-6 space-y-4">
-          <div className="flex items-center text-zinc-800 gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FileHeart className="w-6 h-6 text-[#70B748]" />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-8">
+        <Card className="shadow-sm border-gray-200 rounded-2xl overflow-hidden !p-0">
+          <div className="flex flex-col lg:flex-row">
+            <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center max-lg:p-3">
+              <div className="flex items-center gap-2 mb-4">
+                <Tag
+                  color={isUnstable ? 'error' : 'success'}
+                  className="px-3 py-1 text-sm rounded-full"
+                >
+                  Hasil Analisa Mental Health
+                </Tag>
+              </div>
+
+              <div className="mb-2">
+                <Text className="text-gray-500 text-lg">
+                  Kondisi kamu saat ini:
+                </Text>
+              </div>
+
+              <div className="flex items-center gap-4 mb-6">
+                <StatusIcon
+                  className={`w-10 h-10 max-lg:hidden ${statusColor}`}
+                />
+                <Title
+                  level={1}
+                  className={`!m-0 !font-extrabold tracking-tight ${statusColor}`}
+                >
+                  {isUnstable ? 'BERESIKO' : 'STABIL'}
+                </Title>
+              </div>
+
+              <div className={`p-6 rounded-xl border ${statusBg} mb-6`}>
+                <h4
+                  className={`font-semibold text-lg mb-2 ${
+                    isUnstable ? 'text-red-700' : 'text-green-700'
+                  }`}
+                >
+                  {isUnstable
+                    ? 'Perlu Perhatian Khusus'
+                    : 'Pertahankan Kondisimu'}
+                </h4>
+                <Paragraph className="!mb-0 text-gray-700 leading-relaxed">
+                  {isUnstable
+                    ? 'Hasil tes menunjukkan adanya beberapa hal yang perlu kamu perhatikan lebih lanjut. Tidak ada salahnya untuk mencoba lebih peduli pada kondisi diri sendiri dan luangkan waktu untuk beristirahat sejenak.'
+                    : 'Hasil tes menunjukkan kondisi kamu saat ini cukup baik. Tetap jaga pola hidup yang sehat dan luangkan waktu untuk berkumpul bersama keluarga agar pikiran tetap tenang.'}
+                </Paragraph>
+              </div>
             </div>
-            <p className="text-lg sm:text-2xl font-bold">Hasil Tes Kamu</p>
+
+            <div className="lg:w-[450px] bg-gray-50 border-l border-gray-100 p-8 flex flex-col items-center justify-center relative max-lg:p-4">
+              <div className="w-full flex gap-x-2 items-center">
+                <FileText size={16} />
+                <Text strong className="text-gray-500 flex items-center gap-2">
+                  Statistik Jawaban
+                </Text>
+              </div>
+              <div className="w-full mt-4">
+                <ResultPieChart yaCount={yaCount} tidakCount={tidakCount} />
+              </div>
+            </div>
           </div>
+        </Card>
 
-          <h1
-            className={`text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight ${
-              isUnstable ? 'text-red-500' : 'text-[#70B748]'
-            }`}
-          >
-            {isUnstable ? 'BERESIKO' : 'STABIL'}
-          </h1>
-
-          <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-xl">
-            {isUnstable
-              ? 'Hasil tes menunjukkan adanya beberapa hal yang perlu kamu perhatikan lebih lanjut. Tidak ada salahnya untuk mencoba lebih peduli pada kondisi diri sendiri dan luangkan waktu untuk beristirahat sejenak.'
-              : 'Hasil tes menunjukkan kondisi kamu saat ini cukup baik. Tetap jaga pola hidup yang sehat dan luangkan waktu untuk berkumpul bersama keluarga agar pikiran tetap tenang.'}
-          </p>
+        <div className="flex items-center gap-3 mt-10 mb-4">
+          <div className="h-8 w-1 bg-gray-800 rounded-full"></div>
+          <Title level={3} className="!m-0 text-gray-800">
+            Rincian Jawaban
+          </Title>
         </div>
 
-        <div className="w-full col-start-1 col-end-13 lg:col-start-7 lg:col-end-13 flex justify-center items-center pb-10 lg:pb-0">
-          <PieChart yaCount={yaCount} tidakCount={tidakCount} />
-        </div>
-      </section>
-
-      <section className="px-4 sm:px-8 relative z-4">
-        <div className="max-w-6xl mx-auto">
-          <Card
-            className="shadow-lg border-gray-100 rounded-xl overflow-hidden"
-            bodyStyle={{padding: 0}}
-          >
-            <div className="!bg-[#70B748] px-6 py-4 flex justify-between items-center">
-              <h2 className="text-white text-lg font-semibold m-0">
-                Detail Jawaban Kuisioner
-              </h2>
-            </div>
-
+        <Card className="shadow-sm border-gray-200 rounded-xl overflow-hidden mb-10 !p-0">
+          <div className="bg-white">
             <Table
               columns={columns}
               dataSource={tableDataSource}
               rowKey="no"
               pagination={false}
               scroll={{x: 600}}
-              rowClassName={() => 'hover:bg-gray-50'}
+              rowClassName="hover:bg-gray-50 transition-colors"
+              size="middle"
             />
+          </div>
 
-            <div className="p-6 bg-white border-t border-gray-100 flex justify-end">
-              <Button
-                type="primary"
-                className="!bg-[#439017] !hover:bg-green-600 h-10 px-6"
-                onClick={() => navigate(`/quiz/${questionnaireId}`)}
-              >
-                Ulangi Kuesioner
-              </Button>
-            </div>
-          </Card>
-        </div>
-      </section>
+          <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-between items-center max-lg:flex-col max-lg:gap-y-4">
+            <Text type="secondary" className="text-sm">
+              Total {questionnaireAnswer.length} pertanyaan terjawab
+            </Text>
+            <Button
+              type="primary"
+              size="large"
+              icon={<RefreshCcw size={16} />}
+              className="!bg-[#439017] !hover:bg-green-600 border-none shadow-md h-11 px-6 rounded-lg"
+              onClick={() => navigate(`/quiz/${questionnaireId}`)}
+            >
+              Ulangi Kuesioner
+            </Button>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

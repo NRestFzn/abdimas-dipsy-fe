@@ -1,4 +1,4 @@
-import { Filter, Home } from "lucide-react";
+import { ArrowLeft, Filter, Home } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import type { RWSummary } from "../../../../../types/adminMedisService";
@@ -169,19 +169,31 @@ export default function RTDashboard() {
     return (
         <div className="flex flex-col w-full h-full">
 
+            <div className="p-5">
+                <Button
+                    type="default"
+                    onClick={() => navigate(-1)}
+                    className="flex items-center"
+                >
+                    <ArrowLeft size={18} />
+                    Kembali
+                </Button>
+            </div>
+
             {summaryData && (
                 <Spin spinning={loading.loading}>
+                    <div className="p-5">
+                        <MentalHealthChart
+                            overallDepressionRate={summaryData?.summarize?.unStableMentalPercentage || 0}
+                            totalSubmit={summaryData?.summarize?.submitCount || 0}
+                            totalUser={summaryData?.summarize?.userCount || 0}
 
-                    <MentalHealthChart
-                        overallDepressionRate={summaryData?.summarize?.unStableMentalPercentage || 0}
-                        totalSubmit={summaryData?.summarize?.submitCount || 0}
-                        totalUser={summaryData?.summarize?.userCount || 0}
+                            perRtData={summaryData?.perRt as any[]}
 
-                        perRtData={summaryData?.perRt as any[]}
-
-                        title={`Statistik Kesehatan Mental RT - ${rwName}`}
-                        subtitle={`Persentase Kondisi Mental Warga di Semua RT - ${rwName}`}
-                    />
+                            title={`Statistik Kesehatan Mental RT - ${rwName}`}
+                            subtitle={`Persentase Kondisi Mental Warga di Semua RT - ${rwName}`}
+                        />
+                    </div>
                 </Spin>)
             }
 

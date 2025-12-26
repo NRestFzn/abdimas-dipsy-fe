@@ -2,7 +2,7 @@ import { Avatar, Dropdown, Layout, type MenuProps } from "antd";
 import { ChevronDown, Heart, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { RiLogoutCircleRLine } from "react-icons/ri";
 import { useAdminMedisProfile } from "../../hooks/useAdminMedis";
 import { getImageUrl } from "../../utils/imageHelper";
@@ -96,33 +96,26 @@ interface MainLayoutProps {
 function MainLayout(props: MainLayoutProps) {
   const { children, title, startAction } = props;
 
-  const location = useLocation();
-
-  const hideHeaderRoutes = ["/admin-medis/profile", "/admin/profile"];
-
-  const shouldHideHeader = hideHeaderRoutes.includes(location.pathname);
   return (
     <Layout className="h-screen w-screen overflow-hidden">
-      {!shouldHideHeader && (
-        <Header className="w-full !bg-white text-white flex justify-between items-center !px-4 !py-3 !md:p-[20px] !shadow-sm z-20 relative h-auto min-h-[64px]">
-          <section className="flex items-center gap-3">
-            {startAction && <div>{startAction}</div>}
+      <Header className="w-full !bg-white text-white flex justify-between items-center !px-4 !py-3 !md:p-[20px] !shadow-sm z-20 relative h-auto min-h-[64px]">
+        <section className="flex items-center gap-3">
+          {startAction && <div>{startAction}</div>}
 
-            {!startAction && (
-              <a
-                className="flex items-center space-x-2 md:space-x-4 cursor-pointer"
-                href="/"
-              >
-                <Heart className="fill-[#70B748] text-[#70B748] w-8 h-8 md:w-10 md:h-10 shrink-0" />
-                <div className="text-[#70B748] text-base md:text-lg lg:text-[24px] font-bold leading-tight">
-                  {title}
-                </div>
-              </a>
-            )}
-          </section>
-          <ProfileComponent />
-        </Header>
-      )}
+          {!startAction && (
+            <a
+              className="flex items-center space-x-2 md:space-x-4 cursor-pointer"
+              href="/"
+            >
+              <Heart className="fill-[#70B748] text-[#70B748] w-8 h-8 md:w-10 md:h-10 shrink-0" />
+              <div className="text-[#70B748] text-base md:text-lg lg:text-[24px] font-bold leading-tight">
+                {title}
+              </div>
+            </a>
+          )}
+        </section>
+        <ProfileComponent />
+      </Header>
       <Layout className="h-full overflow-hidden">{children}</Layout>
     </Layout>
   );

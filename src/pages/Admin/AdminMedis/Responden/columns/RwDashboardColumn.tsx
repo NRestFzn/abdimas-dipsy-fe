@@ -39,14 +39,25 @@ export const getRwDashboardColumn = ({
         key: 'unStableMentalPercentage',
         align: 'center',
         render: (percentage: number) => {
-            let color = "green";
-            if (percentage >= 70) { color = "red"; }
-            else if (percentage >= 40) { color = "orange"; }
+            let color = "success";
+            let label = "Rendah";
+
+            if (percentage >= 70) { 
+                color = "error"; 
+                label = "Tinggi";
+            }
+            else if (percentage >= 40) { 
+                color = "warning";
+                label = "Sedang";
+            }
 
             return (
-                <Tag color={color} className="min-w-[60px] text-center">
-                    {percentage}%
-                </Tag>
+                <div className="flex flex-col items-center gap-1">
+                    <span className="font-semibold">{percentage}%</span>
+                    <Tag color={color} className="m-0 min-w-[60px] text-center">
+                        {label}
+                    </Tag>
+                </div>
             );
         },
     },
