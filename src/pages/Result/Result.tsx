@@ -159,7 +159,7 @@ export default function Result() {
             <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center max-lg:p-3">
               <div className="flex items-center gap-2 mb-4">
                 <Tag color={isUnstable ? "error" : "success"} className="px-3 py-1 text-sm rounded-full">
-                  Hasil Analisa Mental Health
+                  hasil analisa kesehatan mental
                 </Tag>
               </div>
 

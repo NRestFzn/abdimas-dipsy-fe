@@ -20,7 +20,7 @@ export const useUpdateProfilePicture = () => {
 
 export const useAdminMedisProfile = () => {
   return useQuery({
-    queryKey: ["admin-medis", "me"],
+    queryKey: ["user", "me"],
     queryFn: adminMedisService.getMe,
     staleTime: 1000 * 60 * 5,
     retry: 1,

@@ -1,5 +1,5 @@
 import { Avatar, Dropdown, Layout, type MenuProps } from "antd";
-import { ChevronDown, Heart, User } from "lucide-react";
+import { ChevronDown, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
@@ -26,14 +26,16 @@ const items: MenuProps["items"] = [
   },
 ];
 
-const ProfileComponent = () => {
+interface ProfileComponentProps {
+  role?: string;
+  fullname?: string;
+  profileUrl?: string;
+}
+
+const ProfileComponent = (props: ProfileComponentProps) => {
+  const { role, fullname, profileUrl } = props
+
   const { logout } = useAuth();
-
-  const { data } = useAdminMedisProfile();
-
-  const role = data?.data?.role?.name;
-  const fullname = data?.data?.fullname;
-  const profileUrl = getImageUrl(data?.data?.profilePicture);
 
   const navigate = useNavigate();
 
@@ -94,7 +96,13 @@ interface MainLayoutProps {
 }
 
 function MainLayout(props: MainLayoutProps) {
-  const { children, title, startAction } = props;
+  const { children, startAction } = props;
+
+  const { data } = useAdminMedisProfile();
+
+  const role = data?.data?.role?.name;
+  const fullname = data?.data?.fullname;
+  const profileUrl = getImageUrl(data?.data?.profilePicture);
 
   return (
     <Layout className="h-screen w-screen overflow-hidden">
@@ -105,16 +113,22 @@ function MainLayout(props: MainLayoutProps) {
           {!startAction && (
             <a
               className="flex items-center space-x-2 md:space-x-4 cursor-pointer"
-              href="/"
+              href={`${role === "admin medis" ? "/admin-medis/responden" : "/admin/responden"}`}
             >
-              <Heart className="fill-[#70B748] text-[#70B748] w-8 h-8 md:w-10 md:h-10 shrink-0" />
-              <div className="text-[#70B748] text-base md:text-lg lg:text-[24px] font-bold leading-tight">
-                {title}
+              <div className="flex items-center gap-3">
+                <img
+                  className="w-10 h-10 object-contain"
+                  src="/icon.png"
+                  alt="Logo"
+                />
+                <span className="text-lg font-bold text-[#70B748] hidden sm:block">
+                  Desa Cibiru Wetan
+                </span>
               </div>
             </a>
           )}
         </section>
-        <ProfileComponent />
+        <ProfileComponent role={role} fullname={fullname} profileUrl={profileUrl} />
       </Header>
       <Layout className="h-full overflow-hidden">{children}</Layout>
     </Layout>

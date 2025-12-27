@@ -44,8 +44,8 @@ function AdminMedis() {
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 flex flex-col gap-y-5">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Daftar Kuisioner</h1>
-                    <p className="text-gray-500">Kelola data kuisioner kesehatan mental</p>
+                    <h1 className="text-2xl font-bold text-gray-800">Data Hasil Kuesioner</h1>
+                    <p className="text-gray-500">Lihat dan pantau hasil pengisian kuesioner warga secara publik</p>
                 </div>
                 <div>
                     <Input
