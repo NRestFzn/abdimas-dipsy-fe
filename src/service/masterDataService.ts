@@ -28,13 +28,13 @@ export const masterDataService = {
 		return response.data.data;
 	},
 
-	getRukunWarga: async (): Promise<MasterData[]> => {
-		const response = await api.get("/v1/rukun-warga");
+	getRukunWarga: async (params?: GetParams): Promise<MasterData[]> => {
+		const response = await api.get("/v1/rukun-warga", { params });
 		return response.data.data;
 	},
 
-	getRukunTetangga: async (): Promise<RukunTetangga[]> => {
-		const response = await api.get("/v1/rukun-tetangga");
+	getRukunTetangga: async (params?: GetParams): Promise<RukunTetangga[]> => {
+		const response = await api.get("/v1/rukun-tetangga", { params });
 		return response.data.data;
 	},
 

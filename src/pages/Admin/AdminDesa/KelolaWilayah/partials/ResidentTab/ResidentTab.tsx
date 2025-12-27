@@ -1,83 +1,68 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
     Table,
     Button,
-    Input,
     Select,
     Card,
-    message
+    message,
 } from "antd";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
 
-import { adminDesaService } from "../../../../../service/adminDesaService";
-import { getResidentColumns, type ResidentData } from "../columns/ResidentColumn";
-import CreateResidentModal from "./CreateResidentModal";
-import EditResidentModal from "./UpdateResidentModal";
+import { adminDesaService } from "../../../../../../service/adminDesaService";
+import { getResidentColumns, type ResidentData } from "../../columns/ResidentColumn";
+import CreateResidentModal from "../CreateResidentModal";
+import EditResidentModal from "../UpdateResidentModal";
+import { useMasterData } from "../../../../../../hooks/useMasterData";
+import { SearchFilter } from "./partials/SearchFilter";
 
 export default function ResidentTab() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
+    const { rukunWarga, rukunTetangga } = useMasterData();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedResidentId, setSelectedResidentId] = useState<string | null>(null);
-
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
-    const [searchName, setSearchName] = useState("");
-    const [debouncedSearch] = useDebounce(searchName, 500);
+
+    const [activeSearch, setActiveSearch] = useState({ term: "", type: "fullname" });
 
     const [filterRW, setFilterRW] = useState<string | null>(null);
     const [filterRT, setFilterRT] = useState<string | null>(null);
 
-    const { data: rwList } = useQuery({
-        queryKey: ["rw-list"],
-        queryFn: () => adminDesaService.getAllRW({order: "[['createdAt', 'desc']]"}),
-        staleTime: 1000 * 60 * 5
+    const { data: rwList, isLoading: loadingRW } = rukunWarga({
+        order: '[["createdAt", "desc"]]'
     });
 
-    const { data: rtListFilter } = useQuery({
-        queryKey: ["rt-list-filter", filterRW],
-        queryFn: () => filterRW ? adminDesaService.getRT({order: "[['createdAt', 'desc']]"}, filterRW) : null,
-        enabled: !!filterRW,
-        staleTime: 1000 * 60 * 5
+    const { data: rtList, isLoading: loadingRT } = rukunTetangga({
+        order: '[["createdAt", "desc"]]'
     });
-
-    useEffect(() => {
-        if (rwList?.data && !filterRW) {
-            const defaultRW = rwList.data.find((rw: any) => rw.name == 1 || rw.name === "1");
-
-            if (defaultRW) {
-                setFilterRW(defaultRW.id);
-            }
-        }
-    }, [rwList]);
-
-    useEffect(() => {
-        if (rtListFilter?.data?.rukunTetangga && !filterRT) {
-            const defaultRT = rtListFilter.data.rukunTetangga.find((rt: any) => rt.name == 1 || rt.name === "1");
-
-            if (defaultRT) {
-                setFilterRT(defaultRT.id);
-            }
-        }
-    }, [rtListFilter]);
-
 
     const { data: residentsData, isLoading } = useQuery({
-        queryKey: ["residents", pagination.current, pagination.pageSize, debouncedSearch, filterRW, filterRT],
-        queryFn: () => adminDesaService.getAllResidents({
-            page: pagination.current,
-            pageSize: pagination.pageSize,
-            fullname: debouncedSearch,
-            RukunWargaId: filterRW,
-            RukunTetanggaId: filterRT,
-            order: '[["createdAt", "desc"]]'
-        }),
+        queryKey: ["residents", pagination.current, pagination.pageSize, activeSearch, filterRW, filterRT],
+        queryFn: () => {
+            const params: any = {
+                page: pagination.current,
+                pageSize: pagination.pageSize,
+                RukunWargaId: filterRW || undefined,
+                RukunTetanggaId: filterRT || undefined,
+                order: '[["createdAt", "desc"]]'
+            };
+
+            if (activeSearch.term) {
+                if (activeSearch.type === "fullname") {
+                    params.fullname = activeSearch.term;
+                } else if (activeSearch.type === "nik") {
+                    params.nik = activeSearch.term;
+                }
+            }
+
+            return adminDesaService.getAllResidents(params);
+        },
         placeholderData: (previousData) => previousData,
-        enabled: !!filterRW
     });
 
     const deleteMutation = useMutation({
@@ -100,6 +85,10 @@ export default function ResidentTab() {
         deleteMutation.mutate(id);
     };
 
+    const handleFilterChange = () => {
+        setPagination(prev => ({ ...prev, current: 1 }));
+    };
+
     const columns = getResidentColumns({
         pagination,
         onViewDetail: (id) => {
@@ -109,19 +98,17 @@ export default function ResidentTab() {
         onDelete: handleDelete
     });
 
+    const onSearch = (term: string, type: any) => {
+        setActiveSearch({ term, type });
+        if (pagination.current !== 1) handleFilterChange();
+    };
+
     return (
         <div className="space-y-4">
-            <Card size="small" className="bg-gray-50 border-gray-200">
+            <Card size="small" className="bg-gray-50 border-gray-200 !mb-2">
                 <div className="flex flex-col md:flex-row gap-4 justify-between items-end">
                     <div className="flex flex-col md:flex-row gap-3 w-full">
-                        <Input
-                            placeholder="Cari Nama Warga..."
-                            prefix={<Search className="text-gray-400" size={16} />}
-                            className="w-full md:w-64"
-                            value={searchName}
-                            onChange={(e) => setSearchName(e.target.value)}
-                            allowClear
-                        />
+                        <SearchFilter onSearch={onSearch} />
 
                         <Select
                             placeholder="Filter RW"
@@ -130,28 +117,29 @@ export default function ResidentTab() {
                             value={filterRW}
                             onChange={(val) => {
                                 setFilterRW(val);
-                                setFilterRT(null);
+                                handleFilterChange();
                             }}
-                            options={rwList?.data?.map((rw: any) => ({ label: `RW ${rw.name}`, value: rw.id }))}
-                            loading={!rwList}
+                            options={rwList?.map((rw) => ({ label: `RW ${rw.name}`, value: rw.id }))}
+                            loading={loadingRW}
                         />
 
                         <Select
                             placeholder="Filter RT"
                             className="w-full md:w-40"
                             allowClear
-                            disabled={!filterRW}
                             value={filterRT}
-                            onChange={setFilterRT}
-                            options={rtListFilter?.data?.rukunTetangga?.map((rt: any) => ({ label: `RT ${rt.name}`, value: rt.id }))}
-                            loading={!rtListFilter && !!filterRW}
+                            onChange={(val) => {
+                                setFilterRT(val);
+                                handleFilterChange();
+                            }}
+                            options={rtList?.map((rt) => ({ label: `RT ${rt.name}`, value: rt.id }))}
+                            loading={loadingRT}
                         />
                     </div>
 
                     <Button
                         type="primary"
                         icon={<Plus size={16} />}
-                        // disabled={rtListFilter?.data?.rukunTetangga?.length === 0}
                         className="!bg-[#70B748] !hover:bg-[#5a9639]"
                         onClick={() => setIsModalOpen(true)}
                     >
