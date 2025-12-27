@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { questionnaireService } from "../../service/questionnaireService";
-import { AlertCircle, ArrowLeft, CheckCircle2, FileText, RefreshCcw } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, FileText } from "lucide-react";
 import { Button, Card, Empty, Spin, Table, Tag, Typography } from "antd";
 import { getUserResultColumns } from "./columns/ResultColumn";
 import ResultPieChart from "../../components/Charts/ResultPieChart";
@@ -212,13 +212,12 @@ export default function Result() {
                             Total {questionnaireAnswer.length} pertanyaan terjawab
                         </Text>
                         <Button
-                            type="primary"
-                            size="large"
-                            icon={<RefreshCcw size={16} />}
-                            className="!bg-[#439017] !hover:bg-green-600 border-none shadow-md h-11 px-6 rounded-lg"
-                            onClick={() => navigate(`/quiz/${questionnaireId}`)}
+                            type="default"
+                            onClick={() => navigate("/")}
+                            className="hover:bg-gray-200 font-medium text-gray-600 pl-0 flex items-center"
                         >
-                            Ulangi Kuesioner
+                            <ArrowLeft size={18} />
+                            Kembali ke Beranda
                         </Button>
                     </div>
                 </Card>

@@ -13,6 +13,8 @@ export default function ResidentLayout() {
 
   const { data: response, isLoading } = useResident();
 
+  const isQuizPage = location.pathname.includes("/quiz") || location.pathname.includes("/result");
+
   const handleLogout = () => {
     Modal.confirm({
       title: "Konfirmasi Keluar",
@@ -51,11 +53,13 @@ export default function ResidentLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <HomeHeader
-        fullname={profile?.fullname || user?.fullname || "Warga"}
-        profileUrl={profilePictureUrl}
-        onLogout={handleLogout}
-      />
+      {!isQuizPage &&
+        <HomeHeader
+          fullname={profile?.fullname || user?.fullname || "Warga"}
+          profileUrl={profilePictureUrl}
+          onLogout={handleLogout}
+        />
+      }
 
       <div className="flex-1">
         <Outlet />
