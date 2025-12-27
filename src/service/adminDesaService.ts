@@ -95,6 +95,12 @@ export const adminDesaService = {
 		return response.data;
 	},
 
+	async getAllRT(params?: GetParams) {
+		const response = await api.get<RtResponse>(`/v1/rukun-tetangga`, { params });
+
+		return response.data;
+	},
+
 	async getWarga(rtId: string) {
 		const response = await api.get<WargaResponse>(`/v1/rukun-tetangga/${rtId}`);
 

@@ -183,6 +183,9 @@ export interface RTSummary {
 }
 
 export interface GetParams {
+	name?: string
+	page?: number
+	pageSize?: number
 	order: string
 }
 
