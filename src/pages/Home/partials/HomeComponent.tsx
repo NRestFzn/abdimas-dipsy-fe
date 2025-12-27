@@ -1,5 +1,5 @@
-import { Button, Card, Tag } from "antd";
-import { Clock, FileText, PlayCircle } from "lucide-react";
+import { Button, Card, Modal, Tag } from "antd";
+import { Clock, Coffee, FileText, Heart, Info, PlayCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
@@ -45,6 +45,83 @@ export const WelcomeHeader = ({ fullname }: WelcomeHeaderProps) => {
   );
 };
 
+interface AttentionModalProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const AttentionModal = (props: AttentionModalProps) => {
+  const { open, onClose, onConfirm } = props
+
+  return (
+    <Modal
+      title={
+        <div className="flex items-center gap-2 text-[#70B748]">
+          <Info size={24} />
+          <span className="text-xl font-bold">Sebelum Memulai...</span>
+        </div>
+      }
+      open={open}
+      onCancel={onClose}
+      footer={[
+        <Button key="back" onClick={onClose}>
+          Nanti Saja
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          className="!bg-[#70B748] !hover:bg-[#5a9639]"
+          size="large"
+          onClick={onConfirm}
+        >
+          Saya Siap & Lanjut
+        </Button>,
+      ]}
+      centered
+      width={500}
+    >
+      <div className="py-4">
+        <p className="text-gray-600 mb-4 text-base">
+          Halo! Agar hasil tes ini akurat dan bermanfaat untukmu, mohon perhatikan hal-hal berikut:
+        </p>
+
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <div className="bg-blue-50 p-2 rounded-full h-fit text-blue-500">
+              <Coffee size={20} />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-800">Cari Tempat Tenang</h4>
+              <p className="text-sm text-gray-500">Pastikan kamu merasa nyaman dan tidak terburu-buru saat mengisi.</p>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <div className="bg-pink-50 p-2 rounded-full h-fit text-pink-500">
+              <Heart size={20} />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-800">Jujur pada Diri Sendiri</h4>
+              <p className="text-sm text-gray-500">Tidak ada jawaban benar atau salah. Jawablah sesuai dengan apa yang kamu rasakan saat ini.</p>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <div className="bg-yellow-50 p-2 rounded-full h-fit text-yellow-500">
+              <FileText size={20} />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-800">Hasil Bersifat Rahasia</h4>
+              <p className="text-sm text-gray-500">Jawabanmu aman dan hanya digunakan untuk keperluan analisa medis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 interface QuestionnaireCardProps {
   id: string;
   title: string;
@@ -65,6 +142,7 @@ export const QuestionnaireCard = ({
   onRefresh,
 }: QuestionnaireCardProps) => {
   const [timerString, setTimerString] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (disabled || !availableAt) return;
@@ -121,73 +199,87 @@ export const QuestionnaireCard = ({
     return () => clearInterval(intervalId);
   }, [disabled, availableAt, onRefresh]);
 
+  const handleCardClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmStart = () => {
+    setIsModalOpen(false);
+    onStart(id);
+  };
+
   return (
-    <Card
-      hoverable
-      className={`h-full flex flex-col border-gray-200 transition-all duration-300 group ${disabled ? "hover:border-[#70B748]" : "opacity-80 bg-gray-50"
-        }`}
-      bodyStyle={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        padding: "24px",
-      }}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className={`p-3 rounded-lg transition-colors duration-300 ${disabled ? "bg-green-50 group-hover:bg-[#70B748]" : "bg-gray-200"
-            }`}
-        >
-          <FileText
-            className={`w-6 h-6 transition-colors ${disabled
+    <>
+      <Card
+        hoverable
+        className={`h-full flex flex-col border-gray-200 transition-all duration-300 group ${disabled ? "hover:border-[#70B748]" : "opacity-80 bg-gray-50"
+          }`}
+        styles={{
+          body: {
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            padding: "24px",
+          }
+        }}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div
+            className={`p-3 rounded-lg transition-colors duration-300 ${disabled ? "bg-green-50 group-hover:bg-[#70B748]" : "bg-gray-200"
+              }`}
+          >
+            <FileText
+              className={`w-6 h-6 transition-colors ${disabled
                 ? "text-[#70B748] group-hover:text-white"
                 : "text-gray-500"
-              }`}
-          />
+                }`}
+            />
+          </div>
+
+          {disabled ? (
+            <Tag color="success" className="mr-0">
+              Tersedia
+            </Tag>
+          ) : (
+            <Tag color="warning" className="mr-0">
+              Cooldown
+            </Tag>
+          )}
         </div>
 
-        {disabled ? (
-          <Tag color="success" className="mr-0">
-            Tersedia
-          </Tag>
-        ) : (
-          <Tag color="warning" className="mr-0">
-            Cooldown
-          </Tag>
-        )}
-      </div>
+        <div className="flex-1 mb-6">
+          <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
+            {title}
+          </h3>
+          <p className="text-gray-500 text-sm line-clamp-3 leading-relaxed">
+            {description || "Tidak ada deskripsi tersedia."}
+          </p>
+        </div>
 
-      <div className="flex-1 mb-6">
-        <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
-          {title}
-        </h3>
-        <p className="text-gray-500 text-sm line-clamp-3 leading-relaxed">
-          {description || "Tidak ada deskripsi tersedia."}
-        </p>
-      </div>
-
-      <Button
-        type="primary"
-        size="large"
-        disabled={!disabled}
-        className={`border-none h-10 font-medium !flex items-center justify-center gap-2 ${disabled
+        <Button
+          type="primary"
+          size="large"
+          disabled={!disabled}
+          className={`border-none h-10 font-medium !flex items-center justify-center gap-2 ${disabled
             ? "!bg-[#70B748] !hover:bg-[#5a9639]"
             : "!bg-gray-300 !text-gray-600 cursor-not-allowed"
-          }`}
-        onClick={() => onStart(id)}
-      >
-        {disabled ? (
-          <div className="flex items-center gap-x-2">
-            <PlayCircle size={18} />
-            Mulai Mengerjakan
-          </div>
-        ) : (
-          <div className="flex items-center gap-x-2">
-            <Clock size={18} />
-            {timerString ? `Tersedia dlm ${timerString}` : "Sedang Cooldown"}
-          </div>
-        )}
-      </Button>
-    </Card>
+            }`}
+          onClick={handleCardClick}
+        >
+          {disabled ? (
+            <div className="flex items-center gap-x-2">
+              <PlayCircle size={18} />
+              Mulai Mengerjakan
+            </div>
+          ) : (
+            <div className="flex items-center gap-x-2">
+              <Clock size={18} />
+              {timerString ? `Tersedia dlm ${timerString}` : "Sedang Cooldown"}
+            </div>
+          )}
+        </Button>
+      </Card>
+      <AttentionModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleConfirmStart} />
+    </>
   );
 };
