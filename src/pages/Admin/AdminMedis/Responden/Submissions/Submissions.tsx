@@ -49,6 +49,8 @@ export default function Submissions() {
     const [dateRange, setDateRange] = useState<[string, string] | null>(null);
     const [openFilter, setOpenFilter] = useState(false);
 
+    console.log(userData)
+
     useEffect(() => {
         if (questionnaireId && userId) {
             fetchInitialData();
