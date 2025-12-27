@@ -204,7 +204,7 @@ export default function Home() {
         <section>
           <Card
             className="shadow-sm border-gray-200 rounded-2xl overflow-hidden !p-0"
-            bodyStyle={{ padding: 0 }}
+            styles={{ body: { padding: 0 } }}
             title={
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4">
                 <div className="flex items-center gap-3">
