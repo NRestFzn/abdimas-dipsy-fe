@@ -75,7 +75,6 @@ export default function MentalHealthChart({
 	usersData,
 	submissionsData,
 	title = "Statistik Kesehatan Mental",
-	subtitle = "Overview Data"
 }: MentalHealthChartProps) {
 
 	const mode = useMemo(() => {
@@ -111,8 +110,8 @@ export default function MentalHealthChart({
 				"Mental Stabil": item.stableMentalCount,
 				"Mental Berisiko": item.unStableMentalCount,
 				"Resiko (%)": item.unStableMentalPercentage,
-				"Total User": item.userCount,
-				"Total Submit": item.submitCount
+				"Jumlah Warga": item.userCount,
+				"Jumlah Pengerjaan": item.submitCount
 			}));
 		}
 
@@ -125,7 +124,7 @@ export default function MentalHealthChart({
 					name: "Status Mental Warga",
 					"Mental Berisiko": riskyCount,
 					"Mental Stabil": stableCount,
-					"Total User": usersData.length
+					"Jumlah Pengguna": usersData.length
 				}
 			];
 		}
@@ -135,8 +134,8 @@ export default function MentalHealthChart({
 			"Mental Stabil": item.stableMentalCount,
 			"Mental Berisiko": item.unStableMentalCount,
 			"Resiko (%)": item.unStableMentalPercentage,
-			"Total User": item.userCount,
-			"Total Submit": item.submitCount
+			"Jumlah Pengguna": item.userCount,
+			"Jumlah Pengerjaan": item.submitCount
 		}));
 	}, [mode, perRwData, perRtData, submissionsData]);
 
@@ -253,8 +252,8 @@ export default function MentalHealthChart({
 						<YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} />
 						<Tooltip content={<CustomTooltip />} cursor={{ fill: '#F3F4F6' }} />
 						<Legend verticalAlign="top" height={36} iconType="circle" />
-						<Bar dataKey="Total User" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={20} />
-						<Bar dataKey="Total Submit" fill="#06B6D4" radius={[4, 4, 0, 0]} barSize={20} />
+						<Bar dataKey="Jumlah Pengguna" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={20} />
+						<Bar dataKey="Jumlah Pengerjaan" fill="#06B6D4" radius={[4, 4, 0, 0]} barSize={20} />
 					</BarChart>
 				);
 			default:
@@ -266,7 +265,6 @@ export default function MentalHealthChart({
 		<div className="flex flex-col gap-6 mb-6">
 			<div>
 				<h2 className="text-xl font-bold text-gray-800">{title}</h2>
-				<p className="text-gray-500">{subtitle}</p>
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -274,7 +272,7 @@ export default function MentalHealthChart({
 				{mode === "USER_HISTORY" ? (
 					<>
 						<KpiCard
-							title="Total Tes Dilakukan"
+							title="Jumlah Pengerjaan"
 							value={totalSubmit}
 							icon={History}
 							colorClass="text-purple-600"
@@ -291,14 +289,14 @@ export default function MentalHealthChart({
 				) : (
 					<>
 						<KpiCard
-							title="Total User"
+							title="Jumlah Pengguna"
 							value={totalUser}
 							icon={Users}
 							colorClass="text-blue-600"
 							bgClass="bg-blue-50"
 						/>
 						<KpiCard
-							title="Total Submit"
+							title="Jumlah Pengerjaan"
 							value={totalSubmit}
 							icon={FileText}
 							colorClass="text-indigo-600"

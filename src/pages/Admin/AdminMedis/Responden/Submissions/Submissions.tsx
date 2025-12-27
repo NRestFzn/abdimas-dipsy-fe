@@ -49,8 +49,6 @@ export default function Submissions() {
     const [dateRange, setDateRange] = useState<[string, string] | null>(null);
     const [openFilter, setOpenFilter] = useState(false);
 
-    console.log(userData)
-
     useEffect(() => {
         if (questionnaireId && userId) {
             fetchInitialData();
@@ -191,7 +189,6 @@ export default function Submissions() {
                         submissionsData={userData.submissions as any[]}
 
                         title={`Riwayat Kesehatan - ${userData.fullname}`}
-                        subtitle={`Total ${userData.summarize.submitCount} kali tes.`}
                     />
                 </Spin>
             )}

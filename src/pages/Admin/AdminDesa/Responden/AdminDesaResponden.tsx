@@ -50,8 +50,8 @@ function AdminDesa() {
         <div className="p-6 space-y-6">
 
             <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-bold text-gray-800">Daftar Kuisioner</h1>
-                <p className="text-gray-500">Kelola data kuisioner kesehatan mental (Publik)</p>
+                <h1 className="text-2xl font-bold text-gray-800">Data Hasil Kuesioner</h1>
+                <p className="text-gray-500">Lihat dan pantau hasil pengisian kuesioner warga secara publik</p>
             </div>
 
             <Card className="shadow-sm border-gray-200" bodyStyle={{ padding: 0 }}>

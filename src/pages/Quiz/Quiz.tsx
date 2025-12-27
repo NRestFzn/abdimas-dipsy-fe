@@ -216,7 +216,7 @@ export default function Quiz() {
                             onClick={handleSubmit}
                             loading={submitting}
                             disabled={answeredCount < totalQuestions}
-                            className="h-12 text-lg font-semibold !bg-[#70B748] !hover:bg-[#5a9639] border-none shadow-md hover:shadow-lg transition-all"
+                            className="h-12 text-lg font-semibold !hover:bg-[#5a9639] border-none shadow-md hover:shadow-lg transition-all"
                             icon={!submitting && <Send size={18} />}
                         >
                             {submitting ? "Mengirim Jawaban..." : "Kirim Jawaban"}
