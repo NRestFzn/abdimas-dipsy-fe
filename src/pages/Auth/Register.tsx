@@ -36,8 +36,8 @@ export default function Register() {
 
   const { register, isLoading, error } = useAuth();
   const masterData = useMasterData();
-  const { data: rukunWarga, isLoading: isLoadRw } = masterData.rukunWarga({ order: '[["createdAt", "desc"]]' })
-  const { data: rukunTetangga, isLoading: isLoadRt } = masterData.rukunTetangga({ order: '[["createdAt", "desc"]]' })
+  const { data: rukunWarga, isLoading: isLoadRw } = masterData.rukunWarga({ order: '[["name", "asc"]]' })
+  const { data: rukunTetangga, isLoading: isLoadRt } = masterData.rukunTetangga({ order: '[["name", "asc"]]' })
 
   const isMasterDataLoading =
     masterData.educations.isLoading ||
