@@ -47,7 +47,7 @@ export const getSubmissionsColumns = ({
         align: 'center',
         render: (isUnstable: number) => {
             const color = isUnstable === 1 ? "error" : "success";
-            const text = isUnstable === 1 ? "Beresiko" : "Stabil";
+            const text = isUnstable === 1 ? "Berisiko" : "Stabil";
             
             return (
                 <Tag color={color} className="min-w-[80px] text-center py-1 text-sm">

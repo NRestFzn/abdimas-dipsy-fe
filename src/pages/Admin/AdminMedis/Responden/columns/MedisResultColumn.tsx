@@ -14,6 +14,7 @@ export const getMedisResultColumns = (): ColumnsType<QuestionResult> => [
         key: 'no',
         width: 70,
         align: 'center',
+        responsive: ["sm"],
     },
     {
         title: 'Pertanyaan',
@@ -31,7 +32,7 @@ export const getMedisResultColumns = (): ColumnsType<QuestionResult> => [
             const isYa = answer === "Ya";
             return (
                 <Tag 
-                    color={isYa ? "success" : "default"} 
+                    color={isYa ? "error" : "success"} 
                     className="px-4 py-1 text-sm font-medium rounded-full min-w-[80px] text-center"
                 >
                     {answer}

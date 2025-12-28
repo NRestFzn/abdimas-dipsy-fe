@@ -147,7 +147,7 @@ const router = createBrowserRouter([
                 element: <Loadable Component={Pages.Submissions} />,
               },
               {
-                path: "result/:questionnaireId/:rwId/:rtId/:userId",
+                path: "result/:submissionId",
                 element: <Loadable Component={Pages.MedisResult} />,
               },
               {

@@ -144,8 +144,8 @@ export default function Submissions() {
     );
 
     const columns = getSubmissionsColumns({
-        onViewDetail: () => {
-            navigate(`/admin-medis/responden/result/questionnaireId=${questionnaireId}/rwId=${rwId}/rtId=${rtId}/userId=${userId}`)
+        onViewDetail: (submissionId: string) => {
+            navigate(`/admin-medis/responden/result/submissionId=${submissionId}`)
         }
     });
 

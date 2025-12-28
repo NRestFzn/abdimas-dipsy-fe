@@ -92,6 +92,9 @@ export interface SubmissionDetailResponse {
 			order: number;
 		};
 	}>;
+	User?: {
+		fullname: string
+	}
 }
 
 export interface RWSectionData {
