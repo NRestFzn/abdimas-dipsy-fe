@@ -38,6 +38,7 @@ export const getResidentColumns = ({
             title: 'Nama Lengkap',
             dataIndex: 'fullname',
             key: 'fullname',
+            sorter: true,
             render: (text) => <span className="font-medium text-gray-700">{text}</span>,
         },
         {

@@ -1,24 +1,16 @@
-import axios from "axios";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { authService } from "../service/authService";
-import type { LoginData, RegisterData } from "../service/authService";
 import type { APIError } from "../types/ErrorFallbackType";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface User {
-	uid: string;
-	fullname: string;
-	email: string;
-	accessToken: string;
-	role?: string;
-	RoleId: string;
-}
+import type { LoginPayload, RegisterPayload, UserMeResponse } from "../types/AuthTypes/authTypes";
 
 interface AuthContextType {
-	user: User | null;
-	login: (data: LoginData) => Promise<any>;
-	register: (data: RegisterData) => Promise<void>;
+	user: UserMeResponse | null;
+	isAuthenticated: boolean;
+	login: (data: LoginPayload) => Promise<any>;
+	register: (data: RegisterPayload) => Promise<void>;
 	logout: () => void;
+	isLoadingUser: boolean;
 	isLoading: boolean;
 	error: APIError | null
 }
@@ -30,109 +22,127 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
 	const queryClient = useQueryClient();
 
-	const [user, setUser] = useState<User | null>(() => {
-		const token = localStorage.getItem("authToken");
-		const userData = localStorage.getItem("userData");
-
-		if (token && userData) {
-			try {
-				return JSON.parse(userData);
-			} catch (err) {
-				console.error("Error parsing initial user data:", err);
-				localStorage.removeItem("authToken");
-				localStorage.removeItem("userData");
-			}
-		}
-		return null;
+	const [user, setUserState] = useState<UserMeResponse | null>(null);
+	const [isLoading, setIsLoading] = useState({
+		loadingUser: true,
+		loadingBtn: false
 	});
-	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<APIError | null>(null);
 
+	const setUser = useCallback((userData: UserMeResponse | null) => {
+		if (userData) {
+			setUserState(userData);
+			if (userData.accessToken) {
+				localStorage.setItem("authToken", userData.accessToken);
+			}
+			localStorage.setItem("userData", JSON.stringify(userData));
+		} else {
+			setUserState(null);
+			localStorage.removeItem("authToken");
+			localStorage.removeItem("userData");
+		}
+	}, []);
+
+	const logout = useCallback(() => {
+		setUser(null);
+		queryClient.clear();
+	}, [queryClient, setUser]);
+
 	useEffect(() => {
-        if (user?.accessToken) {
-            axios.defaults.headers.common["Authorization"] = `Bearer ${user.accessToken}`;
-        }
-    }, [user]);
+		const initAuth = async () => {
+			const token = localStorage.getItem("authToken");
 
-	const login = async (loginData: LoginData) => {
-        setIsLoading(true);
-        setError(null);
+			if (!token) {
+				setIsLoading((prev) => ({ ...prev, loadingUser: false }));
+				return;
+			}
 
-        try {
-            const response = await authService.login(loginData);
+			try {
+				const response = await authService.getProfile();
 
-            // Validasi Response
-            if (response?.statusCode === 200 && response?.data) {
-                const { data } = response;
+				if (response.data) {
+					const userDataWithToken: UserMeResponse = {
+						...response.data,
+						accessToken: token 
+					};
 
-                const userData: User = {
-                    uid: data.uid,
-                    fullname: data.fullname,
-                    email: data.email,
-                    accessToken: data.accessToken,
-                    RoleId: data.RoleId,
-                };
+					setUser(userDataWithToken);
+				}
+			} catch (error) {
+				console.error("Session expired or invalid:", error);
+				logout();
+			} finally {
+				setIsLoading((prev) => ({ ...prev, loadingUser: false }));
+			}
+		};
 
-                setUser(userData);
-                localStorage.setItem("authToken", userData.accessToken);
-                localStorage.setItem("userData", JSON.stringify(userData));
+		initAuth();
+	}, [setUser, logout]);
 
-                axios.defaults.headers.common["Authorization"] = `Bearer ${userData.accessToken}`;
-                
-                return response; 
-            } else {
-                throw new Error(response.message || "Login failed");
-            }
-        } catch (err: any) {
-            console.error("Login Error Catch:", err);
-            setError(err as APIError);
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-	const register = async (registerData: RegisterData): Promise<void> => {
-		setIsLoading(true);
+	const login = async (loginData: LoginPayload) => {
+		setIsLoading((prev) => ({ ...prev, loadingBtn: true }));
 		setError(null);
 
 		try {
-			const response = await authService.register(registerData);
+			const response = await authService.login(loginData);
 
+			if (response?.statusCode === 200 && response?.data) {
+				const loginResponseData = response.data;
+				const token = loginResponseData.accessToken;
+
+				localStorage.setItem("authToken", token as string);
+
+				const profileResponse = await authService.getProfile();
+
+				if (profileResponse.data) {
+					const fullUserData: UserMeResponse = {
+						...profileResponse.data,
+						accessToken: token
+					};
+					setUser(fullUserData);
+
+					return { data: fullUserData };
+				}
+			} else {
+				throw new Error(response.message || "Login failed");
+			}
+		} catch (err: any) {
+			console.error("Login Error:", err);
+			setError(err as APIError);
+			throw err;
+		} finally {
+			setIsLoading((prev) => ({ ...prev, loadingBtn: false }));
+		}
+	};
+
+	const register = async (registerData: RegisterPayload): Promise<void> => {
+		setIsLoading((prev) => ({ ...prev, loadingBtn: true }));
+		setError(null);
+		try {
+			const response = await authService.register(registerData);
 			if (response.statusCode === 200 || response.statusCode === 201) {
-				await login({
-					email: registerData.email,
-					password: registerData.password,
-				});
+				await login({ email: registerData.email, password: registerData.password });
 			} else {
 				throw new Error(response.message || "Registration failed");
 			}
 		} catch (err: any) {
-			console.log("Catch Error:", err)
 			setError(err as APIError);
-
 			throw err;
 		} finally {
-			setIsLoading(false);
+			setIsLoading((prev) => ({ ...prev, loadingBtn: false }));
 		}
-	};
-
-	const logout = (): void => {
-		setUser(null);
-		queryClient.removeQueries();
-		localStorage.removeItem("authToken");
-		localStorage.removeItem("userData");
-		delete axios.defaults.headers.common["Authorization"];
 	};
 
 	return (
 		<AuthContext.Provider
 			value={{
 				user,
+				isAuthenticated: !!user,
 				login,
 				register,
 				logout,
-				isLoading,
+				isLoading: isLoading.loadingBtn,
+				isLoadingUser: isLoading.loadingUser,
 				error,
 			}}>
 			{children}

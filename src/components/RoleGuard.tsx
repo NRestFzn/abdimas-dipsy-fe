@@ -10,10 +10,10 @@ interface RoleGuardProps {
 }
 
 export const RoleGuard = ({ children, allowedRoleIds }: RoleGuardProps) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoadingUser } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (isLoadingUser) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-2">

@@ -16,6 +16,7 @@ import CreateResidentModal from "../CreateResidentModal";
 import EditResidentModal from "../UpdateResidentModal";
 import { useMasterData } from "../../../../../../hooks/useMasterData";
 import { SearchFilter } from "./partials/SearchFilter";
+import type { SorterResult } from "antd/es/table/interface";
 
 export default function ResidentTab() {
     const navigate = useNavigate();
@@ -26,19 +27,21 @@ export default function ResidentTab() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedResidentId, setSelectedResidentId] = useState<string | null>(null);
-    const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
-
     const [activeSearch, setActiveSearch] = useState({ term: "", type: "fullname" });
+    const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+    const [filters, setFilters] = useState({
+        order: '[["fullname", "asc"]]'
+    })
 
     const [filterRW, setFilterRW] = useState<string | null>(null);
     const [filterRT, setFilterRT] = useState<string | null>(null);
 
     const { data: rwList, isLoading: loadingRW } = rukunWarga({
-        order: '[["createdAt", "desc"]]'
+        order: '[["name", "asc"]]'
     });
 
     const { data: rtList, isLoading: loadingRT } = rukunTetangga({
-        order: '[["createdAt", "desc"]]'
+        order: '[["name", "asc"]]'
     });
 
     const { data: residentsData, isLoading } = useQuery({
@@ -49,7 +52,7 @@ export default function ResidentTab() {
                 pageSize: pagination.pageSize,
                 RukunWargaId: filterRW || undefined,
                 RukunTetanggaId: filterRT || undefined,
-                order: '[["createdAt", "desc"]]'
+                order: filters.order
             };
 
             if (activeSearch.term) {
@@ -89,6 +92,23 @@ export default function ResidentTab() {
         setPagination(prev => ({ ...prev, current: 1 }));
     };
 
+    const handleTableChange = (
+        _: any,
+        __: any,
+        sorter: SorterResult<ResidentData> | SorterResult<ResidentData>[]
+    ) => {
+        if (!Array.isArray(sorter)) {
+            const { field, order } = sorter;
+
+            if (order) {
+                const apiOrder = order === 'ascend' ? 'asc' : 'desc';
+                setFilters((prev) => ({ ...prev, order: `[["${field}", "${apiOrder}"]]` }));
+            } else {
+                setFilters((prev) => ({ ...prev, order: '[["fullname", "desc"]]' }));
+            }
+        }
+    };
+
     const columns = getResidentColumns({
         pagination,
         onViewDetail: (id) => {
@@ -102,6 +122,12 @@ export default function ResidentTab() {
         setActiveSearch({ term, type });
         if (pagination.current !== 1) handleFilterChange();
     };
+
+
+    const getRwById = (id: string) => {
+        const rw = rwList?.find((rw) => rw.id === id);
+        return rw?.name || "-"
+    }
 
     return (
         <div className="space-y-4">
@@ -132,7 +158,7 @@ export default function ResidentTab() {
                                 setFilterRT(val);
                                 handleFilterChange();
                             }}
-                            options={rtList?.map((rt) => ({ label: `RT ${rt.name}`, value: rt.id }))}
+                            options={rtList?.map((rt) => ({ label: `RT ${rt.name} dari RW ${getRwById(rt.RukunWargaId)}`, value: rt.id }))}
                             loading={loadingRT}
                         />
                     </div>
@@ -160,6 +186,7 @@ export default function ResidentTab() {
                     showTotal: (total, range) => `${range[0]}-${range[1]} dari ${total} Warga`,
                     onChange: (page, size) => setPagination({ current: page, pageSize: size })
                 }}
+                onChange={handleTableChange}
                 scroll={{ x: 1000 }}
             />
 

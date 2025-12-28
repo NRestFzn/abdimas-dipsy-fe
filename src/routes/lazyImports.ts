@@ -7,8 +7,8 @@ export const Unauthorized = lazy(
 export const NotFound = lazy(() => import("../pages/Fallbacks/NotFound"));
 
 // Auth
-export const Login = lazy(() => import("../pages/Login"));
-export const Register = lazy(() => import("../pages/Register"));
+export const Login = lazy(() => import("../pages/Auth/Login"));
+export const Register = lazy(() => import("../pages/Auth/Register"));
 
 // Resident
 export const Home = lazy(() => import("../pages/Home/Home"));
