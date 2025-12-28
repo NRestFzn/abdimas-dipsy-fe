@@ -7,11 +7,9 @@ interface ResultPieChartProps {
 
 export default function ResultPieChart({ yaCount, tidakCount }: ResultPieChartProps) {
   const data = [
-    { name: "Ya", value: yaCount },
-    { name: "Tidak", value: tidakCount },
+    { name: "Ya", value: yaCount, color: "#EF4444" },
+    { name: "Tidak", value: tidakCount, color: "#70B748" },
   ];
-
-  const COLORS = ["#F87171", "#70B748"]; 
 
   const total = yaCount + tidakCount;
 
@@ -19,28 +17,34 @@ export default function ResultPieChart({ yaCount, tidakCount }: ResultPieChartPr
     const { payload } = props;
     return (
       <div className="flex justify-center gap-4 mt-4">
-        {payload.map((entry: any, index: number) => (
-          <div
-            key={`item-${index}`}
-            className="flex items-center gap-3 bg-white border border-gray-100 px-4 py-2 rounded-xl shadow-sm"
-          >
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                {entry.value}
-              </span>
-              <span className="text-lg font-bold text-gray-800">
-                {index === 0 ? yaCount : tidakCount} 
-                <span className="text-xs text-gray-400 font-normal ml-1">
-                   ({total > 0 ? Math.round(((index === 0 ? yaCount : tidakCount) / total) * 100) : 0}%)
-                </span>
-              </span>
-            </div>
-          </div>
-        ))}
+        {payload.map((entry: any, index: number) => {
+          const { name, value, color } = entry.payload;
+
+          return (
+            (
+              <div
+                key={`item-${index}`}
+                className="flex items-center gap-3 bg-white border border-gray-100 px-4 py-2 rounded-xl shadow-sm"
+              >
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: color }}
+                />
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                    {name}
+                  </span>
+                  <span className="text-lg font-bold text-gray-800">
+                    {value}
+                    <span className="text-xs text-gray-400 font-normal ml-1">
+                      ({total > 0 ? Math.round((value / total) * 100) : 0}%)
+                    </span>
+                  </span>
+                </div>
+              </div>
+            )
+          )
+        })}
       </div>
     );
   };
@@ -60,22 +64,22 @@ export default function ResultPieChart({ yaCount, tidakCount }: ResultPieChartPr
             dataKey="value"
             stroke="none"
           >
-            {data.map((_, index) => (
+            {data.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={COLORS[index % COLORS.length]} 
+                fill={entry.color}
                 style={{ outline: 'none' }}
               />
             ))}
           </Pie>
-          <Tooltip 
+          <Tooltip
             formatter={(value: number) => [`${value} Jawaban`, 'Jumlah']}
             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
           />
           <Legend content={renderLegend} />
         </PieChart>
       </ResponsiveContainer>
-      
+
       <div className="absolute top-[42%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
         <span className="block text-4xl font-bold text-gray-800">{total}</span>
         <span className="text-sm text-gray-400 font-medium">Pertanyaan</span>

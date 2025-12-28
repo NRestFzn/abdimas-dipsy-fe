@@ -4,43 +4,36 @@ import { AlertCircle, ArrowLeft, CheckCircle2, FileText } from "lucide-react";
 import { Button, Card, Empty, Spin, Table, Tag, Typography, message } from "antd";
 import { getMedisResultColumns, type QuestionResult } from "../columns/MedisResultColumn";
 import { adminMedisService } from "../../../../../service/adminMedisService";
-import type { SubmissionDetailResponse, UserSummaryResponse } from "../../../../../types/adminMedisService";
+import type { SubmissionDetailResponse } from "../../../../../types/adminMedisService";
 import ResultPieChart from "../../../../../components/Charts/ResultPieChart";
 
 const { Title, Text, Paragraph } = Typography;
 
 export default function MedisResult() {
     const navigate = useNavigate();
-    
-    const params = useParams<{ questionnaireId: string; userId: string; rwId: string; rtId: string }>();
-    const questionnaireId = params?.questionnaireId?.split("=")?.[1] as string;
-    const userId = params?.userId?.split("=")?.[1] as string;
-    const rwId = params?.rwId?.split("=")?.[1] as string;
-    const rtId = params?.rtId?.split("=")?.[1] as string;
+
+    const params = useParams<{ submissionId: string }>();
+    const submissionId = params?.submissionId?.split("=")?.[1] as string;
 
     const [loading, setLoading] = useState(true);
-    const [userData, setUserData] = useState<UserSummaryResponse | null>(null);
     const [detailData, setDetailData] = useState<SubmissionDetailResponse | null>(null);
     const [mappedQuestions, setMappedQuestions] = useState<QuestionResult[]>([]);
+    const [userName, setUserName] = useState<string>("-");
 
     useEffect(() => {
-        if (questionnaireId && userId) {
-            fetchData();
+        if (submissionId) {
+            fetchData(submissionId);
         }
-    }, [questionnaireId, userId]);
+    }, [submissionId]);
 
-    const fetchData = async () => {
+    const fetchData = async (id: string) => {
         setLoading(true);
         try {
-            const userRes = await adminMedisService.getSummaryUser(questionnaireId!, rwId!, rtId!, userId!);
-            setUserData(userRes);
+            const detailRes = await adminMedisService.getSubmissionDetail(id);
+            setDetailData(detailRes);
+            setUserName(detailRes?.User?.fullname as string || "-")
 
-            if (userRes.submissions && userRes.submissions.length > 0) {
-                const latestSubmissionId = userRes.submissions[0].submissionId;
-
-                const detailRes = await adminMedisService.getSubmissionDetail(latestSubmissionId);
-                setDetailData(detailRes);
-
+            if (detailRes.questionnaireAnswer && detailRes.questionnaireAnswer.length > 0) {
                 const sortedAnswers = detailRes.questionnaireAnswer.sort(
                     (a, b) => a.questionnaireQuestion.order - b.questionnaireQuestion.order
                 );
@@ -76,7 +69,7 @@ export default function MedisResult() {
         );
     }
 
-    if (!userData || !detailData) {
+    if (!detailData) {
         return (
             <div className="h-[80vh] flex flex-col justify-center items-center">
                 <Empty description="Data hasil tes tidak ditemukan" />
@@ -115,20 +108,20 @@ export default function MedisResult() {
                         <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center max-lg:p-6">
                             <div className="flex items-center gap-2 mb-4">
                                 <Tag color={isUnstable ? "error" : "success"} className="px-3 py-1 text-sm rounded-full">
-                                    Hasil Analisa Mental Health
+                                    Hasil Analisa Kesehatan Mental
                                 </Tag>
                             </div>
 
                             <div className="mb-2">
                                 <Text className="text-gray-500 text-lg">
-                                    Kondisi Warga: <span className="font-semibold text-gray-800">{userData.fullname}</span>
+                                    Kondisi Warga: <span className="font-semibold text-gray-800">{userName}</span>
                                 </Text>
                             </div>
 
                             <div className="flex items-center gap-4 mb-6">
                                 <StatusIcon className={`w-10 h-10 max-lg:hidden ${statusColor}`} />
                                 <Title level={1} className={`!m-0 !font-extrabold tracking-tight ${statusColor}`}>
-                                    {isUnstable ? "BERESIKO" : "STABIL"}
+                                    {isUnstable ? "BERISIKO" : "STABIL"}
                                 </Title>
                             </div>
 
@@ -138,8 +131,8 @@ export default function MedisResult() {
                                 </h4>
                                 <Paragraph className="!mb-0 text-gray-700 leading-relaxed">
                                     {isUnstable
-                                        ? `Hasil tes atas nama ${userData.fullname} menunjukkan adanya indikasi gangguan kesehatan mental. Disarankan untuk melakukan tindak lanjut atau konsultasi dengan tenaga profesional.`
-                                        : `Hasil tes atas nama ${userData.fullname} menunjukkan kondisi kesehatan mental yang cukup baik dan stabil. Tidak ditemukan indikasi gangguan yang signifikan.`}
+                                        ? `Hasil tes ini menunjukkan adanya indikasi gangguan kesehatan mental. Disarankan untuk melakukan tindak lanjut atau konsultasi dengan tenaga profesional.`
+                                        : `Hasil tes ini menunjukkan kondisi kesehatan mental yang cukup baik dan stabil. Tidak ditemukan indikasi gangguan yang signifikan.`}
                                 </Paragraph>
                             </div>
                         </div>
@@ -163,7 +156,7 @@ export default function MedisResult() {
                     <Title level={3} className="!m-0 text-gray-800">Rincian Jawaban</Title>
                 </div>
 
-                <Card className="shadow-sm border-gray-200 rounded-xl overflow-hidden mb-10 !p-0" bodyStyle={{ padding: 0 }}>
+                <Card className="shadow-sm border-gray-200 rounded-xl overflow-hidden mb-10 !p-0" styles={{ body: { padding: 0 } }}>
                     <div className="bg-white">
                         <Table
                             columns={columns}
@@ -180,7 +173,7 @@ export default function MedisResult() {
                         <Text type="secondary" className="text-sm">
                             Total {mappedQuestions.length} pertanyaan terjawab
                         </Text>
-                        
+
                     </div>
                 </Card>
             </div>

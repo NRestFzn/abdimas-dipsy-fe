@@ -28,11 +28,11 @@ export const getDesaWargaDashboardColumn = (): ColumnsType<DesaWargaDataRow> => 
     key: 'isMentalUnStable',
     render: (condition) => {
       let color = "success"
-      let label = "Beresiko"
+      let label = "Berisiko"
 
       if (condition) {
         color = "error"
-        label = "Beresiko"
+        label = "Berisiko"
       } else {
         color = "success"
         label = "Stabil"

@@ -170,13 +170,13 @@ export default function Result() {
               <div className="flex items-center gap-4 mb-6">
                 <StatusIcon className={`w-10 h-10 max-lg:hidden ${statusColor}`} />
                 <Title level={1} className={`!m-0 !font-extrabold tracking-tight ${statusColor}`}>
-                  {isUnstable ? "BERESIKO" : "STABIL"}
+                  {isUnstable ? "BERISIKO" : "STABIL"}
                 </Title>
               </div>
 
               <div className={`p-6 rounded-xl border ${statusBg} mb-6`}>
                 <h4 className={`font-semibold text-lg mb-2 ${isUnstable ? 'text-red-700' : 'text-green-700'}`}>
-                  {isUnstable ? "Beresiko" : "Stabil"}
+                  {isUnstable ? "Berisiko" : "Stabil"}
                 </h4>
                 <Paragraph className="!mb-0 text-gray-700 leading-relaxed">
                   {isUnstable
@@ -205,7 +205,7 @@ export default function Result() {
           <Title level={3} className="!m-0 text-gray-800">Rincian Jawaban</Title>
         </div>
 
-        <Card className="shadow-sm border-gray-200 rounded-xl overflow-hidden mb-10 !p-0">
+        <Card className="shadow-sm border-gray-200 rounded-xl overflow-hidden mb-10 !p-0" styles={{ body: { padding: 0 } }}>
           <div className="bg-white">
             <Table
               columns={columns}
