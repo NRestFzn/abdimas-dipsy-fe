@@ -19,6 +19,7 @@ export const getRTColumns = ({ onDelete }: RTColumnProps): ColumnsType<RukunTeta
         title: 'Nama RT',
         dataIndex: 'name',
         key: 'name',
+        sorter: true,
         render: (text) => <span className="font-medium">RT {String(text).padStart(2, '0')}</span>,
     },
     {

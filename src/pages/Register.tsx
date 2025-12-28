@@ -36,21 +36,22 @@ export default function Register() {
 
   const { register, isLoading, error } = useAuth();
   const masterData = useMasterData();
+  const { data: rukunWarga, isLoading: isLoadRw } = masterData.rukunWarga({ order: '[["createdAt", "desc"]]' })
+  const { data: rukunTetangga, isLoading: isLoadRt } = masterData.rukunTetangga({ order: '[["createdAt", "desc"]]' })
 
   const isMasterDataLoading =
     masterData.educations.isLoading ||
     masterData.marriageStatuses.isLoading ||
     masterData.salaryRanges.isLoading ||
-    masterData.rukunWarga.isLoading ||
-    masterData.rukunTetangga.isLoading;
+    isLoadRw || isLoadRt;
 
   const filteredRTList = useMemo(() => {
-    if (!selectedRW || !masterData.rukunTetangga.data) return [];
+    if (!selectedRW || !rukunTetangga) return [];
 
-    return masterData.rukunTetangga.data.filter(
+    return rukunTetangga?.filter(
       (rt: any) => rt.RukunWargaId === selectedRW
     );
-  }, [selectedRW, masterData.rukunTetangga.data]);
+  }, [selectedRW, rukunTetangga]);
 
   const onAccountFinish = () => {
     setShowModal(true);
@@ -220,13 +221,13 @@ export default function Register() {
             >
               <Select
                 placeholder="Pilih RW"
-                loading={masterData.rukunWarga.isLoading}
+                loading={isLoadRw}
                 onChange={(value) => {
                   setSelectedRW(value);
                   accountForm.setFieldValue("rt", null);
                 }}
               >
-                {masterData.rukunWarga.data?.map((rw: any) => (
+                {rukunWarga?.map((rw: any) => (
                   <Option key={rw.id} value={rw.id}>
                     RW {rw.name}
                   </Option>
@@ -243,7 +244,7 @@ export default function Register() {
                 placeholder={selectedRW ? "Pilih RT" : "Pilih RW Dulu"}
                 disabled={!selectedRW}
               >
-                {filteredRTList.map((rt: any) => (
+                {filteredRTList?.map((rt: any) => (
                   <Option key={rt.id} value={rt.id}>
                     RT {rt.name}
                   </Option>

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Table, Button, Modal, Form, InputNumber, Select, message, Alert } from "antd";
 import { AlertTriangle, Plus } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminDesaService } from "../../../../../service/adminDesaService";
 import { getRTColumns } from "../columns/RTColumn";
 import type { RukunTetangga } from "../../../../../types/adminDesaService";
+import { useMasterData } from "../../../../../hooks/useMasterData";
+import type { SorterResult } from "antd/es/table/interface";
 
 export default function RTTab() {
     const queryClient = useQueryClient();
@@ -13,25 +15,23 @@ export default function RTTab() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRT, setSelectedRT] = useState<RukunTetangga | null>(null);
     const [selectedRW, setSelectedRW] = useState<string | null>(null);
+    const [filters, setFilters] = useState({ order: '[["name", "desc"]]' })
+
     const [form] = Form.useForm();
 
-    const { data: rwList } = useQuery({
-        queryKey: ["list-rw"],
-        queryFn: () => adminDesaService.getAllRW()
-    });
-
-    const { data: rtData, isLoading, isFetching } = useQuery({
-        queryKey: ["list-rt", selectedRW],
-        queryFn: () => selectedRW ? adminDesaService.getRT({ order: "[['createdAt', 'desc']]" }, selectedRW) : null,
-        enabled: !!selectedRW
-    });
+    const masterData = useMasterData()
+    const { data: rwList, isLoading: isLoadRw } = masterData.rukunWarga({ order: '[["createdAt", "desc"]]' })
+    const { data: rtList, isLoading: isLoadRt, isFetching: isFetchingRt } = masterData.rukunTetangga({
+        order: filters.order,
+        RukunWargaId: selectedRW as string
+    })
 
     const createMutation = useMutation({
         mutationFn: (vals: { count: number, rwId: string }) => adminDesaService.createRT(vals.count, vals.rwId),
         onSuccess: () => {
             message.success("Berhasil membuat RT");
-            queryClient.invalidateQueries({ queryKey: ["list-rt", selectedRW] });
-            queryClient.invalidateQueries({ queryKey: ["list-rw"] });
+            queryClient.invalidateQueries({ queryKey: ["rukunTetangga", selectedRW] });
+            queryClient.invalidateQueries({ queryKey: ["rukunWarga"] });
             setIsModalOpen(false);
             form.resetFields();
         },
@@ -45,7 +45,7 @@ export default function RTTab() {
         },
         onSuccess: () => {
             message.success({ content: "RT dihapus", key: "deleteRT" });
-            queryClient.invalidateQueries({ queryKey: ["list-rt", selectedRW] });
+            queryClient.invalidateQueries({ queryKey: ["rukunTetangga", selectedRW] });
             setIsDeleteModalOpen(false);
             setSelectedRT(null);
         },
@@ -65,12 +65,29 @@ export default function RTTab() {
         }
     };
 
+    const handleTableChange = (
+        _: any,
+        __: any,
+        sorter: SorterResult<RukunTetangga> | SorterResult<RukunTetangga>[]
+    ) => {
+        if (!Array.isArray(sorter)) {
+            const { field, order } = sorter;
+
+            if (order) {
+                const apiOrder = order === 'ascend' ? 'asc' : 'desc';
+                setFilters((prev) => ({ ...prev, order: `[["${field}", "${apiOrder}"]]` }));
+            } else {
+                setFilters((prev) => ({ ...prev, order: '[["name", "desc"]]' }));
+            }
+        }
+    };
+
     const columns = getRTColumns({
         onDelete: handleDeleteClick
     });
 
-    const dataSource = (rtData?.data?.rukunTetangga || []) as unknown as RukunTetangga[];
-    const tableLoading = isLoading || isFetching || deleteMutation.isPending;
+    const dataSource = (rtList || []) as unknown as RukunTetangga[];
+    const tableLoading = isLoadRt || isLoadRw || isFetchingRt || deleteMutation.isPending;
 
     return (
         <div className="space-y-4 md:space-y-6">
@@ -82,18 +99,20 @@ export default function RTTab() {
                         placeholder="Pilih RW untuk melihat RT"
                         onChange={setSelectedRW}
                         value={selectedRW}
-                        options={rwList?.data?.map((rw: any) => ({ label: `RW ${rw.name}`, value: rw.id }))}
+                        options={rwList?.map((rw: any) => ({ label: `RW ${rw?.name}`, value: rw?.id }))}
                         loading={!rwList}
                         size="large"
+                        allowClear
                     />
                 </div>
 
                 <Button
                     type="primary"
                     icon={<Plus size={16} />}
-                    className="!bg-[#70B748] !hover:bg-[#5a9639] w-full md:w-auto flex justify-center items-center h-10" // Full width btn on mobile
+                    className="!hover:bg-[#5a9639] w-full md:w-auto flex justify-center items-center h-10" // Full width btn on mobile
                     onClick={() => setIsModalOpen(true)}
                     disabled={!selectedRW}
+                    title={!selectedRW ? "Pilih RW terlebih dahulu untuk menambah RT" : "Tambah RT"}
                 >
                     Tambah RT
                 </Button>
@@ -111,6 +130,7 @@ export default function RTTab() {
                         showSizeChanger: false
                     }}
                     scroll={{ x: 600 }}
+                    onChange={handleTableChange}
                     locale={{
                         emptyText: selectedRW ? "Belum ada data RT di RW ini" : "Silakan pilih RW terlebih dahulu di atas"
                     }}
@@ -132,7 +152,7 @@ export default function RTTab() {
                     <div className="bg-gray-50 p-3 rounded-md mb-4 border border-gray-100">
                         <p className="text-gray-500 text-sm">
                             Menambahkan RT ke dalam <br className="md:hidden" />
-                            <span className="font-semibold text-gray-700">RW {rwList?.data?.find((r: any) => r.id === selectedRW)?.name}</span>
+                            <span className="font-semibold text-gray-700">RW {rwList?.find((r: any) => r.id === selectedRW)?.name}</span>
                         </p>
                     </div>
                     <Form.Item
@@ -189,7 +209,7 @@ export default function RTTab() {
                         </div>
 
                         <Alert
-                            message="Tindakan ini tidak dapat dibatalkan!"
+                            title="Tindakan ini tidak dapat dibatalkan!"
                             type="warning"
                             showIcon
                             className="text-xs"
