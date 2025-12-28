@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Table, Button, Modal, Form, InputNumber, message, Alert } from "antd";
 import { AlertTriangle, Plus } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminDesaService } from "../../../../../service/adminDesaService";
 import { getRWColumns } from "../columns/RWColumn";
 import type { RukunWarga } from "../../../../../types/adminDesaService";
+import { useMasterData } from "../../../../../hooks/useMasterData";
+import type { SorterResult } from "antd/es/table/interface";
 
 export default function RWTab() {
     const queryClient = useQueryClient();
@@ -13,13 +15,12 @@ export default function RWTab() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRW, setSelectedRW] = useState<RukunWarga | null>(null);
+    const [filters, setFilters] = useState({ order: '[["name", "desc"]]' })
 
     const [form] = Form.useForm();
 
-    const { data: rwList, isLoading } = useQuery({
-        queryKey: ["list-rw"],
-        queryFn: () => adminDesaService.getAllRW()
-    });
+    const masterData = useMasterData()
+    const { data: rukungWarga, isLoading: isLoadRw } = masterData.rukunWarga({ order: filters.order })
 
     const createMutation = useMutation({
         mutationFn: (count: number) => adminDesaService.createRW(count),
@@ -30,7 +31,7 @@ export default function RWTab() {
         onSuccess: () => {
             setLoading(false)
             message.success("Berhasil membuat RW");
-            queryClient.invalidateQueries({ queryKey: ["list-rw"] });
+            queryClient.invalidateQueries({ queryKey: ["rukunWarga"] });
             setIsModalOpen(false);
             form.resetFields();
         },
@@ -46,7 +47,7 @@ export default function RWTab() {
         onSuccess: () => {
             setLoading(false)
             message.success({ content: "RW dihapus", key: "deleteRW" });
-            queryClient.invalidateQueries({ queryKey: ["list-rw"] });
+            queryClient.invalidateQueries({ queryKey: ["rukunWarga"] });
             setIsDeleteModalOpen(false);
             setSelectedRW(null);
         },
@@ -70,11 +71,28 @@ export default function RWTab() {
         createMutation.mutate(values.count);
     };
 
+    const handleTableChange = (
+        _: any,
+        __: any,
+        sorter: SorterResult<RukunWarga> | SorterResult<RukunWarga>[]
+    ) => {
+        if (!Array.isArray(sorter)) {
+            const { field, order } = sorter;
+
+            if (order) {
+                const apiOrder = order === 'ascend' ? 'asc' : 'desc';
+                setFilters((prev) => ({ ...prev, order: `[["${field}", "${apiOrder}"]]` }));
+            } else {
+                setFilters((prev) => ({ ...prev, order: '[["name", "desc"]]' }));
+            }
+        }
+    };
+
     const columns = getRWColumns({
         onDelete: handleDeleteClick
     });
 
-    const dataSource = (rwList?.data || []) as unknown as RukunWarga[];
+    const dataSource = (rukungWarga || []) as unknown as RukunWarga[];
 
     return (
         <div className="space-y-4">
@@ -88,8 +106,9 @@ export default function RWTab() {
                 columns={columns}
                 dataSource={dataSource}
                 rowKey="id"
-                loading={isLoading || loading}
+                loading={isLoadRw || loading}
                 pagination={{ pageSize: 10 }}
+                onChange={handleTableChange}
             />
 
             <Modal
@@ -119,10 +138,10 @@ export default function RWTab() {
                     <Button key="cancel" onClick={() => setIsDeleteModalOpen(false)}>
                         Batal
                     </Button>,
-                    <Button 
-                        key="delete" 
-                        type="primary" 
-                        danger 
+                    <Button
+                        key="delete"
+                        type="primary"
+                        danger
                         loading={deleteMutation.isPending}
                         onClick={confirmDelete}
                     >
@@ -134,7 +153,7 @@ export default function RWTab() {
                 {selectedRW && (
                     <div className="flex flex-col gap-4 py-2">
                         <p className="text-gray-600">
-                            Apakah Anda yakin ingin menghapus 
+                            Apakah Anda yakin ingin menghapus
                             <span className="font-bold text-gray-800"> RW {selectedRW.name}</span>?
                         </p>
 
@@ -153,7 +172,7 @@ export default function RWTab() {
                         </div>
 
                         <Alert
-                            message="Tindakan ini tidak dapat dibatalkan!"
+                            title="Tindakan ini tidak dapat dibatalkan!"
                             type="warning"
                             showIcon
                             className="text-xs"

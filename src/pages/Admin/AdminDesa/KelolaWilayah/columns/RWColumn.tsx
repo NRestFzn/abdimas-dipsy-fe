@@ -19,6 +19,7 @@ export const getRWColumns = ({ onDelete }: RWColumnProps): ColumnsType<RukunWarg
         title: 'Nama RW',
         dataIndex: 'name',
         key: 'name',
+        sorter: true,
         render: (text) => <span className="font-medium">RW {text}</span>,
     },
     {

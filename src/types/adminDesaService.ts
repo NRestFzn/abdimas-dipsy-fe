@@ -186,6 +186,7 @@ export interface GetParams {
 	name?: string
 	page?: number
 	pageSize?: number
+	RukunWargaId?: string // This whole damn things need to be refactor
 	order: string
 }
 
