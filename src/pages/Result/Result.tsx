@@ -90,6 +90,10 @@ export default function Result() {
     }
   }, [questionnaireId, id]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const yaCount = questionnaireAnswer.filter(
     (q) => q.answerValue === 'Ya'
   ).length;
