@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Modal, Form, Input, Button, Alert, Row, Col, Select } from "antd";
-import { Info } from "lucide-react"; // Import icon Info
-import type { ResidentProfile } from "../../../service/residentService";
-import { useUpdateProfile } from "../../../hooks/useResident";
-import { getErrorMessage } from "../../../utils/getErrorMessage";
-import { useMasterData } from "../../../hooks/useMasterData";
+import {useEffect, useState} from 'react';
+import {Modal, Form, Input, Button, Alert, Row, Col, Select} from 'antd';
+import {Info} from 'lucide-react'; // Import icon Info
+import type {ResidentProfile} from '../../../service/residentService';
+import {useUpdateProfile} from '../../../hooks/useResident';
+import {getErrorMessage} from '../../../utils/getErrorMessage';
+import {useMasterData} from '../../../hooks/useMasterData';
 
 interface EditProfileModalProps {
   open: boolean;
@@ -20,9 +20,9 @@ export default function EditProfileModal({
   const [form] = Form.useForm();
   const updateMutation = useUpdateProfile();
 
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const { salaryRanges } = useMasterData();
+  const {salaryRanges} = useMasterData();
 
   useEffect(() => {
     if (open && initialData) {
@@ -52,7 +52,7 @@ export default function EditProfileModal({
     updateMutation.mutate(payload, {
       onSuccess: () => {
         onClose();
-        form.resetFields(["newPassword", "confirmNewPassword"]);
+        form.resetFields(['newPassword', 'confirmNewPassword']);
       },
       onError: (err) => {
         const msg = getErrorMessage(err);
@@ -103,7 +103,7 @@ export default function EditProfileModal({
             <Form.Item
               label="Nomor Telepon"
               name="phoneNumber"
-              rules={[{ required: true, message: "Nomor telepon wajib diisi" }]}
+              rules={[{required: true, message: 'Nomor telepon wajib diisi'}]}
             >
               <Input placeholder="Contoh: 08123456789" />
             </Form.Item>
@@ -113,7 +113,7 @@ export default function EditProfileModal({
             <Form.Item
               label="Rentang Gaji"
               name="SalaryRangeId"
-              rules={[{ required: true, message: "Pilih rentang gaji" }]}
+              rules={[{required: true, message: 'Pilih rentang gaji'}]}
             >
               <Select
                 placeholder="Pilih Rentang Gaji"
@@ -121,7 +121,7 @@ export default function EditProfileModal({
               >
                 {salaryRanges.data?.map((salary) => (
                   <Select.Option key={salary.id} value={salary.id}>
-                    Rp {parseInt(salary.minRange).toLocaleString()} - Rp{" "}
+                    Rp {parseInt(salary.minRange).toLocaleString()} - Rp{' '}
                     {parseInt(salary.maxRange).toLocaleString()}
                   </Select.Option>
                 ))}
@@ -139,7 +139,7 @@ export default function EditProfileModal({
               <Form.Item
                 label="Password Baru"
                 name="newPassword"
-                rules={[{ min: 6, message: "Min 6 karakter" }]}
+                rules={[{min: 8, message: 'Min 8 karakter'}]}
               >
                 <Input.Password placeholder="Kosongkan jika tidak ubah" />
               </Form.Item>
@@ -148,17 +148,17 @@ export default function EditProfileModal({
               <Form.Item
                 label="Konfirmasi Password"
                 name="confirmNewPassword"
-                dependencies={["newPassword"]}
+                dependencies={['newPassword']}
                 rules={[
-                  ({ getFieldValue }) => ({
+                  ({getFieldValue}) => ({
                     validator(_, value) {
-                      if (!value || getFieldValue("newPassword") === value) {
+                      if (!value || getFieldValue('newPassword') === value) {
                         return Promise.resolve();
                       }
-                      if (!getFieldValue("newPassword") && !value) {
+                      if (!getFieldValue('newPassword') && !value) {
                         return Promise.resolve();
                       }
-                      return Promise.reject(new Error("Password tidak cocok!"));
+                      return Promise.reject(new Error('Password tidak cocok!'));
                     },
                   }),
                 ]}
