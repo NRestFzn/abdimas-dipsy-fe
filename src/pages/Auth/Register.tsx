@@ -18,10 +18,10 @@ import {
   HomeOutlined,
   IdcardOutlined,
 } from "@ant-design/icons";
-import { useAuth } from "../context/AuthContext";
-import { useMasterData } from "../hooks/useMasterData";
-import type { RegisterData } from "../service/authService";
+import { useAuth } from "../../context/AuthContext";
+import { useMasterData } from "../../hooks/useMasterData";
 import { useNavigate } from "react-router";
+import type { RegisterPayload } from "../../types/AuthTypes/authTypes";
 
 const { Option } = Select;
 
@@ -65,7 +65,7 @@ export default function Register() {
         ? profileValues.tanggalLahir.format("YYYY-MM-DD")
         : "";
 
-      const payload: RegisterData = {
+      const payload: RegisterPayload = {
         email: accountValues.email,
         password: accountValues.password,
         confirmPassword: accountValues.confirmPassword,

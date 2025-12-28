@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Form, Input, Button, Card, Alert, Typography } from "antd";
 import { Mail, Lock } from "lucide-react"; // Icon modern
-import { useAuth } from "../context/AuthContext";
-import { getErrorMessage } from "../utils/getErrorMessage";
-import { ROLE_ID } from "../constants";
-import type { LoginData } from "../service/authService";
+import { useAuth } from "../../context/AuthContext";
+import { getErrorMessage } from "../../utils/getErrorMessage";
+import { ROLE_ID } from "../../constants";
+import type { LoginPayload } from "../../types/AuthTypes/authTypes";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -14,7 +14,7 @@ export default function Login() {
   const { login, isLoading, error } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
 
-  const onFinish = async (values: LoginData) => {
+  const onFinish = async (values: LoginPayload) => {
     setFormError(null);
     try {
       const response = await login({
@@ -32,7 +32,7 @@ export default function Login() {
         navigate("/admin-medis/responden");
       } else {
         console.warn("Role ID tidak dikenali:", userRoleId);
-        navigate("/"); // Fallback aman
+        navigate("/");
       }
     } catch (err) {
       console.error("Login error:", err);

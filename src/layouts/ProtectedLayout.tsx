@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router"; // Sesuaikan import react-router-dom
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { Loader2 } from "lucide-react";
 
 export default function ProtectedLayout() {
   const token = localStorage.getItem("authToken");
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoadingUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ export default function ProtectedLayout() {
     }
   }, [user, token, logout]);
 
-  if (isLoading) {
+  if (isLoadingUser) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
         <Loader2 className="animate-spin text-[#70B748]" size={32} />
