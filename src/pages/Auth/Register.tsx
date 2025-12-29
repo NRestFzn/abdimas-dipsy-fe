@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import {useMemo, useState} from 'react';
 import {
   Form,
   Input,
@@ -11,19 +11,19 @@ import {
   Alert,
   message,
   Spin,
-} from "antd";
+} from 'antd';
 import {
   UserOutlined,
   LockOutlined,
   HomeOutlined,
   IdcardOutlined,
-} from "@ant-design/icons";
-import { useAuth } from "../../context/AuthContext";
-import { useMasterData } from "../../hooks/useMasterData";
-import { useNavigate } from "react-router";
-import type { RegisterPayload } from "../../types/AuthTypes/authTypes";
+} from '@ant-design/icons';
+import {useAuth} from '../../context/AuthContext';
+import {useMasterData} from '../../hooks/useMasterData';
+import {useNavigate} from 'react-router';
+import type {RegisterPayload} from '../../types/AuthTypes/authTypes';
 
-const { Option } = Select;
+const {Option} = Select;
 
 export default function Register() {
   const navigate = useNavigate();
@@ -34,23 +34,26 @@ export default function Register() {
   const [accountForm] = Form.useForm();
   const [profileForm] = Form.useForm();
 
-  const { register, isLoading, error } = useAuth();
+  const {register, isLoading, error} = useAuth();
   const masterData = useMasterData();
-  const { data: rukunWarga, isLoading: isLoadRw } = masterData.rukunWarga({ order: '[["name", "asc"]]' })
-  const { data: rukunTetangga, isLoading: isLoadRt } = masterData.rukunTetangga({ order: '[["name", "asc"]]' })
+  const {data: rukunWarga, isLoading: isLoadRw} = masterData.rukunWarga({
+    order: '[["name", "asc"]]',
+  });
+  const {data: rukunTetangga, isLoading: isLoadRt} = masterData.rukunTetangga({
+    order: '[["name", "asc"]]',
+  });
 
   const isMasterDataLoading =
     masterData.educations.isLoading ||
     masterData.marriageStatuses.isLoading ||
     masterData.salaryRanges.isLoading ||
-    isLoadRw || isLoadRt;
+    isLoadRw ||
+    isLoadRt;
 
   const filteredRTList = useMemo(() => {
     if (!selectedRW || !rukunTetangga) return [];
 
-    return rukunTetangga?.filter(
-      (rt: any) => rt.RukunWargaId === selectedRW
-    );
+    return rukunTetangga?.filter((rt: any) => rt.RukunWargaId === selectedRW);
   }, [selectedRW, rukunTetangga]);
 
   const onAccountFinish = () => {
@@ -62,8 +65,8 @@ export default function Register() {
       const accountValues = accountForm.getFieldsValue();
 
       const birthDateISO = profileValues.tanggalLahir
-        ? profileValues.tanggalLahir.format("YYYY-MM-DD")
-        : "";
+        ? profileValues.tanggalLahir.format('YYYY-MM-DD')
+        : '';
 
       const payload: RegisterPayload = {
         email: accountValues.email,
@@ -84,14 +87,14 @@ export default function Register() {
 
       await register(payload);
 
-      message.success("Registrasi berhasil!");
+      message.success('Registrasi berhasil!');
       accountForm.resetFields();
       profileForm.resetFields();
       setShowModal(false);
 
-      navigate("/");
+      navigate('/');
     } catch (err) {
-      console.error("Registration error:", err);
+      console.error('Registration error:', err);
     }
   };
 
@@ -100,14 +103,14 @@ export default function Register() {
 
     if (
       err.errors &&
-      typeof err.errors === "object" &&
+      typeof err.errors === 'object' &&
       Object.keys(err.errors).length > 0
     ) {
       return (
         <ul className="list-disc pl-4 m-0 text-sm">
           {Object.entries(err.errors).map(([key, msg]) => (
             <li key={key}>
-              <span className="font-semibold capitalize">{key}:</span>{" "}
+              <span className="font-semibold capitalize">{key}:</span>{' '}
               {String(msg)}
             </li>
           ))}
@@ -156,8 +159,8 @@ export default function Register() {
             label="Email"
             name="email"
             rules={[
-              { required: true, message: "Email wajib diisi" },
-              { type: "email", message: "Format email tidak valid" },
+              {required: true, message: 'Email wajib diisi'},
+              {type: 'email', message: 'Format email tidak valid'},
             ]}
           >
             <Input
@@ -169,7 +172,11 @@ export default function Register() {
           <Form.Item
             label="Password"
             name="password"
-            rules={[{ required: true, message: "Password wajib diisi" }]}
+            validateTrigger={['onChange', 'onBlur']}
+            rules={[
+              {required: true, message: 'Password wajib diisi'},
+              {min: 8, message: 'Password minimal berisi 8 karakter'},
+            ]}
           >
             <Input.Password
               prefix={<LockOutlined className="pr-1" />}
@@ -180,17 +187,17 @@ export default function Register() {
           <Form.Item
             label="Konfirmasi Password"
             name="confirmPassword"
-            dependencies={["password"]}
+            dependencies={['password']}
             hasFeedback
             rules={[
-              { required: true, message: "Konfirmasi password wajib diisi" },
-              ({ getFieldValue }) => ({
+              {required: true, message: 'Konfirmasi password wajib diisi'},
+              ({getFieldValue}) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue("password") === value) {
+                  if (!value || getFieldValue('password') === value) {
                     return Promise.resolve();
                   }
                   return Promise.reject(
-                    new Error("Password yang Anda masukkan tidak sama!")
+                    new Error('Password yang Anda masukkan tidak sama!')
                   );
                 },
               }),
@@ -205,7 +212,7 @@ export default function Register() {
           <Form.Item
             label="Alamat"
             name="alamat"
-            rules={[{ required: true, message: "Alamat wajib diisi" }]}
+            rules={[{required: true, message: 'Alamat wajib diisi'}]}
           >
             <Input
               prefix={<HomeOutlined className="pr-1" />}
@@ -217,14 +224,14 @@ export default function Register() {
             <Form.Item
               label="RW"
               name="rw"
-              rules={[{ required: true, message: "Pilih RW" }]}
+              rules={[{required: true, message: 'Pilih RW'}]}
             >
               <Select
                 placeholder="Pilih RW"
                 loading={isLoadRw}
                 onChange={(value) => {
                   setSelectedRW(value);
-                  accountForm.setFieldValue("rt", null);
+                  accountForm.setFieldValue('rt', null);
                 }}
               >
                 {rukunWarga?.map((rw: any) => (
@@ -238,10 +245,10 @@ export default function Register() {
             <Form.Item
               label="RT"
               name="rt"
-              rules={[{ required: true, message: "Pilih RT" }]}
+              rules={[{required: true, message: 'Pilih RT'}]}
             >
               <Select
-                placeholder={selectedRW ? "Pilih RT" : "Pilih RW Dulu"}
+                placeholder={selectedRW ? 'Pilih RT' : 'Pilih RW Dulu'}
                 disabled={!selectedRW}
               >
                 {filteredRTList?.map((rt: any) => (
@@ -257,9 +264,9 @@ export default function Register() {
             label="NIK"
             name="nik"
             rules={[
-              { required: true, message: "NIK wajib diisi" },
-              { len: 16, message: "NIK harus 16 digit" },
-              { pattern: /^[0-9]+$/, message: "NIK harus berupa angka" },
+              {required: true, message: 'NIK wajib diisi'},
+              {len: 16, message: 'NIK harus 16 digit'},
+              {pattern: /^[0-9]+$/, message: 'NIK harus berupa angka'},
             ]}
           >
             <Input
@@ -309,7 +316,7 @@ export default function Register() {
           form={profileForm}
           layout="vertical"
           onFinish={onProfileFinish}
-          initialValues={{ gender: "m" }}
+          initialValues={{gender: 'm'}}
         >
           {error && (
             <Alert
@@ -323,7 +330,7 @@ export default function Register() {
           <Form.Item
             label="Nama Lengkap"
             name="namaLengkap"
-            rules={[{ required: true, message: "Nama lengkap wajib diisi" }]}
+            rules={[{required: true, message: 'Nama lengkap wajib diisi'}]}
           >
             <Input placeholder="Masukkan nama lengkap" />
           </Form.Item>
@@ -332,10 +339,10 @@ export default function Register() {
             label="Nomor Handphone"
             name="noHp"
             rules={[
-              { required: true, message: "Nomor HP wajib diisi" },
-              { pattern: /^[0-9]+$/, message: "Hanya boleh angka" },
-              { min: 10, message: "Minimal 10 digit" },
-              { max: 15, message: "Maksimal 15 digit" },
+              {required: true, message: 'Nomor HP wajib diisi'},
+              {pattern: /^[0-9]+$/, message: 'Hanya boleh angka'},
+              {min: 10, message: 'Minimal 10 digit'},
+              {max: 15, message: 'Maksimal 15 digit'},
             ]}
           >
             <Input placeholder="Contoh: 081234567890" maxLength={15} />
@@ -344,7 +351,7 @@ export default function Register() {
           <Form.Item
             label="Tanggal Lahir"
             name="tanggalLahir"
-            rules={[{ required: true, message: "Tanggal lahir wajib diisi" }]}
+            rules={[{required: true, message: 'Tanggal lahir wajib diisi'}]}
           >
             <DatePicker
               className="w-full"
@@ -356,7 +363,7 @@ export default function Register() {
           <Form.Item
             label="Jenis Kelamin"
             name="gender"
-            rules={[{ required: true }]}
+            rules={[{required: true}]}
           >
             <Radio.Group>
               <Radio value="m">Laki-laki</Radio>
@@ -367,7 +374,7 @@ export default function Register() {
           <Form.Item
             label="Status Pernikahan"
             name="statusPernikahan"
-            rules={[{ required: true, message: "Pilih status pernikahan" }]}
+            rules={[{required: true, message: 'Pilih status pernikahan'}]}
           >
             <Radio.Group>
               {masterData.marriageStatuses.data?.map((status) => (
@@ -385,7 +392,7 @@ export default function Register() {
           <Form.Item
             label="Pendidikan Terakhir"
             name="pendidikan"
-            rules={[{ required: true, message: "Pilih pendidikan" }]}
+            rules={[{required: true, message: 'Pilih pendidikan'}]}
           >
             <Select placeholder="Pilih Pendidikan">
               {masterData.educations.data?.map((edu) => (
@@ -399,7 +406,7 @@ export default function Register() {
           <Form.Item
             label="Pekerjaan"
             name="pekerjaan"
-            rules={[{ required: true, message: "Pekerjaan wajib diisi" }]}
+            rules={[{required: true, message: 'Pekerjaan wajib diisi'}]}
           >
             <Input placeholder="Masukkan pekerjaan" />
           </Form.Item>
@@ -407,12 +414,12 @@ export default function Register() {
           <Form.Item
             label="Rentang Gaji"
             name="gaji"
-            rules={[{ required: true, message: "Pilih rentang gaji" }]}
+            rules={[{required: true, message: 'Pilih rentang gaji'}]}
           >
             <Select placeholder="Pilih Rentang Gaji">
               {masterData.salaryRanges.data?.map((salary) => (
                 <Option key={salary.id} value={salary.id}>
-                  Rp {parseInt(salary.minRange).toLocaleString()} - Rp{" "}
+                  Rp {parseInt(salary.minRange).toLocaleString()} - Rp{' '}
                   {parseInt(salary.maxRange).toLocaleString()}
                 </Option>
               ))}
