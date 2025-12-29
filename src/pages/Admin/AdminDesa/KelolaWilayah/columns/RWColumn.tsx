@@ -4,16 +4,17 @@ import type { ColumnsType } from "antd/es/table";
 import type { RukunWarga } from "../../../../../types/adminDesaService";
 
 interface RWColumnProps {
+    pagination: { current: number; pageSize: number };
     onDelete: (record: RukunWarga) => void;
 }
 
-export const getRWColumns = ({ onDelete }: RWColumnProps): ColumnsType<RukunWarga> => [
+export const getRWColumns = ({ pagination, onDelete }: RWColumnProps): ColumnsType<RukunWarga> => [
     {
         title: 'No',
         key: 'index',
         width: 70,
         align: 'center',
-        render: (_, __, index) => index + 1,
+        render: (_, __, index) => (pagination?.current - 1) * pagination?.pageSize + index + 1,
     },
     {
         title: 'Nama RW',

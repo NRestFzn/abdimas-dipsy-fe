@@ -92,9 +92,7 @@ export default function RWTab() {
         }
     };
 
-    const columns = getRWColumns({
-        onDelete: handleDeleteClick
-    });
+
 
     const dataSource = Array.isArray(rukungWarga) ? rukungWarga : (rukungWarga as any)?.data || [];
     const currentCount = dataSource.length;
@@ -104,6 +102,11 @@ export default function RWTab() {
     const fakeTotal = hasMore
         ? (pagination.current * pagination.pageSize) + 1
         : ((pagination.current - 1) * pagination.pageSize) + currentCount;
+
+    const columns = getRWColumns({
+        pagination,
+        onDelete: handleDeleteClick
+    });
 
     return (
         <div className="space-y-4">
