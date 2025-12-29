@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Table, Button, Modal, Form, InputNumber, message, Alert } from "antd";
+import { Table, Button, Modal, Form, InputNumber, message, Alert, Pagination } from "antd";
 import { AlertTriangle, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminDesaService } from "../../../../../service/adminDesaService";
@@ -16,11 +16,15 @@ export default function RWTab() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRW, setSelectedRW] = useState<RukunWarga | null>(null);
     const [filters, setFilters] = useState({ order: '[["name", "desc"]]' })
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+    })
 
     const [form] = Form.useForm();
 
     const masterData = useMasterData()
-    const { data: rukungWarga, isLoading: isLoadRw } = masterData.rukunWarga({ order: filters.order })
+    const { data: rukungWarga, isLoading: isLoadRw } = masterData.rukunWarga({ order: filters.order, page: pagination.current, pageSize: pagination.pageSize })
 
     const createMutation = useMutation({
         mutationFn: (count: number) => adminDesaService.createRW(count),
@@ -107,9 +111,25 @@ export default function RWTab() {
                 dataSource={dataSource}
                 rowKey="id"
                 loading={isLoadRw || loading}
-                pagination={{ pageSize: 10 }}
                 onChange={handleTableChange}
+                pagination={false}
             />
+
+            <div className="w-full flex justify-end py-5">
+                <Pagination
+                    current={pagination.current}
+                    pageSize={pagination.pageSize}
+                    total={dataSource?.length || 0}
+                    onChange={(page, pageSize) => {
+                        setPagination({
+                            current: page,
+                            pageSize: pageSize,
+                        });
+                    }}
+                    showLessItems={true}
+                    size="default"
+                />
+            </div>
 
             <Modal
                 title="Tambah RW Baru"
