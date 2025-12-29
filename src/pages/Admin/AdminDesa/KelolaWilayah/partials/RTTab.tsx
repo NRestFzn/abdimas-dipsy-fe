@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Table, Button, Modal, Form, InputNumber, Select, message, Alert } from "antd";
+import { useMemo, useState } from "react";
+import { Table, Button, Modal, Form, InputNumber, Select, message, Alert, Spin } from "antd";
 import { AlertTriangle, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminDesaService } from "../../../../../service/adminDesaService";
@@ -20,11 +20,38 @@ export default function RTTab() {
     const [form] = Form.useForm();
 
     const masterData = useMasterData()
-    const { data: rwList, isLoading: isLoadRw } = masterData.rukunWarga({ order: '[["createdAt", "desc"]]' })
+    const {
+        data: rwInfiniteData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading: isLoadRw
+    } = masterData.infiniteRukunWarga(20)
     const { data: rtList, isLoading: isLoadRt, isFetching: isFetchingRt } = masterData.rukunTetangga({
         order: filters.order,
         RukunWargaId: selectedRW as string
     })
+
+    const rwOptions = useMemo(() => {
+        return rwInfiniteData?.pages.flatMap((page: any) => {
+            const dataArray = Array.isArray(page) ? page : (page.data || []);
+            
+            return dataArray?.map((rw: any) => ({
+                label: `RW ${rw.name}`,
+                value: rw.id
+            }));
+        }) || [];
+    }, [rwInfiniteData]);
+
+    const handleRWPopupScroll = (e: any) => {
+        const target = e.target;
+        if (
+            !isFetchingNextPage &&
+            target.scrollTop + target.offsetHeight >= target.scrollHeight - 10
+        ) {
+            if (hasNextPage) fetchNextPage();
+        }
+    };
 
     const createMutation = useMutation({
         mutationFn: (vals: { count: number, rwId: string }) => adminDesaService.createRT(vals.count, vals.rwId),
@@ -99,10 +126,21 @@ export default function RTTab() {
                         placeholder="Pilih RW untuk melihat RT"
                         onChange={setSelectedRW}
                         value={selectedRW}
-                        options={rwList?.map((rw: any) => ({ label: `RW ${rw?.name}`, value: rw?.id }))}
-                        loading={!rwList}
+                        options={rwOptions}
+                        loading={isLoadRw}
                         size="large"
                         allowClear
+                        onPopupScroll={handleRWPopupScroll}
+                        popupRender={(menu) => (
+                            <>
+                                {menu}
+                                {isFetchingNextPage && (
+                                    <div className="flex justify-center p-2">
+                                        <Spin size="small" />
+                                    </div>
+                                )}
+                            </>
+                        )}
                     />
                 </div>
 
@@ -152,7 +190,9 @@ export default function RTTab() {
                     <div className="bg-gray-50 p-3 rounded-md mb-4 border border-gray-100">
                         <p className="text-gray-500 text-sm">
                             Menambahkan RT ke dalam <br className="md:hidden" />
-                            <span className="font-semibold text-gray-700">RW {rwList?.find((r: any) => r.id === selectedRW)?.name}</span>
+                            <span className="font-semibold text-gray-700">
+                                RW {rwOptions?.find((r: any) => r?.value === selectedRW)?.label.replace('RW ', '')}
+                            </span>
                         </p>
                     </div>
                     <Form.Item
