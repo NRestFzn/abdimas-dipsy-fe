@@ -92,11 +92,21 @@ export default function RWTab() {
         }
     };
 
+
+
+    const dataSource = Array.isArray(rukungWarga) ? rukungWarga : (rukungWarga as any)?.data || [];
+    const currentCount = dataSource.length;
+
+    const hasMore = currentCount === pagination.pageSize;
+
+    const fakeTotal = hasMore
+        ? (pagination.current * pagination.pageSize) + 1
+        : ((pagination.current - 1) * pagination.pageSize) + currentCount;
+
     const columns = getRWColumns({
+        pagination,
         onDelete: handleDeleteClick
     });
-
-    const dataSource = (rukungWarga || []) as unknown as RukunWarga[];
 
     return (
         <div className="space-y-4">
@@ -115,19 +125,20 @@ export default function RWTab() {
                 pagination={false}
             />
 
-            <div className="w-full flex justify-end py-5">
+            <div className="flex justify-end py-4">
                 <Pagination
                     current={pagination.current}
                     pageSize={pagination.pageSize}
-                    total={dataSource?.length || 0}
-                    onChange={(page, pageSize) => {
-                        setPagination({
-                            current: page,
-                            pageSize: pageSize,
-                        });
+                    total={fakeTotal}
+                    onChange={(newPage, newPageSize) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            current: newPage,
+                            pageSize: newPageSize
+                        }))
                     }}
-                    showLessItems={true}
-                    size="default"
+                    showSizeChanger={true}
+                    showTotal={(_, range) => `${range[0]}-${range[1]} Data`}
                 />
             </div>
 

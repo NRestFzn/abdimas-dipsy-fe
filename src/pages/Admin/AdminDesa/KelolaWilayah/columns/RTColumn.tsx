@@ -4,16 +4,17 @@ import type { ColumnsType } from "antd/es/table";
 import type { RukunTetangga } from "../../../../../types/adminDesaService";
 
 interface RTColumnProps {
+    pagination: { current: number; pageSize: number };
     onDelete: (record: RukunTetangga) => void;
 }
 
-export const getRTColumns = ({ onDelete }: RTColumnProps): ColumnsType<RukunTetangga> => [
+export const getRTColumns = ({ pagination, onDelete }: RTColumnProps): ColumnsType<RukunTetangga> => [
     {
         title: 'No',
         key: 'index',
         width: 70,
         align: 'center',
-        render: (_, __, index) => index + 1,
+        render: (_, __, index) => (pagination?.current - 1) * pagination?.pageSize + index + 1,
     },
     {
         title: 'Nama RT',
@@ -36,11 +37,11 @@ export const getRTColumns = ({ onDelete }: RTColumnProps): ColumnsType<RukunTeta
         width: 100,
         render: (_, record) => (
             <Tooltip title="Hapus RT">
-                <Button 
-                    danger 
-                    size="small" 
-                    icon={<Trash2 size={16} />} 
-                    onClick={() => onDelete(record)} 
+                <Button
+                    danger
+                    size="small"
+                    icon={<Trash2 size={16} />}
+                    onClick={() => onDelete(record)}
                 />
             </Tooltip>
         ),

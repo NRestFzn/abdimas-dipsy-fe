@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Table, Button, Modal, Form, InputNumber, Select, message, Alert, Spin } from "antd";
+import { Table, Button, Modal, Form, InputNumber, Select, message, Alert, Spin, Pagination } from "antd";
 import { AlertTriangle, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminDesaService } from "../../../../../service/adminDesaService";
@@ -16,6 +16,10 @@ export default function RTTab() {
     const [selectedRT, setSelectedRT] = useState<RukunTetangga | null>(null);
     const [selectedRW, setSelectedRW] = useState<string | null>(null);
     const [filters, setFilters] = useState({ order: '[["name", "desc"]]' })
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+    })
 
     const [form] = Form.useForm();
 
@@ -29,13 +33,15 @@ export default function RTTab() {
     } = masterData.infiniteRukunWarga(20)
     const { data: rtList, isLoading: isLoadRt, isFetching: isFetchingRt } = masterData.rukunTetangga({
         order: filters.order,
-        RukunWargaId: selectedRW as string
+        RukunWargaId: selectedRW as string,
+        page: pagination.current,
+        pageSize: pagination.pageSize
     })
 
     const rwOptions = useMemo(() => {
         return rwInfiniteData?.pages.flatMap((page: any) => {
             const dataArray = Array.isArray(page) ? page : (page.data || []);
-            
+
             return dataArray?.map((rw: any) => ({
                 label: `RW ${rw.name}`,
                 value: rw.id
@@ -110,11 +116,19 @@ export default function RTTab() {
     };
 
     const columns = getRTColumns({
+        pagination,
         onDelete: handleDeleteClick
     });
 
     const dataSource = (rtList || []) as unknown as RukunTetangga[];
     const tableLoading = isLoadRt || isLoadRw || isFetchingRt || deleteMutation.isPending;
+
+    const currentCount = dataSource.length;
+    const hasMore = currentCount === pagination.pageSize;
+
+    const fakeTotal = hasMore
+        ? (pagination.current * pagination.pageSize) + 1
+        : ((pagination.current - 1) * pagination.pageSize) + currentCount;
 
     return (
         <div className="space-y-4 md:space-y-6">
@@ -162,16 +176,28 @@ export default function RTTab() {
                     dataSource={dataSource}
                     rowKey="id"
                     loading={tableLoading}
-                    pagination={{
-                        pageSize: 10,
-                        responsive: true,
-                        showSizeChanger: false
-                    }}
+                    pagination={false}
                     scroll={{ x: 600 }}
                     onChange={handleTableChange}
                     locale={{
-                        emptyText: selectedRW ? "Belum ada data RT di RW ini" : "Silakan pilih RW terlebih dahulu di atas"
+                        emptyText: "Tidak Ada Data"
                     }}
+                />
+            </div>
+            <div className="flex justify-end py-4">
+                <Pagination
+                    current={pagination.current}
+                    pageSize={pagination.pageSize}
+                    total={fakeTotal}
+                    onChange={(newPage, newPageSize) => {
+                        setPagination((prev) => ({
+                            ...prev,
+                            current: newPage,
+                            pageSize: newPageSize
+                        }))
+                    }}
+                    showSizeChanger={true}
+                    showTotal={(_, range) => `${range[0]}-${range[1]} Data`}
                 />
             </div>
 
