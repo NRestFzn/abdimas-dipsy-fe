@@ -69,7 +69,7 @@ export default function Register() {
         : '';
 
       const payload: RegisterPayload = {
-        email: accountValues.email,
+        email: accountValues.email || null,
         password: accountValues.password,
         confirmPassword: accountValues.confirmPassword,
         nik: accountValues.nik,
@@ -82,7 +82,7 @@ export default function Register() {
         RukunTetanggaId: accountValues.rt,
         EducationId: profileValues.pendidikan,
         SalaryRangeId: profileValues.gaji,
-        phoneNumber: profileValues.noHp,
+        phoneNumber: profileValues.noHp || null,
       };
 
       await register(payload);
