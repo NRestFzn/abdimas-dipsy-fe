@@ -2,12 +2,13 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { authService } from "../service/authService";
 import type { APIError } from "../types/ErrorFallbackType";
 import { useQueryClient } from "@tanstack/react-query";
-import type { LoginPayload, RegisterPayload, UserMeResponse } from "../types/AuthTypes/authTypes";
+import type { LoginPayload, LoginResidentPayload, RegisterPayload, UserMeResponse } from "../types/AuthTypes/authTypes";
 
 interface AuthContextType {
 	user: UserMeResponse | null;
 	isAuthenticated: boolean;
 	login: (data: LoginPayload) => Promise<any>;
+	loginResident: (data: LoginResidentPayload) => Promise<any>;
 	register: (data: RegisterPayload) => Promise<void>;
 	logout: () => void;
 	isLoadingUser: boolean;
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				if (response.data) {
 					const userDataWithToken: UserMeResponse = {
 						...response.data,
-						accessToken: token 
+						accessToken: token
 					};
 
 					setUser(userDataWithToken);
@@ -85,27 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		try {
 			const response = await authService.login(loginData);
-
-			if (response?.statusCode === 200 && response?.data) {
-				const loginResponseData = response.data;
-				const token = loginResponseData.accessToken;
-
-				localStorage.setItem("authToken", token as string);
-
-				const profileResponse = await authService.getProfile();
-
-				if (profileResponse.data) {
-					const fullUserData: UserMeResponse = {
-						...profileResponse.data,
-						accessToken: token
-					};
-					setUser(fullUserData);
-
-					return { data: fullUserData };
-				}
-			} else {
-				throw new Error(response.message || "Login failed");
-			}
+			return await handleLoginSuccess(response)
 		} catch (err: any) {
 			console.error("Login Error:", err);
 			setError(err as APIError);
@@ -114,6 +95,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			setIsLoading((prev) => ({ ...prev, loadingBtn: false }));
 		}
 	};
+
+	const loginResident = async (loginData: LoginResidentPayload) => {
+		setIsLoading((prev) => ({ ...prev, loadingBtn: true }));
+
+		try {
+			const response = await authService.loginResident(loginData)
+			return await handleLoginSuccess(response)
+		} catch (error) {
+			console.error("Resident Login Error:", error);
+			setError(error as APIError);
+			throw error;
+		} finally {
+			setIsLoading((prev) => ({ ...prev, loadingBtn: false }));
+		}
+	}
 
 	const register = async (registerData: RegisterPayload): Promise<void> => {
 		setIsLoading((prev) => ({ ...prev, loadingBtn: true }));
@@ -133,12 +129,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	};
 
+	const handleLoginSuccess = async (response: any) => {
+		if (response?.statusCode === 200 && response?.data) {
+			const loginResponseData = response.data;
+			const token = loginResponseData.accessToken;
+
+			localStorage.setItem("authToken", token as string);
+
+			const profileResponse = await authService.getProfile();
+
+			if (profileResponse.data) {
+				const fullUserData: UserMeResponse = {
+					...profileResponse.data,
+					accessToken: token
+				};
+				setUser(fullUserData);
+				return { data: fullUserData };
+			}
+		} else {
+			throw new Error(response.message || "Login failed");
+		}
+	};
+
 	return (
 		<AuthContext.Provider
 			value={{
 				user,
 				isAuthenticated: !!user,
 				login,
+				loginResident,
 				register,
 				logout,
 				isLoading: isLoading.loadingBtn,

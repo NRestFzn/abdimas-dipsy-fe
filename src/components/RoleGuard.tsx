@@ -7,9 +7,10 @@ import type { ReactNode } from "react";
 interface RoleGuardProps {
   children: ReactNode;
   allowedRoleIds: string[];
+  loginPath?: string;
 }
 
-export const RoleGuard = ({ children, allowedRoleIds }: RoleGuardProps) => {
+export const RoleGuard = ({ children, allowedRoleIds, loginPath = "/masuk" }: RoleGuardProps) => {
   const { user, isLoadingUser } = useAuth();
   const location = useLocation();
 
@@ -31,7 +32,7 @@ export const RoleGuard = ({ children, allowedRoleIds }: RoleGuardProps) => {
   }
 
   if (!user) {
-    return <Navigate to="/masuk" state={{ from: location }} replace />;
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   if (!allowedRoleIds.includes(user.RoleId)) {

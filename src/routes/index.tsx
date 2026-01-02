@@ -1,5 +1,5 @@
-import { createBrowserRouter, Navigate } from "react-router"; // Sesuaikan import router Anda
-import { Suspense, type ComponentType, type LazyExoticComponent,  } from "react";
+import { createBrowserRouter, Navigate } from "react-router";
+import { Suspense, type ComponentType, type LazyExoticComponent, } from "react";
 import Loading from "../pages/Loading";
 import ProtectedLayout from "../layouts/ProtectedLayout";
 import ResidentLayout from "../layouts/Resident/MainLayout";
@@ -8,6 +8,7 @@ import AdminMediLayout from "../layouts/Admin/AdminMedis/AdminMedisLayout";
 import { RoleGuard } from "../components/RoleGuard";
 import { ROLE_ID } from "../constants";
 import * as Pages from "./lazyImports";
+import { RootRedirect } from "../components/RootRedirect";
 
 interface LoadableProps {
   Component: LazyExoticComponent<ComponentType<any>>;
@@ -23,6 +24,7 @@ const Loadable = ({ Component }: LoadableProps) => {
 
 const router = createBrowserRouter([
   { path: "/masuk", element: <Loadable Component={Pages.Login} /> },
+  { path: "/masuk-warga", element: <Loadable Component={Pages.LoginResident} /> },
   { path: "/daftar", element: <Loadable Component={Pages.Register} /> },
   {
     path: "/unauthorized",
@@ -35,14 +37,20 @@ const router = createBrowserRouter([
     element: <ProtectedLayout />,
     children: [
       {
-        path: "/",
         element: (
-          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA]}>
+          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA]} loginPath="/masuk-warga">
             <ResidentLayout />
           </RoleGuard>
         ),
         children: [
-          { index: true, element: <Loadable Component={Pages.Home} /> },
+          {
+            index: true, element: (
+              <>
+                <RootRedirect />
+                <Loadable Component={Pages.Home} />
+              </>
+            )
+          },
           { path: "profile", element: <Loadable Component={Pages.Profile} /> },
           { path: "quiz/:id", element: <Loadable Component={Pages.Quiz} /> },
           {
