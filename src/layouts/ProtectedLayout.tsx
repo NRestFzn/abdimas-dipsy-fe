@@ -1,19 +1,17 @@
 import { useEffect } from "react";
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { Loader2 } from "lucide-react";
 
 export default function ProtectedLayout() {
   const token = localStorage.getItem("authToken");
   const { user, isLoadingUser, logout } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "authToken" && !event.newValue) {
         logout();
-        navigate("/masuk");
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -33,10 +31,6 @@ export default function ProtectedLayout() {
         <span className="ml-2 text-gray-600 font-medium">Memuat...</span>
       </div>
     );
-  }
-
-  if (!user || !token) {
-    return <Navigate to="/masuk" state={{ from: location }} replace />;
   }
 
   return <Outlet />;

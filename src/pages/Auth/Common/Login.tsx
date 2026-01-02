@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Form, Input, Button, Card, Alert, Typography } from "antd";
 import { Mail, Lock } from "lucide-react"; // Icon modern
-import { useAuth } from "../../context/AuthContext";
-import { getErrorMessage } from "../../utils/getErrorMessage";
-import { ROLE_ID } from "../../constants";
-import type { LoginPayload } from "../../types/AuthTypes/authTypes";
+import { useAuth } from "../../../context/AuthContext";
+import { getErrorMessage } from "../../../utils/getErrorMessage";
+import { ROLE_ID } from "../../../constants";
+import type { LoginPayload } from "../../../types/AuthTypes/authTypes";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -24,9 +24,7 @@ export default function Login() {
 
       const userRoleId = response?.data?.RoleId;
 
-      if (userRoleId === ROLE_ID.WARGA) {
-        navigate("/");
-      } else if (userRoleId === ROLE_ID.ADMIN_DESA) {
+      if (userRoleId === ROLE_ID.ADMIN_DESA) {
         navigate("/admin/responden");
       } else if (userRoleId === ROLE_ID.ADMIN_MEDIS) {
         navigate("/admin-medis/responden");

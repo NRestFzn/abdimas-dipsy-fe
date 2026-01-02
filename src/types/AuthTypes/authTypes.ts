@@ -21,33 +21,39 @@ export interface UserMeResponse {
 }
 
 export interface AuthResponse {
-    uid: string;
-    fullname: string;
-    email: string;
-    role?: string;
-    RoleId?: string;
-    accessToken?: string;
+  uid: string;
+  fullname: string;
+  email: string;
+  RoleId?: string;
+  accessToken?: string;
+  expiresAt?: string;
+  expiresIn?: number
 }
 
 export interface LoginPayload {
-    email: string;
-    RoleId?: string
-    password: string;
+  email: string;
+  RoleId?: string
+  password: string;
+}
+
+export interface LoginResidentPayload {
+  nik: string,
+  password: string
 }
 
 export interface RegisterPayload {
-    fullname: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    gender: "m" | "f";
-    profession: string;
-    birthDate: string;
-    MarriageStatusId: string;
-    RukunWargaId: string;
-    RukunTetanggaId: string;
-    EducationId: string;
-    SalaryRangeId: string;
-    nik: string;
-    phoneNumber: number;
+  fullname: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  gender: "m" | "f";
+  profession: string;
+  birthDate: string;
+  MarriageStatusId: string;
+  RukunWargaId: string;
+  RukunTetanggaId: string;
+  EducationId: string;
+  SalaryRangeId: string;
+  nik: string;
+  phoneNumber: number;
 }
