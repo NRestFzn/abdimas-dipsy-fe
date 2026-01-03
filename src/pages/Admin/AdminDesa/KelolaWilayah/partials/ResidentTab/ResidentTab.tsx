@@ -125,7 +125,7 @@ export default function ResidentTab() {
 
 
     const getRwById = (id: string) => {
-        const rw = rwList?.find((rw) => rw.id === id);
+        const rw = rwList?.data?.find((rw) => rw.id === id);
         return rw?.name || "-"
     }
 
@@ -145,7 +145,7 @@ export default function ResidentTab() {
                                 setFilterRW(val);
                                 handleFilterChange();
                             }}
-                            options={rwList?.map((rw) => ({ label: `RW ${rw.name}`, value: rw.id }))}
+                            options={rwList?.data?.map((rw) => ({ label: `RW ${rw.name}`, value: rw.id }))}
                             loading={loadingRW}
                         />
 
