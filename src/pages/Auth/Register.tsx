@@ -53,7 +53,7 @@ export default function Register() {
   const filteredRTList = useMemo(() => {
     if (!selectedRW || !rukunTetangga) return [];
 
-    return rukunTetangga?.filter((rt: any) => rt.RukunWargaId === selectedRW);
+    return rukunTetangga?.data?.filter((rt: any) => rt.RukunWargaId === selectedRW);
   }, [selectedRW, rukunTetangga]);
 
   const onAccountFinish = () => {
