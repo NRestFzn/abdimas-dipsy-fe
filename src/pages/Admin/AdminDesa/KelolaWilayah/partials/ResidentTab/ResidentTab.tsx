@@ -158,7 +158,7 @@ export default function ResidentTab() {
                                 setFilterRT(val);
                                 handleFilterChange();
                             }}
-                            options={rtList?.map((rt) => ({ label: `RT ${rt.name} dari RW ${getRwById(rt.RukunWargaId)}`, value: rt.id }))}
+                            options={rtList?.data?.map((rt) => ({ label: `RT ${rt.name} dari RW ${getRwById(rt.RukunWargaId)}`, value: rt.id }))}
                             loading={loadingRT}
                         />
                     </div>

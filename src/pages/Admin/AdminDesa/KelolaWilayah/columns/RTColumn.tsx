@@ -1,20 +1,20 @@
 import { Button, Tooltip } from "antd";
 import { Trash2 } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
-import type { RukunTetangga } from "../../../../../types/adminDesaService";
+import type { RukunTetanggaWithCount } from "../../../../../types/masterDataTypes";
 
 interface RTColumnProps {
-    pagination: { current: number; pageSize: number };
-    onDelete: (record: RukunTetangga) => void;
+    pagination: { page: number; pageSize: number };
+    onDelete: (record: RukunTetanggaWithCount) => void;
 }
 
-export const getRTColumns = ({ pagination, onDelete }: RTColumnProps): ColumnsType<RukunTetangga> => [
+export const getRTColumns = ({ pagination, onDelete }: RTColumnProps): ColumnsType<RukunTetanggaWithCount> => [
     {
         title: 'No',
         key: 'index',
         width: 70,
         align: 'center',
-        render: (_, __, index) => (pagination?.current - 1) * pagination?.pageSize + index + 1,
+        render: (_, __, index) => (pagination?.page - 1) * pagination?.pageSize + index + 1,
     },
     {
         title: 'Nama RT',

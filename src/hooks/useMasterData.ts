@@ -1,11 +1,12 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { masterDataService } from "../service/masterDataService";
-import type { GetParams } from "../types/adminDesaService";
+import type { GetRTParams, GetRWParams } from "../types/masterDataTypes";
 
 export const useMasterData = () => {
 	const queryClient = useQueryClient();
 
-	const rukunWarga = (params?: GetParams) => {
+	// Rukun Warga Hooks and Mutation
+	const rukunWarga = (params?: GetRWParams) => {
 		return useQuery({
 			queryKey: ["rukunWarga", params],
 			queryFn: () => masterDataService.getRukunWarga(params),
@@ -26,6 +27,35 @@ export const useMasterData = () => {
 			queryClient.invalidateQueries({ queryKey: ["rukunWarga"] });
 		},
 	});
+	// End Rukun Warga Hooks and Mutation
+
+	// Rukun Tetangga Hooks and Mutation
+	const rukunTetangga = (params?: GetRTParams) => {
+		return useQuery({
+			queryKey: ["rukunTetangga", params],
+			queryFn: () => masterDataService.getRukunTetangga(params),
+			placeholderData: keepPreviousData,
+			enabled: !!params?.RukunWargaId
+		});
+	}
+
+	const createRTMutation = useMutation({
+		mutationFn: (vals: { count: number, rwId: string }) =>
+			masterDataService.createRukunTetangga(vals.count, vals.rwId),
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({
+				queryKey: ["rukunTetangga", { RukunWargaId: variables.rwId }]
+			});
+		},
+	});
+
+	const deleteRTMutation = useMutation({
+		mutationFn: (id: string) => masterDataService.deleteRukunTetangga(id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["rukunTetangga"] });
+		},
+	});
+	// END Rukun Tetangga Hooks and Mutation
 
 	const educations = useQuery({
 		queryKey: ["educations"],
@@ -36,13 +66,6 @@ export const useMasterData = () => {
 		queryKey: ["marriageStatuses"],
 		queryFn: masterDataService.getMarriageStatuses,
 	});
-
-	const rukunTetangga = (params?: GetParams) => {
-		return useQuery({
-			queryKey: ["rukunTetangga", params],
-			queryFn: () => masterDataService.getRukunTetangga(params),
-		});
-	}
 
 	const salaryRanges = useQuery({
 		queryKey: ["salaryRanges"],
@@ -76,9 +99,12 @@ export const useMasterData = () => {
 		createRWMutation,
 		deleteRWMutation,
 
+		rukunTetangga,
+		createRTMutation,
+		deleteRTMutation,
+
 		educations,
 		marriageStatuses,
-		rukunTetangga,
 		salaryRanges,
 
 		infiniteRukunWarga,

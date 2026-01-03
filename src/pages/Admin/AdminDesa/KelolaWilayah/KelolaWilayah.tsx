@@ -1,6 +1,6 @@
 import { Card, Tabs } from "antd";
 import RWTab from "./partials/RwTab/RWTab";
-import RTTab from "./partials/RTTab";
+import RTTab from "./partials/RTTab/RTTab";
 import ResidentTab from "./partials/ResidentTab/ResidentTab";
 
 export default function KelolaWilayah() {

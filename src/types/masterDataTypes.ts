@@ -46,3 +46,15 @@ export interface GetRWParams {
     name?: string;
     order?: string;
 }
+
+export interface RukunTetanggaWithCount extends RukunTetangga {
+    userCount: number;
+}
+
+export interface GetRTParams {
+    page?: number;
+    pageSize?: number;
+    name?: string;
+    order?: string;
+    RukunWargaId?: string;
+}
