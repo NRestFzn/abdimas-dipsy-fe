@@ -9,16 +9,18 @@ export interface UserDetail {
     gender: string,
     birthDate: string
     UserId: string
+
     RukunWargaId: string
     RukunTetanggaId: string
     MarriageStatusId: string
     EducationId: string
     SalaryRangeId: string
-    rukunWarga: RukunWarga
-    rukunTetangga: RukunTetangga
-    marriageStatus: MarriageStatus
-    education: Education
-    salaryRange: SalaryRange
+
+    rukunWarga?: RukunWarga
+    rukunTetangga?: RukunTetangga
+    marriageStatus?: MarriageStatus
+    education?: Education
+    salaryRange?: SalaryRange
     createdAt: string
     updatedAt: string
 }
@@ -32,4 +34,32 @@ export interface UpdateProfileResidentPayload {
     SalaryRangeId: string;
     newPassword?: string;
     confirmNewPassword?: string;
+}
+
+export interface ResidentData extends UserMe {
+    userDetail: UserDetail;
+}
+
+export interface GetResidentsParams {
+    page?: number;
+    pageSize?: number;
+    fullname?: string;
+    nik?: string;
+    RukunWargaId?: string;
+    RukunTetanggaId?: string;
+    order?: string;
+}
+
+export interface CreateResidentPayload {
+    fullname: string;
+    email: string;
+    gender: "m" | "f";
+    profession: string;
+    birthDate: string;
+    MarriageStatusId: string;
+    RukunWargaId: string;
+    RukunTetanggaId: string;
+    EducationId: string;
+    SalaryRangeId: string;
+    nik: string;
 }

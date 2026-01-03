@@ -6,78 +6,90 @@ import {
     Select,
     Card,
     message,
+    Pagination,
+    Spin,
 } from "antd";
 import { Plus } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { adminDesaService } from "../../../../../../service/adminDesaService";
-import { getResidentColumns, type ResidentData } from "../../columns/ResidentColumn";
+import { getResidentColumns } from "../../columns/ResidentColumn";
 import CreateResidentModal from "../CreateResidentModal";
 import EditResidentModal from "../UpdateResidentModal";
 import { useMasterData } from "../../../../../../hooks/useMasterData";
 import { SearchFilter } from "./partials/SearchFilter";
 import type { SorterResult } from "antd/es/table/interface";
+import { useResident } from "../../../../../../hooks/Admin/AdminDesa/useResident";
+import type { ResidentData } from "../../../../../../types/Resident/residentType";
+import { useInfiniteSelectOptions } from "../../../../../../hooks/Common/useInfiniteSelectOptions";
 
 export default function ResidentTab() {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
-    const { rukunWarga, rukunTetangga } = useMasterData();
+    const { infiniteRukunWarga, infiniteRukunTetangga } = useMasterData();
+    const {
+        getResidents,
+        deleteResidentMutation
+    } = useResident();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedResidentId, setSelectedResidentId] = useState<string | null>(null);
+
     const [activeSearch, setActiveSearch] = useState({ term: "", type: "fullname" });
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
     const [filters, setFilters] = useState({
         order: '[["fullname", "asc"]]'
     })
-
     const [filterRW, setFilterRW] = useState<string | null>(null);
     const [filterRT, setFilterRT] = useState<string | null>(null);
 
-    const { data: rwList, isLoading: loadingRW } = rukunWarga({
-        order: '[["name", "asc"]]'
+    const rwQuery = infiniteRukunWarga(20);
+    const {
+        options: rwOptions,
+        onPopupScroll: onRWScroll,
+        isLoading: loadingRW,
+        isFetchingNextPage: fetchingNextRW
+    } = useInfiniteSelectOptions({
+        queryResult: rwQuery,
+        labelKey: (item: any) => `RW ${item.name}`,
+        valueKey: 'id'
     });
 
-    const { data: rtList, isLoading: loadingRT } = rukunTetangga({
-        order: '[["name", "asc"]]'
+    const rtQuery = infiniteRukunTetangga(20, filterRW);
+    const {
+        options: rtOptions,
+        onPopupScroll: onRTScroll,
+        isLoading: loadingRT,
+        isFetchingNextPage: fetchingNextRT
+    } = useInfiniteSelectOptions({
+        queryResult: rtQuery,
+        labelKey: (item: any) => `RT ${item.name}`,
+        valueKey: 'id'
     });
 
-    const { data: residentsData, isLoading } = useQuery({
-        queryKey: ["residents", pagination.current, pagination.pageSize, activeSearch, filterRW, filterRT],
-        queryFn: () => {
-            const params: any = {
-                page: pagination.current,
-                pageSize: pagination.pageSize,
-                RukunWargaId: filterRW || undefined,
-                RukunTetanggaId: filterRT || undefined,
-                order: filters.order
-            };
-
-            if (activeSearch.term) {
-                if (activeSearch.type === "fullname") {
-                    params.fullname = activeSearch.term;
-                } else if (activeSearch.type === "nik") {
-                    params.nik = activeSearch.term;
-                }
-            }
-
-            return adminDesaService.getAllResidents(params);
-        },
-        placeholderData: (previousData) => previousData,
+    const {
+        data: residentsResponse,
+        isLoading: isLoadingResidents,
+        isFetching: isFetchingResidents
+    } = getResidents({
+        page: pagination.current,
+        pageSize: pagination.pageSize,
+        RukunWargaId: filterRW || undefined,
+        RukunTetanggaId: filterRT || undefined,
+        order: filters.order,
+        fullname: activeSearch.type === "fullname" ? activeSearch.term : undefined,
+        nik: activeSearch.type === "nik" ? activeSearch.term : undefined,
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: adminDesaService.deleteResident,
-        onSuccess: () => {
-            message.success("Warga berhasil dihapus");
-            queryClient.invalidateQueries({ queryKey: ["residents"] });
-        },
-        onError: () => {
-            message.error("Gagal menghapus warga");
-        }
-    });
+    const handleRWChange = (val: string | null) => {
+        setFilterRW(val);
+        setFilterRT(null);
+        setPagination(prev => ({ ...prev, current: 1 }));
+    };
+
+    const handleRTChange = (val: string | null) => {
+        setFilterRT(val);
+        setPagination(prev => ({ ...prev, current: 1 }));
+    };
 
     const handleEdit = (id: string) => {
         setSelectedResidentId(id);
@@ -85,11 +97,15 @@ export default function ResidentTab() {
     };
 
     const handleDelete = (id: string) => {
-        deleteMutation.mutate(id);
-    };
-
-    const handleFilterChange = () => {
-        setPagination(prev => ({ ...prev, current: 1 }));
+        message.loading({ content: "Menghapus warga...", key: "deleteResident" });
+        deleteResidentMutation.mutate(id, {
+            onSuccess: () => {
+                message.success({ content: "Warga berhasil dihapus", key: "deleteResident" });
+            },
+            onError: () => {
+                message.error({ content: "Gagal menghapus warga", key: "deleteResident" });
+            }
+        });
     };
 
     const handleTableChange = (
@@ -106,8 +122,19 @@ export default function ResidentTab() {
             } else {
                 setFilters((prev) => ({ ...prev, order: '[["fullname", "desc"]]' }));
             }
+
+            setPagination(prev => ({ ...prev, current: 1 }));
         }
     };
+
+    const onSearch = (term: string, type: any) => {
+        setActiveSearch({ term, type });
+        setPagination(prev => ({ ...prev, current: 1 }));
+    };
+
+    const dataSource = residentsResponse?.data || [];
+    const totalData = residentsResponse?.meta?.pagination?.total || 0;
+    const isTableLoading = isLoadingResidents || isFetchingResidents || deleteResidentMutation.isPending;
 
     const columns = getResidentColumns({
         pagination,
@@ -117,17 +144,6 @@ export default function ResidentTab() {
         onEdit: handleEdit,
         onDelete: handleDelete
     });
-
-    const onSearch = (term: string, type: any) => {
-        setActiveSearch({ term, type });
-        if (pagination.current !== 1) handleFilterChange();
-    };
-
-
-    const getRwById = (id: string) => {
-        const rw = rwList?.data?.find((rw) => rw.id === id);
-        return rw?.name || "-"
-    }
 
     return (
         <div className="space-y-4">
@@ -141,25 +157,24 @@ export default function ResidentTab() {
                             className="w-full md:w-40"
                             allowClear
                             value={filterRW}
-                            onChange={(val) => {
-                                setFilterRW(val);
-                                handleFilterChange();
-                            }}
-                            options={rwList?.data?.map((rw) => ({ label: `RW ${rw.name}`, value: rw.id }))}
+                            onChange={handleRWChange}
+                            options={rwOptions}
                             loading={loadingRW}
+                            onPopupScroll={onRWScroll}
+                            notFoundContent={fetchingNextRW ? <Spin size="small" /> : null}
                         />
 
                         <Select
-                            placeholder="Filter RT"
+                            placeholder={filterRW ? "Filter RT" : "Pilih RW Dulu"}
                             className="w-full md:w-40"
                             allowClear
                             value={filterRT}
-                            onChange={(val) => {
-                                setFilterRT(val);
-                                handleFilterChange();
-                            }}
-                            options={rtList?.data?.map((rt) => ({ label: `RT ${rt.name} dari RW ${getRwById(rt.RukunWargaId)}`, value: rt.id }))}
+                            onChange={handleRTChange}
+                            options={rtOptions}
+                            disabled={!filterRW}
                             loading={loadingRT}
+                            onPopupScroll={onRTScroll}
+                            notFoundContent={fetchingNextRT ? <Spin size="small" /> : null}
                         />
                     </div>
 
@@ -176,19 +191,24 @@ export default function ResidentTab() {
 
             <Table<ResidentData>
                 columns={columns}
-                dataSource={(residentsData?.data || []) as ResidentData[]}
+                dataSource={dataSource}
                 rowKey="id"
-                loading={isLoading}
-                pagination={{
-                    current: pagination.current,
-                    pageSize: pagination.pageSize,
-                    total: residentsData?.total || residentsData?.data?.length || 0,
-                    showTotal: (total, range) => `${range[0]}-${range[1]} dari ${total} Warga`,
-                    onChange: (page, size) => setPagination({ current: page, pageSize: size })
-                }}
+                loading={isTableLoading}
+                pagination={false}
                 onChange={handleTableChange}
                 scroll={{ x: 1000 }}
             />
+
+            <div className="flex justify-end py-4">
+                <Pagination
+                    current={pagination.current}
+                    pageSize={pagination.pageSize}
+                    total={totalData}
+                    showTotal={(total, range) => `${range[0]}-${range[1]} dari ${total} Warga`}
+                    onChange={(page, size) => setPagination({ current: page, pageSize: size })}
+                    showSizeChanger
+                />
+            </div>
 
             <CreateResidentModal
                 open={isModalOpen}
