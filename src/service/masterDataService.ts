@@ -1,6 +1,6 @@
 import type { Education, GetParams, MarriageStatus, MasterDataResponse } from "../types/adminDesaService";
 import type { ResponseData } from "../types/commons";
-import type { RukunWargaWithCount } from "../types/masterDataTypes";
+import type { GetRTParams, GetRWParams, RukunTetanggaWithCount, RukunWargaWithCount } from "../types/masterDataTypes";
 import { api } from "./api";
 
 export interface MasterData {
@@ -20,9 +20,10 @@ export interface RukunTetangga extends MasterData {
 }
 
 export type RukunWargaResponse = ResponseData<RukunWargaWithCount[]>;
+export type RukunTetanggaResponse = ResponseData<RukunTetanggaWithCount[]>;
 
 export const masterDataService = {
-	getRukunWarga: async (params?: GetParams) => {
+	getRukunWarga: async (params?: GetRWParams) => {
 		const response = await api.get<RukunWargaResponse>("/v1/rukun-warga", { params });
 		return response.data;
 	},
@@ -37,6 +38,21 @@ export const masterDataService = {
 		return response.data;
 	},
 
+	getRukunTetangga: async (params?: GetRTParams) => {
+		const response = await api.get<RukunTetanggaResponse>("/v1/rukun-tetangga", { params });
+		return response.data;
+	},
+
+	createRukunTetangga: async (count: number, rwId: string) => {
+		const response = await api.post("/v1/rukun-tetangga", { count, RukunWargaId: rwId });
+		return response.data;
+	},
+
+	deleteRukunTetangga: async (id: string) => {
+		const response = await api.delete(`/v1/rukun-tetangga/${id}`);
+		return response.data;
+	},
+
 	getEducations: async (): Promise<MasterData[]> => {
 		const response = await api.get("/v1/education");
 		return response.data.data;
@@ -44,11 +60,6 @@ export const masterDataService = {
 
 	getMarriageStatuses: async (): Promise<MasterData[]> => {
 		const response = await api.get("/v1/marriage-status");
-		return response.data.data;
-	},
-
-	getRukunTetangga: async (params?: GetParams): Promise<RukunTetangga[]> => {
-		const response = await api.get("/v1/rukun-tetangga", { params });
 		return response.data.data;
 	},
 
