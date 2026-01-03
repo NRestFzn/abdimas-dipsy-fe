@@ -1,10 +1,18 @@
+export interface PaginationMeta {
+    page: number,
+    pageSize: number,
+    pageCount: number,
+    total: number
+}
+
 export interface Metadata {
-    userCount: number
+    pagination: PaginationMeta
+    userCount?: number
 }
 
 export interface ResponseData<T> {
     statusCode: number;
     message: string;
     data?: T
-    metadata?: Metadata
+    meta?: Metadata
 }

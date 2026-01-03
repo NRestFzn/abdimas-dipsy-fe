@@ -76,6 +76,7 @@ export default function Profile() {
 
   const profile = response.data;
   const profilePictureUrl = getImageUrl(profile.profilePicture);
+  const userDetail = profile.userDetail
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -119,10 +120,10 @@ export default function Profile() {
 
                 <div className="absolute bottom-1 right-1 bg-white p-1.5 rounded-full shadow-md z-10 pointer-events-none">
                   <Tag
-                    color={profile.gender === "m" ? "blue" : "magenta"}
+                    color={userDetail.gender === "m" ? "blue" : "magenta"}
                     className="m-0 px-2 rounded-full font-bold flex items-center gap-1"
                   >
-                    {profile.gender === "m" ? (
+                    {userDetail.gender === "m" ? (
                       <BsGenderMale />
                     ) : (
                       <BsGenderFemale />
@@ -176,7 +177,7 @@ export default function Profile() {
               </div>
             }
             className="shadow-sm border-gray-200 rounded-2xl"
-            headStyle={{ borderBottom: "1px solid #f0f0f0" }}
+            styles={{ header: { borderBottom: "1px solid #f0f0f0" } }}
           >
             <Descriptions
               column={1}
@@ -185,13 +186,13 @@ export default function Profile() {
               contentStyle={{ fontWeight: 500, color: "#374151" }}
             >
               <Descriptions.Item label="Jenis Kelamin">
-                {profile.gender === "m" ? "Laki-Laki" : "Perempuan"}
+                {userDetail.gender === "m" ? "Laki-Laki" : "Perempuan"}
               </Descriptions.Item>
               <Descriptions.Item label="Tanggal Lahir">
-                {dayjs(profile.birthDate).locale("id").format("DD MMMM YYYY")}
+                {dayjs(userDetail.birthDate).locale("id").format("DD MMMM YYYY")}
               </Descriptions.Item>
               <Descriptions.Item label="Nomor Telepon">
-                {profile.userDetail.phoneNumber}
+                {profile.userDetail.phoneNumber || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Status Pernikahan">
                 {profile.userDetail.marriageStatus.name}
@@ -207,7 +208,7 @@ export default function Profile() {
               </div>
             }
             className="shadow-sm border-gray-200 rounded-2xl"
-            headStyle={{ borderBottom: "1px solid #f0f0f0" }}
+            styles={{ header: { borderBottom: "1px solid #f0f0f0" } }}
           >
             <Descriptions
               column={1}

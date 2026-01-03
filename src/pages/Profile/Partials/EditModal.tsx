@@ -1,15 +1,15 @@
 import {useEffect, useState} from 'react';
 import {Modal, Form, Input, Button, Alert, Row, Col, Select} from 'antd';
-import {Info} from 'lucide-react'; // Import icon Info
-import type {ResidentProfile} from '../../../service/residentService';
+import {Info} from 'lucide-react';
 import {useUpdateProfile} from '../../../hooks/useResident';
 import {getErrorMessage} from '../../../utils/getErrorMessage';
 import {useMasterData} from '../../../hooks/useMasterData';
+import type { ResidentMe } from '../../../types/Resident/residentType';
 
 interface EditProfileModalProps {
   open: boolean;
   onClose: () => void;
-  initialData: ResidentProfile;
+  initialData: ResidentMe;
 }
 
 export default function EditProfileModal({
@@ -28,8 +28,6 @@ export default function EditProfileModal({
     if (open && initialData) {
       form.setFieldsValue({
         phoneNumber: initialData.userDetail.phoneNumber,
-        profession: initialData.userDetail.profession,
-        EducationId: initialData.userDetail.education.id,
         SalaryRangeId: initialData.userDetail.salaryRange.id,
       });
     }
@@ -38,8 +36,6 @@ export default function EditProfileModal({
   const handleSubmit = async (values: any) => {
     const payload = {
       phoneNumber: values.phoneNumber,
-      profession: initialData.userDetail.profession,
-      EducationId: initialData.userDetail.education.id,
       SalaryRangeId: values.SalaryRangeId,
       ...(values.newPassword
         ? {
@@ -71,7 +67,7 @@ export default function EditProfileModal({
       width={600}
     >
       <Alert
-        message="Perbarui Data Diri"
+        title="Perbarui Data Diri"
         description="Pastikan data pekerjaan dan pendidikan yang Anda masukkan adalah data terbaru."
         type="info"
         showIcon
@@ -83,7 +79,7 @@ export default function EditProfileModal({
 
       {errorMsg && (
         <Alert
-          message="Gagal Menyimpan"
+          title="Gagal Menyimpan"
           description={errorMsg}
           type="error"
           showIcon

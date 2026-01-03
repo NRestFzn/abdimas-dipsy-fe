@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { residentService, type UpdateProfilePayload } from "../service/residentService";
+import { residentService } from "../service/residentService";
 import { message } from "antd";
+import type { UpdateProfileResidentPayload } from "../types/Resident/residentType";
 
 export const useResident = () => {
   return useQuery({
@@ -15,7 +16,7 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: UpdateProfilePayload) => residentService.updateProfile(payload),
+    mutationFn: (payload: UpdateProfileResidentPayload) => residentService.updateProfile(payload),
     onSuccess: () => {
       message.success("Profil berhasil diperbarui!");
       queryClient.invalidateQueries({ queryKey: ["resident", "me"] });

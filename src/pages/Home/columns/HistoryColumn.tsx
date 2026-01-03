@@ -1,19 +1,19 @@
 import type { ColumnsType } from "antd/es/table";
-import type { HistoryData } from "../../../types/wargaType";
 import { Button } from "antd";
 import dayjs from "dayjs"
+import type { HistoryTableData } from "../Home";
 
 interface HistoryColumnsProps {
-    pagination: { current: number; pageSize: number }
+    pagination: { page: number; pageSize: number }
     onSee: (id: string) => void
 }
 
-export const getHistoryColumn = ({ onSee, pagination }: HistoryColumnsProps): ColumnsType<HistoryData> => [
+export const getHistoryColumn = ({ onSee, pagination }: HistoryColumnsProps): ColumnsType<HistoryTableData> => [
     {
         title: "No",
         width: 60,
         align: "center",
-        render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+        render: (_, __, index) => (pagination.page - 1) * pagination.pageSize + index + 1,
     },
     {
         title: "Judul Kuisioner",
