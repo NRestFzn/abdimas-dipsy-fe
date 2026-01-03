@@ -127,8 +127,8 @@ export default function Home() {
                   title={quiz.title}
                   description={quiz.description}
                   onStart={handleStartQuiz}
-                  disabled={quiz.isAvailable}
-                  availableAt={quiz.availableAt}
+                  disabled={quiz?.isAvailable as boolean}
+                  availableAt={quiz?.availableAt as string}
                   onRefresh={refetch}
                 />
               ))}

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { questionnaireService } from "../../service/Questionnaire/questionnaireService";
-import type { Questionnaire } from "../../types/Questionnaire/questionnaireTypes";
+import type { GetQuestionnaireParams, Questionnaire } from "../../types/Questionnaire/questionnaireTypes";
 
 export const useQuestionnaire = () => {
   const query = useQuery({
@@ -17,3 +17,13 @@ export const useQuestionnaire = () => {
     isFetching: query.isFetching,
   };
 };
+
+export const useAdminQuestionnaire = (params: GetQuestionnaireParams) => {
+  const query = useQuery({
+    queryKey: ["questionnaires", params],
+    queryFn: () => questionnaireService.getAllQuestionnaire(params),
+    staleTime: 1000 * 60 * 5,
+  })
+
+  return query
+}

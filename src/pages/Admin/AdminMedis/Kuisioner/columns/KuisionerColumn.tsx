@@ -1,7 +1,7 @@
 import { Button, Dropdown, Modal, Tag, type MenuProps } from "antd";
 import { CheckCircle, Clock, Edit, Eye, MoreHorizontal, Settings, Trash2, XCircle } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
-import type { Questionnaire } from "../../../../../types/adminMedisService";
+import type { Questionnaire } from "../../../../../types/Questionnaire/questionnaireTypes";
 
 interface KuisionerColumnProps {
   pagination: { current: number; pageSize: number };
@@ -107,6 +107,7 @@ export const getKuisionerColumns = ({
       title: "Dibuat",
       dataIndex: "createdAt",
       key: "createdAt",
+      sorter: true,
       width: 150,
       render: (date) =>
         new Date(date).toLocaleDateString("id-ID", {
