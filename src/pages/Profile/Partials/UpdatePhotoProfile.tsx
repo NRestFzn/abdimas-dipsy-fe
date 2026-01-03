@@ -79,7 +79,7 @@ export default function UpdatePhotoModal({ open, onClose, currentPhotoUrl, fulln
                     type="primary" 
                     onClick={handleSave}
                     loading={updatePictureMutation.isPending}
-                    disabled={!fileToUpload} // Disable jika belum pilih foto baru
+                    disabled={!fileToUpload}
                     className="bg-[#70B748] hover:bg-[#5a9639]"
                 >
                     Simpan Foto
