@@ -85,12 +85,31 @@ export const useMasterData = () => {
 			getNextPageParam: (lastPage: any, allPages) => {
 				const dataArray = Array.isArray(lastPage) ? lastPage : lastPage?.data || [];
 
-				if (dataArray.length === pageSize) {
-					return allPages.length + 1;
-				}
-				return undefined;
+				if (dataArray.length < pageSize) return undefined;
+				return allPages.length + 1;
 			},
 			initialPageParam: 1,
+		});
+	}
+
+	const infiniteRukunTetangga = (pageSize = 20, rwId?: string | null) => {
+		return useInfiniteQuery({
+			queryKey: ["rukunTetangga", "infinite", rwId],
+			queryFn: async ({ pageParam = 1 }) => {
+				return masterDataService.getRukunTetangga({
+					page: pageParam,
+					pageSize: pageSize,
+					order: '[["name", "asc"]]',
+					RukunWargaId: rwId || undefined
+				});
+			},
+			getNextPageParam: (lastPage: any, allPages) => {
+				const dataArray = Array.isArray(lastPage) ? lastPage : lastPage?.data || [];
+				if (dataArray.length < pageSize) return undefined;
+				return allPages.length + 1;
+			},
+			initialPageParam: 1,
+			enabled: !!rwId,
 		});
 	}
 
@@ -108,5 +127,6 @@ export const useMasterData = () => {
 		salaryRanges,
 
 		infiniteRukunWarga,
+		infiniteRukunTetangga
 	};
 };

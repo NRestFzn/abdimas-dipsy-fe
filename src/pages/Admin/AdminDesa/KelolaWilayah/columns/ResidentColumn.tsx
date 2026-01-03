@@ -1,18 +1,8 @@
 import { Button, Dropdown, Modal, Tag, type MenuProps } from "antd";
 import { Edit, Eye, MoreVertical, Trash2 } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
+import type { ResidentData } from "../../../../../types/Resident/residentType";
 
-export interface ResidentData {
-    id: string;
-    fullname: string;
-    email: string;
-    gender: "m" | "f";
-    birthDate: string;
-    userDetail?: {
-        nik: string;
-        profession: string;
-    };
-}
 
 interface ResidentColumnProps {
     pagination: { current: number; pageSize: number };

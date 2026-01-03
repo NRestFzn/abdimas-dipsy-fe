@@ -28,7 +28,7 @@ export default function EditProfileModal({
     if (open && initialData) {
       form.setFieldsValue({
         phoneNumber: initialData.userDetail.phoneNumber,
-        SalaryRangeId: initialData.userDetail.salaryRange.id,
+        SalaryRangeId: initialData.userDetail?.salaryRange?.id,
       });
     }
   }, [open, initialData, form]);

@@ -195,7 +195,7 @@ export default function Profile() {
                 {profile.userDetail.phoneNumber || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Status Pernikahan">
-                {profile.userDetail.marriageStatus.name}
+                {profile.userDetail?.marriageStatus?.name}
               </Descriptions.Item>
             </Descriptions>
           </Card>
@@ -217,19 +217,19 @@ export default function Profile() {
               contentStyle={{ fontWeight: 500, color: "#374151" }}
             >
               <Descriptions.Item label="Wilayah Tinggal">
-                RW {String(profile.userDetail.rukunWarga.name).padStart(2, "0")}{" "}
+                RW {String(profile.userDetail?.rukunWarga?.name).padStart(2, "0")}{" "}
                 / RT{" "}
-                {String(profile.userDetail.rukunTetangga.name).padStart(2, "0")}
+                {String(profile.userDetail?.rukunTetangga?.name).padStart(2, "0")}
               </Descriptions.Item>
               <Descriptions.Item label="Pendidikan Terakhir">
-                {profile.userDetail.education.name}
+                {profile.userDetail?.education?.name}
               </Descriptions.Item>
               <Descriptions.Item label="Pekerjaan">
                 {profile.userDetail.profession}
               </Descriptions.Item>
               <Descriptions.Item label="Rentang Pendapatan">
-                {formatCurrency(profile.userDetail.salaryRange.minRange)} -{" "}
-                {formatCurrency(profile.userDetail.salaryRange.maxRange)}
+                {formatCurrency(profile.userDetail?.salaryRange?.minRange as string)} -{" "}
+                {formatCurrency(profile.userDetail?.salaryRange?.maxRange as string)}
               </Descriptions.Item>
             </Descriptions>
           </Card>

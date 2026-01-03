@@ -1,9 +1,9 @@
-import { Modal, Form, Input, Select, DatePicker, message, Row, Col } from "antd";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Modal, Form, Input, Select, DatePicker, Row, Col, Spin } from "antd";
 import { useState } from "react";
-import { masterDataService } from "../../../../../service/masterDataService";
-import { adminDesaService } from "../../../../../service/adminDesaService";
-import type { CreateResidentPayload } from "../../../../../types/adminDesaService";
+import { useMasterData } from "../../../../../hooks/useMasterData";
+import { useResident } from "../../../../../hooks/Admin/AdminDesa/useResident";
+import type { CreateResidentPayload } from "../../../../../types/Resident/residentType";
+import { useInfiniteSelectOptions } from "../../../../../hooks/Common/useInfiniteSelectOptions";
 
 interface CreateResidentModalProps {
     open: boolean;
@@ -11,50 +11,47 @@ interface CreateResidentModalProps {
 }
 
 export default function CreateResidentModal({ open, onCancel }: CreateResidentModalProps) {
-    const queryClient = useQueryClient();
+    const {
+        educations,
+        marriageStatuses,
+        salaryRanges,
+        infiniteRukunWarga,
+        infiniteRukunTetangga
+    } = useMasterData();
+
+    const { createResidentMutation } = useResident();
+
+    const { data: educationList, isLoading: loadingEdu } = educations;
+    const { data: marriageList, isLoading: loadingMarriage } = marriageStatuses;
+    const { data: salaryList, isLoading: loadingSalary } = salaryRanges;
+
     const [form] = Form.useForm();
     const [selectedRW, setSelectedRW] = useState<string | null>(null);
 
-    const { data: educationList } = useQuery({
-        queryKey: ["edu"],
-        queryFn: masterDataService.getEducationList,
-        staleTime: Infinity
-    });
-    const { data: marriageList } = useQuery({
-        queryKey: ["marriage"],
-        queryFn: masterDataService.getMarriageStatusList,
-        staleTime: Infinity
-    });
-    const { data: salaryList } = useQuery({
-        queryKey: ["salary"],
-        queryFn: masterDataService.getSalaryRangeList,
-        staleTime: Infinity
-    });
-    const { data: rwList } = useQuery({
-        queryKey: ["rw-list"],
-        queryFn: () => adminDesaService.getAllRW(),
-        staleTime: 1000 * 60 * 5
+    const rwQuery = infiniteRukunWarga(20);
+    const { options: rwOptions, onPopupScroll: onRWScroll, isLoading: loadingRW, isFetchingNextPage: fetchingNextRW } = useInfiniteSelectOptions({
+        queryResult: rwQuery,
+        labelKey: (item: any) => `RW ${item.name}`,
+        valueKey: 'id'
     });
 
-    const { data: rtList, isLoading: loadingRT } = useQuery({
-        queryKey: ["rt-list-form", selectedRW],
-        queryFn: () => selectedRW ? adminDesaService.getRT({ order: "[['createdAt', 'desc']]" }, selectedRW) : null,
-        enabled: !!selectedRW,
+    const rtQuery = infiniteRukunTetangga(20, selectedRW);
+    const { options: rtOptions, onPopupScroll: onRTScroll, isLoading: loadingRT, isFetchingNextPage: fetchingNextRT } = useInfiniteSelectOptions({
+        queryResult: rtQuery,
+        labelKey: (item: any) => `RT ${item.name}`,
+        valueKey: 'id'
     });
 
-    const createMutation = useMutation({
-        mutationFn: (payload: CreateResidentPayload) => adminDesaService.createResident(payload),
-        onSuccess: () => {
-            message.success("Warga berhasil ditambahkan");
-            queryClient.invalidateQueries({ queryKey: ["residents"] });
-            form.resetFields();
-            setSelectedRW(null);
-            onCancel();
-        },
-        onError: (err: any) => {
-            message.error(err.response?.data?.message || "Gagal menambah warga");
-        }
-    });
+    const handleRWChange = (val: string) => {
+        setSelectedRW(val);
+        form.setFieldValue("RukunTetanggaId", undefined);
+    };
+
+    const handleCancel = () => {
+        form.resetFields();
+        setSelectedRW(null);
+        onCancel();
+    };
 
     const handleCreate = (values: any) => {
         const payload: CreateResidentPayload = {
@@ -63,14 +60,16 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
             password: "password123",
             confirmPassword: "password123"
         };
-        createMutation.mutate(payload);
+
+        createResidentMutation.mutate(payload, {
+            onSuccess: () => {
+                handleCancel();
+            },
+        });
     };
 
-    const handleCancel = () => {
-        form.resetFields();
-        setSelectedRW(null);
-        onCancel();
-    };
+    const isLoading = loadingEdu || loadingMarriage || loadingSalary || loadingRW || loadingRT
+    const isPending = createResidentMutation.isPending
 
     return (
         <Modal
@@ -80,11 +79,12 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
             onOk={() => form.submit()}
             width={800}
             style={{ top: 20 }}
-            confirmLoading={createMutation.isPending}
+            confirmLoading={isLoading || isPending}
             okText="Simpan"
             cancelText="Batal"
             okButtonProps={{ className: "!bg-[#70B748] !hover:bg-[#5a9639]" }}
-            destroyOnClose
+            destroyOnHidden
+            centered
         >
             <Form form={form} layout="vertical" onFinish={handleCreate}>
                 <Row gutter={[16, 16]}>
@@ -139,21 +139,35 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
                         <Form.Item label="RW" name="RukunWargaId" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Pilih RW"
-                                onChange={(val) => {
-                                    setSelectedRW(val);
-                                    form.setFieldValue("RukunTetanggaId", undefined);
+                                onChange={handleRWChange}
+                                options={rwOptions}
+                                loading={loadingRW || isLoading}
+                                onPopupScroll={onRWScroll}
+                                notFoundContent={fetchingNextRW ? <Spin size="small" /> : null}
+                                showSearch={{
+                                    filterOption: (input, option) => {
+                                        const labelStr = String(option?.label ?? '');
+                                        return labelStr.toLowerCase().includes(input.toLowerCase());
+                                    }
                                 }}
-                                options={rwList?.data?.map((rw: any) => ({ label: `RW ${rw.name}`, value: rw.id }))}
                             />
                         </Form.Item>
                     </Col>
                     <Col xs={24} md={12}>
                         <Form.Item label="RT" name="RukunTetanggaId" rules={[{ required: true }]}>
                             <Select
-                                placeholder={loadingRT ? "Memuat RT..." : "Pilih RT"}
+                                placeholder={!selectedRW ? "Pilih RW Terlebih Dahulu" : "Pilih RT"}
                                 disabled={!selectedRW}
-                                loading={loadingRT}
-                                options={rtList?.data?.rukunTetangga?.map((rt: any) => ({ label: `RT ${rt.name}`, value: rt.id }))}
+                                loading={loadingRT || isLoading}
+                                options={rtOptions}
+                                onPopupScroll={onRTScroll}
+                                notFoundContent={fetchingNextRT ? <Spin size="small" /> : null}
+                                showSearch={{
+                                    filterOption: (input, option) => {
+                                        const labelStr = String(option?.label ?? '');
+                                        return labelStr.toLowerCase().includes(input.toLowerCase());
+                                    }
+                                }}
                             />
                         </Form.Item>
                     </Col>

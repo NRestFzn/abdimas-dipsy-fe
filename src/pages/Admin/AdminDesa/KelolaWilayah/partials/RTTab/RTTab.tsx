@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Table, Button, Select, Spin, Pagination, Empty } from "antd";
 import { Plus } from "lucide-react";
 import { getRTColumns } from "../../columns/RTColumn";
@@ -7,6 +7,7 @@ import type { SorterResult } from "antd/es/table/interface";
 import type { RukunTetanggaWithCount } from "../../../../../../types/masterDataTypes";
 import ModalCreateRt from "./Partials/ModalCreateRT";
 import ModalDeleteRt from "./Partials/ModalDeleteRT";
+import { useInfiniteSelectOptions } from "../../../../../../hooks/Common/useInfiniteSelectOptions";
 
 export default function RTTab() {
     const masterData = useMasterData()
@@ -21,23 +22,12 @@ export default function RTTab() {
         pageSize: 10,
     })
 
-    const {
-        data: rwInfiniteData,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isLoading: isLoadRwList
-    } = masterData.infiniteRukunWarga(20);
-
-    const rwOptions = useMemo(() => {
-        return rwInfiniteData?.pages.flatMap((page: any) => {
-            const dataArray = Array.isArray(page) ? page : (page.data || []);
-            return dataArray?.map((rw: any) => ({
-                label: `RW ${rw.name}`,
-                value: rw.id
-            }));
-        }) || [];
-    }, [rwInfiniteData]);
+    const rwQuery = masterData.infiniteRukunWarga(20);
+    const { options: rwOptions, onPopupScroll: onRWScroll, isLoading: loadingRW, isFetchingNextPage: fetchingNextRW } = useInfiniteSelectOptions({
+        queryResult: rwQuery,
+        labelKey: (item: any) => `RW ${item.name}`,
+        valueKey: 'id'
+    });
 
     const {
         data: rtResponse,
@@ -77,13 +67,6 @@ export default function RTTab() {
         }
     };
 
-    const handleRWPopupScroll = (e: any) => {
-        const target = e.target;
-        if (!isFetchingNextPage && target.scrollTop + target.offsetHeight >= target.scrollHeight - 10) {
-            if (hasNextPage) fetchNextPage();
-        }
-    };
-
     const columns = getRTColumns({
         pagination,
         onDelete: handleDeleteClick
@@ -107,14 +90,16 @@ export default function RTTab() {
                         onChange={handleRWSelect}
                         value={selectedRW}
                         options={rwOptions}
-                        loading={isLoadRwList || isPending}
+                        loading={loadingRW || isPending}
                         size="large"
                         showSearch={{
-                            filterOption: (input, option) =>
-                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                            filterOption: (input, option) => {
+                                const labelStr = String(option?.label ?? '');
+                                return labelStr.toLowerCase().includes(input.toLowerCase());
+                            }
                         }}
-                        onPopupScroll={handleRWPopupScroll}
-                        notFoundContent={isFetchingNextPage ? <Spin size="small" /> : null}
+                        onPopupScroll={onRWScroll}
+                        notFoundContent={fetchingNextRW ? <Spin size="small" /> : null}
                         allowClear
                     />
                 </div>
