@@ -160,7 +160,7 @@ export default function AdminProfile() {
               </div>
             }
             className="shadow-sm border-gray-200 rounded-2xl"
-            headStyle={{ borderBottom: "1px solid #f0f0f0" }}
+            styles={{ header: { borderBottom: "1px solid #f0f0f0" } }}
           >
             <Descriptions
               column={1}
@@ -173,14 +173,6 @@ export default function AdminProfile() {
               </Descriptions.Item>
 
               <Descriptions.Item label="Email">{data.email}</Descriptions.Item>
-
-              <Descriptions.Item label="Jenis Kelamin">
-                {data.gender === "m" ? "Laki-laki" : "Perempuan"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Tanggal Lahir">
-                {dayjs(data.birthDate).locale("id").format("DD MMMM YYYY")}
-              </Descriptions.Item>
             </Descriptions>
           </Card>
         </div>
