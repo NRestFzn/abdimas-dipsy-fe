@@ -10,25 +10,25 @@ import {
   message,
   InputNumber,
   Space,
+  Pagination,
 } from "antd";
 import { Plus, Search, ArrowLeft } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
 import { getKuisionerColumns } from "./columns/KuisionerColumn";
-import type {
-  CreateQuestionnairePayload,
-  Questionnaire,
-} from "../../../../types/adminMedisService";
+import type { CreateQuestionnairePayload } from "../../../../types/adminMedisService";
 import { adminMedisService } from "../../../../service/adminMedisService";
 import QuestionManager from "./Partials/QuestionManager";
 import { useNavigate } from "react-router";
+import { useAdminQuestionnaire } from "../../../../hooks/Questionnaire/useQuestionnaire";
+import type { Questionnaire } from "../../../../types/Questionnaire/questionnaireTypes";
+import type { SorterResult } from "antd/es/table/interface";
 
 const ONE_HOUR = 60;
-const ONE_DAY = 1440;       // 24 * 60
-const ONE_WEEK = 10080;     // 7 * 1440
-const ONE_MONTH = 43200;    // 30 * 1440  Notes: 30 days
-const ONE_YEAR = 525600;    // 365 * 1440
+const ONE_DAY = 1440; // 24 * 60
+const ONE_WEEK = 10080; // 7 * 1440
+const ONE_MONTH = 43200; // 30 * 1440  Notes: 30 days
+const ONE_YEAR = 525600; // 365 * 1440
 
 export default function Kuisioner() {
   const navigate = useNavigate();
@@ -36,6 +36,9 @@ export default function Kuisioner() {
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [searchText, setSearchText] = useState("");
   const [debouncedSearch] = useDebounce(searchText, 500);
+  const [filters, setFilters] = useState({
+    order: JSON.stringify([["createdAt", "desc"]]),
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -46,14 +49,15 @@ export default function Kuisioner() {
     useState<Questionnaire | null>(null);
   const [form] = Form.useForm();
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["questionnaires", pagination.current, debouncedSearch],
-    queryFn: () =>
-      adminMedisService.getAllQuestionnaires({
-        page: pagination.current,
-        pageSize: pagination.pageSize,
-        title: debouncedSearch,
-      }),
+  const {
+    data: questionnaires,
+    isLoading: loadQuestionnaires,
+    refetch,
+  } = useAdminQuestionnaire({
+    title: debouncedSearch,
+    page: pagination.current,
+    pageSize: pagination.pageSize,
+    order: filters.order,
   });
 
   const openCreateModal = () => {
@@ -64,7 +68,7 @@ export default function Kuisioner() {
       status: "draft",
       riskThreshold: 0,
       tempUnit: 1,
-      tempDuration: 0
+      tempDuration: 0,
     });
     setIsModalOpen(true);
   };
@@ -108,7 +112,8 @@ export default function Kuisioner() {
 
   const handleSave = async (values: any) => {
     setModalLoading(true);
-    const calculatedMinutes = (values.tempDuration || 0) * (values.tempUnit || 1);
+    const calculatedMinutes =
+      (values.tempDuration || 0) * (values.tempUnit || 1);
 
     try {
       if (isEditMode && editingId) {
@@ -148,7 +153,7 @@ export default function Kuisioner() {
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === "publish" ? "draft" : "publish";
     try {
-      const currentData = (data?.data || []).find((q) => q.id === id);
+      const currentData = (questionnaires?.data || []).find((q) => q.id === id);
       if (!currentData) return;
 
       await adminMedisService.updateQuestionnaire(id, {
@@ -156,7 +161,7 @@ export default function Kuisioner() {
         description: currentData.description,
         status: newStatus as "draft" | "publish",
         riskThreshold: currentData.riskThreshold as number,
-        cooldownInMinutes: currentData.cooldownInMinutes as number
+        cooldownInMinutes: currentData.cooldownInMinutes as number,
       });
 
       message.success(`Status berhasil diubah ke ${newStatus}`);
@@ -207,14 +212,38 @@ export default function Kuisioner() {
     );
   }
 
+  const handleTableChange = (
+    _: any,
+    __: any,
+    sorter: SorterResult<Questionnaire> | SorterResult<Questionnaire>[]
+  ) => {
+    if (!Array.isArray(sorter)) {
+      const { field, order } = sorter;
+      if (order) {
+        const apiOrder = order === "ascend" ? "asc" : "desc";
+        setFilters((prev) => ({
+          ...prev,
+          order: `[["${field}", "${apiOrder}"]]`,
+        }));
+      } else {
+        setFilters((prev) => ({ ...prev, order: '[["createdAt", "desc"]]' }));
+      }
+      setPagination((prev) => ({ ...prev, page: 1 }));
+    }
+  };
+
   const columns = getKuisionerColumns({
     pagination,
     onManageQuestions: handleManage,
     onEditStatus: handleToggleStatus,
     onEditData: handleOpenEdit,
     onDelete: handleDeleteQuestionnaire,
-    onPreview: (id) => navigate(`/admin-medis/kuisioner/questionnaireId=${id}/preview`),
+    onPreview: (id) =>
+      navigate(`/admin-medis/kuisioner/questionnaireId=${id}/preview`),
   });
+
+  const dataSource = questionnaires?.data;
+  const totalData = questionnaires?.meta?.pagination?.total;
 
   return (
     <div className="flex flex-col gap-6 p-6 w-full">
@@ -251,20 +280,32 @@ export default function Kuisioner() {
 
         <Table<Questionnaire>
           columns={columns}
-          dataSource={(data?.data || []) as Questionnaire[]}
+          dataSource={dataSource}
           rowKey="id"
-          loading={isLoading}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: data?.data?.length || 0,
-            onChange: (page, pageSize) =>
-              setPagination({ current: page, pageSize }),
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} Kuisioner`,
-          }}
+          loading={loadQuestionnaires}
+          onChange={handleTableChange}
           scroll={{ x: 1000 }}
+          pagination={false}
         />
+
+        <div className="flex justify-end py-4">
+          <Pagination
+            current={pagination.current}
+            pageSize={pagination.pageSize}
+            total={totalData}
+            onChange={(newPage, newPageSize) => {
+              setPagination((prev) => ({
+                ...prev,
+                current: newPage,
+                pageSize: newPageSize,
+              }));
+            }}
+            showSizeChanger={true}
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} dari ${total} Data`
+            }
+          />
+        </div>
       </Card>
 
       <Modal
@@ -292,7 +333,7 @@ export default function Kuisioner() {
             </Form.Item>
 
             <Form.Item label="Masa Tenggang" required className="flex-1">
-              <Space.Compact style={{ width: '100%' }}>
+              <Space.Compact style={{ width: "100%" }}>
                 <Form.Item
                   name="tempDuration"
                   noStyle
@@ -300,16 +341,12 @@ export default function Kuisioner() {
                 >
                   <InputNumber
                     min={0}
-                    style={{ width: 'calc(100% - 90px)' }}
+                    style={{ width: "calc(100% - 90px)" }}
                     placeholder="0"
                   />
                 </Form.Item>
 
-                <Form.Item
-                  name="tempUnit"
-                  noStyle
-                  initialValue={1}
-                >
+                <Form.Item name="tempUnit" noStyle initialValue={1}>
                   <Select style={{ width: 100 }}>
                     <Select.Option value={1}>Menit</Select.Option>
                     <Select.Option value={ONE_HOUR}>Jam</Select.Option>
@@ -319,7 +356,6 @@ export default function Kuisioner() {
                     <Select.Option value={ONE_YEAR}>Tahun</Select.Option>
                   </Select>
                 </Form.Item>
-
               </Space.Compact>
             </Form.Item>
           </div>

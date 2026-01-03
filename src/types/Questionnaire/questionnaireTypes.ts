@@ -30,10 +30,27 @@ export interface Questionnaire {
     status: string,
     riskThreshold: number,
     cooldownInMinutes: number,
-    submissions: Submission[];
-    isAvailable: boolean;
-    availableAt: string | null;
-    latestSubmission: string | null;
-    createdAt: string,
-    updatedAt: string,
+
+    submissions?: Submission[];
+    isAvailable?: boolean;
+    availableAt?: string | null;
+    latestSubmission?: string | null;
+    createdAt?: string,
+    updatedAt?: string,
+}
+
+export interface QuestionnairePayload {
+  title: string;
+  description: string;
+  status: "draft" | "publish";
+  riskThreshold: number;
+  cooldownInMinutes: number;
+}
+
+export interface GetQuestionnaireParams {
+    title?: string;
+    status?: string;
+    page?: number;
+    pageSize?: number;
+    order?: string;   
 }
