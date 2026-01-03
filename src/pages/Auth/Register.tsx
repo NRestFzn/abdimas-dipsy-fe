@@ -172,7 +172,7 @@ export default function Register() {
           </Form.Item>
 
           <Form.Item
-            label="Email"
+            label="Email (Optional)"
             name="email"
             rules={[
               { type: 'email', message: 'Format email tidak valid' },
@@ -249,7 +249,7 @@ export default function Register() {
                   accountForm.setFieldValue('rt', null);
                 }}
               >
-                {rukunWarga?.map((rw: any) => (
+                {rukunWarga?.data?.map((rw: any) => (
                   <Option key={rw.id} value={rw.id}>
                     RW {rw.name}
                   </Option>

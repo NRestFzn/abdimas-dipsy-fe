@@ -1,5 +1,5 @@
 import { Card, Tabs } from "antd";
-import RWTab from "./partials/RWTab";
+import RWTab from "./partials/RwTab/RWTab";
 import RTTab from "./partials/RTTab";
 import ResidentTab from "./partials/ResidentTab/ResidentTab";
 

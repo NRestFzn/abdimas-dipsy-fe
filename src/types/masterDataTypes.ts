@@ -34,3 +34,15 @@ export interface SalaryRange {
     minRange: string;
     maxRange: string;
 }
+
+export interface RukunWargaWithCount extends RukunWarga {
+    rtCount: number;
+    userCount: number;
+}
+
+export interface GetRWParams {
+    page?: number;
+    pageSize?: number;
+    name?: string;
+    order?: string;
+}
