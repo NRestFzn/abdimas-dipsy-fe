@@ -58,6 +58,13 @@ export interface GetQuestionnaireParams {
     order?: string;
 }
 
+export interface GetPublicQuestionnaireParams {
+    title?: string;
+    page?: number;
+    pageSize?: number;
+    order?: string;
+}
+
 export interface QuestionnaireCategory {
     id: string;
     name: string;
@@ -66,12 +73,12 @@ export interface QuestionnaireCategory {
 }
 
 export interface CategoryPayload {
-  name: string;
+    name: string;
 }
 
 export interface GetCategoryParams {
-  name?: string;
-  page?: number;
-  pageSize?: number;
-  order?: string;
+    name?: string;
+    page?: number;
+    pageSize?: number;
+    order?: string;
 }

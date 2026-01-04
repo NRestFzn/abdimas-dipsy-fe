@@ -1,5 +1,6 @@
 import { api } from "../api";
 import type {
+  GetPublicQuestionnaireParams,
   GetQuestionnaireParams,
   Questionnaire,
   QuestionnaireHistoryParams,
@@ -31,6 +32,14 @@ export const questionnaireService = {
   getAllQuestionnaire: async (params: GetQuestionnaireParams) => {
     const response = await api.get<QuestionnaireMeResponse>(
       "/v1/questionnaire",
+      { params }
+    );
+    return response.data;
+  },
+
+  getPublicQuestionnaires: async (params: GetPublicQuestionnaireParams) => {
+    const response = await api.get<QuestionnaireMeResponse>(
+      "/v1/questionnaire/public",
       { params }
     );
     return response.data;
