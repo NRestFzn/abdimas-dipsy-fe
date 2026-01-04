@@ -67,14 +67,26 @@ export const getKuisionerColumns = ({
       dataIndex: "description",
       key: "description",
       ellipsis: true,
-      width: 300,
+      width: 250,
+    },
+    {
+      title: "Kategori",
+      dataIndex: ["category", "name"],
+      key: "category",
+      align: "center",
+      width: 100,
+      render: (value) => {
+        return (
+          <Tag color="blue"> {value || "-"}</Tag >
+        )
+      }
     },
     {
       title: "Threshold",
       dataIndex: "riskThreshold",
       key: "riskThreshold",
       align: "center",
-      width: 100,
+      width: 150,
     },
     {
       title: "Cooldown",

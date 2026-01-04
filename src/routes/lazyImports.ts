@@ -8,7 +8,7 @@ export const NotFound = lazy(() => import("../pages/Fallbacks/NotFound"));
 
 // Auth
 export const Login = lazy(() => import("../pages/Auth/Admin/Login"));
-export const LoginResident = lazy(() => import ("../pages/Auth/LoginResident"))
+export const LoginResident = lazy(() => import("../pages/Auth/LoginResident"))
 export const Register = lazy(() => import("../pages/Auth/Register"));
 
 // Resident
@@ -76,4 +76,7 @@ export const KuisionerPreview = lazy(
 );
 export const AdminMedisProfile = lazy(
   () => import("../pages/Admin/AdminMedis/ProfileAdmin/ProfileAdmin")
+);
+export const AdminMedisCategory = lazy(
+  () => import("../pages/Admin/AdminMedis/MasterData/Category/CategoryPage")
 );

@@ -4,31 +4,19 @@ import {
   Card,
   Input,
   Table,
-  Modal,
-  Form,
-  Select,
   message,
-  InputNumber,
-  Space,
   Pagination,
 } from "antd";
 import { Plus, Search, ArrowLeft } from "lucide-react";
 import { useDebounce } from "use-debounce";
 
 import { getKuisionerColumns } from "./columns/KuisionerColumn";
-import type { CreateQuestionnairePayload } from "../../../../types/adminMedisService";
-import { adminMedisService } from "../../../../service/adminMedisService";
 import QuestionManager from "./Partials/QuestionManager";
 import { useNavigate } from "react-router";
-import { useAdminQuestionnaire } from "../../../../hooks/Questionnaire/useQuestionnaire";
+import { useAdminQuestionnaire, useQuestionnaireMutation } from "../../../../hooks/Questionnaire/useQuestionnaire";
 import type { Questionnaire } from "../../../../types/Questionnaire/questionnaireTypes";
 import type { SorterResult } from "antd/es/table/interface";
-
-const ONE_HOUR = 60;
-const ONE_DAY = 1440; // 24 * 60
-const ONE_WEEK = 10080; // 7 * 1440
-const ONE_MONTH = 43200; // 30 * 1440  Notes: 30 days
-const ONE_YEAR = 525600; // 365 * 1440
+import CreateQuestionnaireModal from "./Partials/CreateQuestionnaireModal";
 
 export default function Kuisioner() {
   const navigate = useNavigate();
@@ -41,18 +29,12 @@ export default function Kuisioner() {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [modalLoading, setModalLoading] = useState(false);
-
-  const [selectedQuestionnaire, setSelectedQuestionnaire] =
-    useState<Questionnaire | null>(null);
-  const [form] = Form.useForm();
+  const [editingData, setEditingData] = useState<Questionnaire | null>(null);
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<Questionnaire | null>(null);
 
   const {
     data: questionnaires,
     isLoading: loadQuestionnaires,
-    refetch,
   } = useAdminQuestionnaire({
     title: debouncedSearch,
     page: pagination.current,
@@ -60,157 +42,61 @@ export default function Kuisioner() {
     order: filters.order,
   });
 
+  const { updateMutation, deleteMutation } = useQuestionnaireMutation();
+
   const openCreateModal = () => {
-    setIsEditMode(false);
-    setEditingId(null);
-    form.resetFields();
-    form.setFieldsValue({
-      status: "draft",
-      riskThreshold: 0,
-      tempUnit: 1,
-      tempDuration: 0,
-    });
+    setEditingData(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (record: Questionnaire) => {
-    setIsEditMode(true);
-    setEditingId(record.id);
-
-    let unitValue = 1;
-    let displayValue = record.cooldownInMinutes || 0;
-
-    if (displayValue > 0) {
-      if (displayValue % ONE_YEAR === 0) {
-        unitValue = ONE_YEAR;
-        displayValue = displayValue / ONE_YEAR;
-      } else if (displayValue % ONE_MONTH === 0) {
-        unitValue = ONE_MONTH;
-        displayValue = displayValue / ONE_MONTH;
-      } else if (displayValue % ONE_WEEK === 0) {
-        unitValue = ONE_WEEK;
-        displayValue = displayValue / ONE_WEEK;
-      } else if (displayValue % ONE_DAY === 0) {
-        unitValue = ONE_DAY;
-        displayValue = displayValue / ONE_DAY;
-      } else if (displayValue % ONE_HOUR === 0) {
-        unitValue = ONE_HOUR;
-        displayValue = displayValue / ONE_HOUR;
-      }
-    }
-
-    form.setFieldsValue({
-      title: record.title,
-      description: record.description,
-      riskThreshold: record.riskThreshold,
-      status: record.status,
-      tempDuration: displayValue,
-      tempUnit: unitValue,
-    });
+    setEditingData(record);
     setIsModalOpen(true);
   };
 
-  const handleSave = async (values: any) => {
-    setModalLoading(true);
-    const calculatedMinutes =
-      (values.tempDuration || 0) * (values.tempUnit || 1);
-
-    try {
-      if (isEditMode && editingId) {
-        await adminMedisService.updateQuestionnaire(editingId, {
-          title: values.title,
-          description: values.description,
-          status: values.status,
-          riskThreshold: Number(values.riskThreshold),
-          cooldownInMinutes: calculatedMinutes,
-        });
-        message.success("Kuisioner berhasil diperbarui!");
-      } else {
-        const payload: CreateQuestionnairePayload = {
-          title: values.title,
-          description: values.description,
-          riskThreshold: Number(values.riskThreshold),
-          cooldownInMinutes: calculatedMinutes,
-          status: values.status as "draft" | "publish",
-        };
-        await adminMedisService.createQuestionnaire(payload);
-        message.success("Kuisioner berhasil dibuat!");
-      }
-
-      setIsModalOpen(false);
-      form.resetFields();
-      refetch();
-    } catch (error: any) {
-      const action = isEditMode ? "memperbarui" : "membuat";
-      message.error(
-        error.response?.data?.message || `Gagal ${action} kuisioner`
-      );
-    } finally {
-      setModalLoading(false);
-    }
-  };
-
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
+  const handleToggleStatus = (id: string, currentStatus: string) => {
     const newStatus = currentStatus === "publish" ? "draft" : "publish";
-    try {
-      const currentData = (questionnaires?.data || []).find((q) => q.id === id);
-      if (!currentData) return;
 
-      await adminMedisService.updateQuestionnaire(id, {
-        title: currentData.title,
-        description: currentData.description,
-        status: newStatus as "draft" | "publish",
-        riskThreshold: currentData.riskThreshold as number,
-        cooldownInMinutes: currentData.cooldownInMinutes as number,
-      });
+    const currentData = (questionnaires?.data || []).find((q) => q.id === id);
+    if (!currentData) return;
 
-      message.success(`Status berhasil diubah ke ${newStatus}`);
-      refetch();
-    } catch (error) {
-      message.error("Gagal mengubah status");
-    }
+    const payload = {
+      title: currentData.title,
+      description: currentData.description,
+      status: newStatus as "draft" | "publish",
+      riskThreshold: currentData.riskThreshold,
+      cooldownInMinutes: currentData.cooldownInMinutes,
+      CategoryId: currentData.CategoryId,
+    };
+
+    message.loading({ content: "Memperbarui status...", key: "statusUpdate" });
+
+    updateMutation.mutate({ id, payload }, {
+      onSuccess: () => {
+        message.success({ content: `Status berhasil diubah ke ${newStatus}`, key: "statusUpdate" });
+      },
+      onError: () => {
+        message.error({ content: "Gagal mengubah status", key: "statusUpdate" });
+      }
+    });
   };
 
-  const handleDeleteQuestionnaire = async (id: string) => {
-    try {
-      await adminMedisService.deleteQuestionnaire(id);
+  const handleDeleteQuestionnaire = (id: string) => {
+    message.loading({ content: "Menghapus kuisioner...", key: "deleteQ" });
 
-      message.success(`Kuisioner berhasil dihapus`);
-      refetch();
-    } catch (error) {
-      message.error("Kuisioner gagal dihapus");
-    }
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        message.success({ content: "Kuisioner berhasil dihapus", key: "deleteQ" });
+      },
+      onError: () => {
+        message.error({ content: "Gagal menghapus kuisioner", key: "deleteQ" });
+      }
+    });
   };
 
   const handleManage = (record: Questionnaire) => {
     setSelectedQuestionnaire(record);
   };
-
-  if (selectedQuestionnaire) {
-    return (
-      <div className="bg-gray-100 min-h-screen p-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center gap-4 mb-6 border-b border-gray-100 pb-4">
-            <Button
-              onClick={() => setSelectedQuestionnaire(null)}
-              className="flex items-center"
-            >
-              <ArrowLeft size={18} />
-              Kembali
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800 m-0">
-                {selectedQuestionnaire.title}
-              </h1>
-              <p className="text-gray-500 text-sm m-0">Kelola Pertanyaan</p>
-            </div>
-          </div>
-
-          <QuestionManager questionnaireId={selectedQuestionnaire.id} />
-        </div>
-      </div>
-    );
-  }
 
   const handleTableChange = (
     _: any,
@@ -241,6 +127,33 @@ export default function Kuisioner() {
     onPreview: (id) =>
       navigate(`/admin-medis/kuisioner/questionnaireId=${id}/preview`),
   });
+
+  if (selectedQuestionnaire) {
+    return (
+      <div className="bg-gray-100 min-h-screen p-6">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <div className="flex items-center gap-4 mb-6 border-b border-gray-100 pb-4">
+            <Button
+              onClick={() => setSelectedQuestionnaire(null)}
+              className="flex items-center"
+            >
+              <ArrowLeft size={18} />
+              Kembali
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800 m-0">
+                {selectedQuestionnaire.title}
+              </h1>
+              <p className="text-gray-500 text-sm m-0">Kelola Pertanyaan</p>
+            </div>
+          </div>
+
+          <QuestionManager questionnaireId={selectedQuestionnaire.id} />
+        </div>
+      </div>
+    );
+  }
+
 
   const dataSource = questionnaires?.data;
   const totalData = questionnaires?.meta?.pagination?.total;
@@ -308,78 +221,12 @@ export default function Kuisioner() {
         </div>
       </Card>
 
-      <Modal
-        title={isEditMode ? "Edit Kuisioner" : "Buat Kuisioner Baru"}
+      <CreateQuestionnaireModal
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
-        footer={null}
-      >
-        <Form form={form} layout="vertical" onFinish={handleSave}>
-          <Form.Item
-            label="Judul Kuisioner"
-            name="title"
-            rules={[{ required: true, message: "Judul wajib diisi" }]}
-          >
-            <Input placeholder="Masukkan judul..." />
-          </Form.Item>
+        editingData={editingData}
+      />
 
-          <Form.Item label="Deskripsi" name="description">
-            <Input.TextArea rows={3} placeholder="Deskripsi singkat..." />
-          </Form.Item>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item label="Risk Threshold" name="riskThreshold">
-              <InputNumber min={0} className="!w-full" placeholder="0" />
-            </Form.Item>
-
-            <Form.Item label="Masa Tenggang" required className="flex-1">
-              <Space.Compact style={{ width: "100%" }}>
-                <Form.Item
-                  name="tempDuration"
-                  noStyle
-                  rules={[{ required: true, message: "Wajib diisi" }]}
-                >
-                  <InputNumber
-                    min={0}
-                    style={{ width: "calc(100% - 90px)" }}
-                    placeholder="0"
-                  />
-                </Form.Item>
-
-                <Form.Item name="tempUnit" noStyle initialValue={1}>
-                  <Select style={{ width: 100 }}>
-                    <Select.Option value={1}>Menit</Select.Option>
-                    <Select.Option value={ONE_HOUR}>Jam</Select.Option>
-                    <Select.Option value={ONE_DAY}>Hari</Select.Option>
-                    <Select.Option value={ONE_WEEK}>Minggu</Select.Option>
-                    <Select.Option value={ONE_MONTH}>Bulan</Select.Option>
-                    <Select.Option value={ONE_YEAR}>Tahun</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Space.Compact>
-            </Form.Item>
-          </div>
-
-          <Form.Item label="Status" name="status">
-            <Select>
-              <Select.Option value="draft">Draft</Select.Option>
-              <Select.Option value="publish">Publish</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <div className="flex justify-end gap-2 mt-4">
-            <Button onClick={() => setIsModalOpen(false)}>Batal</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={modalLoading}
-              className="!bg-[#70B748] hover:bg-[#5a9639]"
-            >
-              {isEditMode ? "Simpan Perubahan" : "Buat"}
-            </Button>
-          </div>
-        </Form>
-      </Modal>
     </div>
   );
 }

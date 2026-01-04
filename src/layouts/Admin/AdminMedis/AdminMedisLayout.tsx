@@ -43,7 +43,7 @@ function AdminMediLayout() {
                     onCollapse={(val) => setResponsiveSidebar(val)}
                 >
                     <div className="flex flex-col justify-between h-full pb-5">
-                        <div className="flex flex-col gap-5 px-4 flex-1 overflow-y-auto py-4">
+                        <div className="flex flex-col gap-5 flex-1 overflow-y-auto py-4">
                             <AdminSideBar
                                 responsiveSidebar={responsiveSidebar}
                             />
