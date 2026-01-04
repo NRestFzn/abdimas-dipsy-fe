@@ -1,11 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { questionnaireService } from "../../service/Questionnaire/questionnaireService";
-import type { GetQuestionnaireParams, Questionnaire, QuestionnairePayload } from "../../types/Questionnaire/questionnaireTypes";
+import type { GetPublicQuestionnaireParams, GetQuestionnaireParams, Questionnaire, QuestionnairePayload } from "../../types/Questionnaire/questionnaireTypes";
 
 export const useQuestionnaire = () => {
   const query = useQuery({
     queryKey: ["questionnaires-me"],
     queryFn: questionnaireService.getQuestionnairesMe,
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -16,6 +17,15 @@ export const useQuestionnaire = () => {
     refetch: query.refetch,
     isFetching: query.isFetching,
   };
+};
+
+export const usePublicQuestionnaire = (params: GetPublicQuestionnaireParams) => {
+  return useQuery({
+    queryKey: ["public-questionnaires", params],
+    queryFn: () => questionnaireService.getPublicQuestionnaires(params),
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60 * 5,
+  });
 };
 
 export const useAdminQuestionnaire = (params: GetQuestionnaireParams) => {
