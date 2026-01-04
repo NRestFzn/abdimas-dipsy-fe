@@ -30,6 +30,8 @@ export interface Questionnaire {
     status: string,
     riskThreshold: number,
     cooldownInMinutes: number,
+    CategoryId: string;
+    category?: { id: string; name: string };
 
     submissions?: Submission[];
     isAvailable?: boolean;
@@ -40,11 +42,12 @@ export interface Questionnaire {
 }
 
 export interface QuestionnairePayload {
-  title: string;
-  description: string;
-  status: "draft" | "publish";
-  riskThreshold: number;
-  cooldownInMinutes: number;
+    title: string;
+    description: string;
+    status: "draft" | "publish";
+    riskThreshold: number;
+    cooldownInMinutes: number;
+    CategoryId: string;
 }
 
 export interface GetQuestionnaireParams {
@@ -52,5 +55,23 @@ export interface GetQuestionnaireParams {
     status?: string;
     page?: number;
     pageSize?: number;
-    order?: string;   
+    order?: string;
+}
+
+export interface QuestionnaireCategory {
+    id: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CategoryPayload {
+  name: string;
+}
+
+export interface GetCategoryParams {
+  name?: string;
+  page?: number;
+  pageSize?: number;
+  order?: string;
 }

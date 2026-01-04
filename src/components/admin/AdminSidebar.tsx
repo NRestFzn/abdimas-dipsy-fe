@@ -1,59 +1,104 @@
-import { Link, useLocation } from "react-router";
-import { File, FileHeartIcon, HouseIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { Menu, ConfigProvider, type MenuProps } from "antd";
+import {
+    File,
+    FileHeartIcon,
+    HouseIcon,
+    Database,
+    Tags
+} from "lucide-react";
 
-interface SidebarItemProps {
-    label: string;
-    path: string;
-    icon: React.ElementType;
+type MenuItem = Required<MenuProps>['items'][number];
+
+function getItem(
+    label: React.ReactNode,
+    key: React.Key,
+    icon?: React.ReactNode,
+    children?: MenuItem[],
+    type?: 'group',
+): MenuItem {
+    return {
+        key,
+        icon,
+        children,
+        label,
+        type,
+    } as MenuItem;
 }
 
 export default function AdminSideBar({ responsiveSidebar }: { responsiveSidebar: boolean }) {
     const location = useLocation();
+    const navigate = useNavigate();
     const pathname = location.pathname;
 
     const isAdminMedis = pathname.startsWith("/admin-medis");
 
-    const menuItems: SidebarItemProps[] = [
-        {
-            label: "Responden",
-            path: isAdminMedis ? "/admin-medis/responden" : "/admin/responden",
-            icon: FileHeartIcon,
-        },
-        {
-            label: isAdminMedis ? "Kuisioner" : "Kelola Wilayah",
-            path: isAdminMedis ? "/admin-medis/kuisioner" : "/admin/kelola-wilayah",
-            icon: isAdminMedis ? File : HouseIcon,
-        }
+    const [openKeys, setOpenKeys] = useState<string[]>([]);
+
+    const itemsAdminDesa: MenuItem[] = [
+        getItem('Responden', '/admin/responden', <FileHeartIcon size={20} />),
+        getItem('Kelola Wilayah', '/admin/kelola-wilayah', <HouseIcon size={20} />),
     ];
 
-    return (
-        <nav className="flex flex-col gap-2">
-            {menuItems.map((item) => {
-                const isActive = pathname.startsWith(item.path);
+    const itemsAdminMedis: MenuItem[] = [
+        getItem('Responden', '/admin-medis/responden', <FileHeartIcon size={20} />),
+        getItem('Kuisioner', '/admin-medis/kuisioner', <File size={20} />),
+        getItem('Master Data', 'sub-master-data', <Database size={20} />, [
+            getItem('Kategori', '/admin-medis/master-data/category', <Tags size={18} />),
+        ]),
+    ];
 
-                return (
-                    <Link key={item.path} to={item.path} className="block">
-                        <div
-                            className={`
-                                flex items-center gap-[20px] p-[10px] rounded-[8px] transition-all duration-200
-                                ${responsiveSidebar ? "justify-center" : "justify-start"}
-                                ${isActive 
-                                    ? "bg-[#f0f7e9] text-[#70B748]" 
-                                    : "bg-transparent text-zinc-600 hover:text-[#70B748] hover:bg-gray-50"
-                                }
-                            `}
-                        >
-                            <item.icon className="w-6 h-6 shrink-0" />
-                            
-                            {!responsiveSidebar && (
-                                <span className="text-base font-medium whitespace-nowrap animate-in fade-in duration-300">
-                                    {item.label}
-                                </span>
-                            )}
-                        </div>
-                    </Link>
-                );
-            })}
-        </nav>
+    const items = isAdminMedis ? itemsAdminMedis : itemsAdminDesa;
+
+    useEffect(() => {
+        if (pathname.includes('/master-data')) {
+            setOpenKeys(['sub-master-data']);
+        }
+    }, [pathname]);
+
+    const onClick: MenuProps['onClick'] = (e) => {
+        navigate(e.key);
+    };
+
+    const onOpenChange: MenuProps['onOpenChange'] = (keys) => {
+        setOpenKeys(keys);
+    };
+
+    return (
+        <ConfigProvider
+            theme={{
+                components: {
+                    Menu: {
+                        itemSelectedBg: "#f0f7e9",
+                        itemSelectedColor: "#70B748",
+                        itemHoverBg: "#f9fafb",
+                        itemHoverColor: "#70B748",
+                        itemColor: "#52525b",
+                        iconSize: 20,
+                    },
+                },
+            }}
+        >
+            <Menu
+                mode="inline"
+                selectedKeys={[pathname]}
+
+                openKeys={openKeys}
+                onOpenChange={onOpenChange as any}
+
+                inlineCollapsed={responsiveSidebar}
+
+                style={{
+                    borderRight: 0,
+                    background: 'transparent',
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    margin: 0
+                }}
+                items={items}
+                onClick={onClick}
+            />
+        </ConfigProvider>
     );
 }

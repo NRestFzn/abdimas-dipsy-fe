@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { questionnaireService } from "../../service/Questionnaire/questionnaireService";
-import type { GetQuestionnaireParams, Questionnaire } from "../../types/Questionnaire/questionnaireTypes";
+import type { GetQuestionnaireParams, Questionnaire, QuestionnairePayload } from "../../types/Questionnaire/questionnaireTypes";
 
 export const useQuestionnaire = () => {
   const query = useQuery({
@@ -27,3 +27,35 @@ export const useAdminQuestionnaire = (params: GetQuestionnaireParams) => {
 
   return query
 }
+
+export const useQuestionnaireMutation = () => {
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: (payload: QuestionnairePayload) => questionnaireService.createQuestionnaire(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questionnaires"] });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: QuestionnairePayload }) =>
+      questionnaireService.updateQuestionnaire(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questionnaires"] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => questionnaireService.deleteQuestionnaire(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questionnaires"] });
+    },
+  });
+
+  return {
+    createMutation,
+    updateMutation,
+    deleteMutation
+  };
+};

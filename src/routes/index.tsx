@@ -132,6 +132,15 @@ const router = createBrowserRouter([
             element: <Loadable Component={Pages.KuisionerPreview} />,
           },
           {
+            path: "master-data",
+            children: [
+              {
+                path: "category",
+                element: <Loadable Component={Pages.AdminMedisCategory} />,
+              }
+            ]
+          },
+          {
             path: "responden",
             children: [
               {

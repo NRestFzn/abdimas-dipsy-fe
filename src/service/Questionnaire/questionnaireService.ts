@@ -44,7 +44,6 @@ export const questionnaireService = {
     return response.data;
   },
 
-  // --- UPDATE ---
   updateQuestionnaire: async (id: string, payload: QuestionnairePayload) => {
     const response = await api.put<SingleQuestionnaireResponse>(
       `/v1/questionnaire/${id}`,
@@ -53,7 +52,6 @@ export const questionnaireService = {
     return response.data;
   },
 
-  // --- DELETE ---
   deleteQuestionnaire: async (id: string) => {
     const response = await api.delete(`/v1/questionnaire/${id}`);
     return response.data;
