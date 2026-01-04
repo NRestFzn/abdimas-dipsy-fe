@@ -1,12 +1,37 @@
 import { Input, Pagination, Table } from "antd";
-import { useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
-import { useQuery } from "@tanstack/react-query";
-import { adminMedisService } from "../../../../service/adminMedisService";
-import type { GetQuestionnaireParams, Questionnaire } from "../../../../types/adminMedisService";
 import { getQuestionnaireColumns } from "./columns/AdminMedisColumn";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useAdminQuestionnaire } from "../../../../hooks/Questionnaire/useQuestionnaire";
+import type { SorterResult } from "antd/es/table/interface";
+import type { Questionnaire } from "../../../../types/Questionnaire/questionnaireTypes";
+
+interface SearchInputProps {
+    onSearch: (value: string) => void;
+}
+
+const SearchInput = memo(({ onSearch }: SearchInputProps) => {
+    const [localText, setLocalText] = useState("");
+    const [debouncedValue] = useDebounce(localText, 500);
+
+    useEffect(() => {
+        onSearch(debouncedValue);
+    }, [debouncedValue, onSearch]);
+
+    return (
+        <Input
+            prefix={<Search className="text-gray-400" size={18} />}
+            placeholder="Cari judul kuisioner..."
+            className="max-w-md"
+            value={localText}
+            onChange={(e) => setLocalText(e.target.value)}
+            allowClear
+            size="middle"
+        />
+    );
+});
 
 function AdminMedis() {
     const navigate = useNavigate()
@@ -15,22 +40,45 @@ function AdminMedis() {
         current: 1,
         pageSize: 10,
     })
-    const [searchText, setSearchText] = useState("")
-    const [debouncedSearch] = useDebounce(searchText, 500)
-
-    const useGetAllQuestionnaire = () => {
-        const params: GetQuestionnaireParams = {
-            page: pagination.current,
-            pageSize: pagination.pageSize,
-            title: debouncedSearch
-        }
-        return adminMedisService.getAllQuestionnaires(params)
-    }
-
-    const { data, isLoading } = useQuery({
-        queryKey: ["questionnaires", pagination.current, pagination.pageSize, debouncedSearch],
-        queryFn: useGetAllQuestionnaire,
+    const [finalSearch, setFinalSearch] = useState("");
+    const [filters, setFilters] = useState({
+        order: '[["createdAt", "desc"]]'
     });
+
+    const {
+        data: questionnaireResponse,
+        isLoading,
+        isFetching
+    } = useAdminQuestionnaire({
+        page: pagination.current,
+        pageSize: pagination.pageSize,
+        title: finalSearch,
+        order: filters.order,
+    });
+
+    useEffect(() => {
+        setPagination((prev) => ({ ...prev, current: 1 }));
+    }, [finalSearch]);
+
+    const handleTableChange = (
+        _: any,
+        __: any,
+        sorter: SorterResult<Questionnaire> | SorterResult<Questionnaire>[]
+    ) => {
+        if (!Array.isArray(sorter)) {
+            const { field, order } = sorter;
+            if (order) {
+                const apiOrder = order === "ascend" ? "asc" : "desc";
+                setFilters((prev) => ({
+                    ...prev,
+                    order: `[["${field}", "${apiOrder}"]]`,
+                }));
+            } else {
+                setFilters((prev) => ({ ...prev, order: '[["createdAt", "desc"]]' }));
+            }
+            setPagination((prev) => ({ ...prev, current: 1 }));
+        }
+    };
 
     const adminDesaMedisColumn = getQuestionnaireColumns({
         pagination,
@@ -38,6 +86,9 @@ function AdminMedis() {
             navigate(`/admin-medis/responden/questionnaireId=${id}`);
         }
     })
+
+    const dataSource = questionnaireResponse?.data || [];
+    const totalData = questionnaireResponse?.meta?.pagination?.total || 0;
 
     return (
         <div className="p-6 space-y-6">
@@ -48,23 +99,16 @@ function AdminMedis() {
                     <p className="text-gray-500">Lihat dan pantau hasil pengisian kuesioner warga secara publik</p>
                 </div>
                 <div>
-                    <Input
-                        prefix={<Search className="text-gray-400" size={18} />}
-                        placeholder="Cari judul kuisioner..."
-                        className="max-w-md"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        allowClear
-                        size="middle"
-                    />
+                    <SearchInput onSearch={setFinalSearch} />
                 </div>
 
                 <Table<Questionnaire>
                     columns={adminDesaMedisColumn}
-                    dataSource={data?.data as Questionnaire[] || []}
-                    loading={isLoading}
+                    dataSource={dataSource}
+                    loading={isLoading || isFetching}
                     rowKey="id"
                     pagination={false}
+                    onChange={handleTableChange}
                     scroll={{ x: 800 }}
                 />
 
@@ -72,7 +116,9 @@ function AdminMedis() {
                     <Pagination
                         current={pagination.current}
                         pageSize={pagination.pageSize}
-                        total={data?.data?.length || 0}
+                        total={totalData}
+
+                        showTotal={(total, range) => `${range[0]}-${range[1]} dari ${total} Data`}
 
                         onChange={(page, pageSize) => {
                             setPagination({
@@ -82,7 +128,6 @@ function AdminMedis() {
                         }}
 
                         showSizeChanger={true}
-                        // pageSizeOptions={['10', '20', '50', '100']}
                         showLessItems={true}
                         size="default"
                     />
