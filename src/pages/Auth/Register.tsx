@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   Form,
   Input,
@@ -22,6 +22,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useMasterData } from '../../hooks/useMasterData';
 import { useNavigate } from 'react-router';
 import type { RegisterPayload } from '../../types/AuthTypes/authTypes';
+import { useInfiniteSelectOptions } from '../../hooks/Common/useInfiniteSelectOptions';
 
 const { Option } = Select;
 
@@ -35,26 +36,48 @@ export default function Register() {
   const [profileForm] = Form.useForm();
 
   const { register, isLoading, error } = useAuth();
-  const masterData = useMasterData();
-  const { data: rukunWarga, isLoading: isLoadRw } = masterData.rukunWarga({
-    order: '[["name", "asc"]]',
+  const {
+    educations,
+    marriageStatuses,
+    salaryRanges,
+    infiniteRukunWarga,
+    infiniteRukunTetangga
+  } = useMasterData();
+
+  const rwQuery = infiniteRukunWarga(20);
+  const {
+    options: rwOptions,
+    onPopupScroll: onRWScroll,
+    isLoading: loadingRW,
+    isFetchingNextPage: fetchingNextRW
+  } = useInfiniteSelectOptions({
+    queryResult: rwQuery,
+    labelKey: (item: any) => `RW ${item.name}`,
+    valueKey: 'id'
   });
-  const { data: rukunTetangga, isLoading: isLoadRt } = masterData.rukunTetangga({
-    order: '[["name", "asc"]]',
+
+  const rtQuery = infiniteRukunTetangga(20, selectedRW);
+  const {
+    options: rtOptions,
+    onPopupScroll: onRTScroll,
+    isLoading: loadingRT,
+    isFetchingNextPage: fetchingNextRT
+  } = useInfiniteSelectOptions({
+    queryResult: rtQuery,
+    labelKey: (item: any) => `RT ${item.name}`,
+    valueKey: 'id'
   });
 
-  const isMasterDataLoading =
-    masterData.educations.isLoading ||
-    masterData.marriageStatuses.isLoading ||
-    masterData.salaryRanges.isLoading ||
-    isLoadRw ||
-    isLoadRt;
+  const { data: educationList, isLoading: loadEdu } = educations;
+  const { data: marriageList, isLoading: loadMarriage } = marriageStatuses;
+  const { data: salaryList, isLoading: loadSalary } = salaryRanges;
 
-  const filteredRTList = useMemo(() => {
-    if (!selectedRW || !rukunTetangga) return [];
+  const isMasterDataLoading = loadEdu || loadMarriage || loadSalary;
 
-    return rukunTetangga?.data?.filter((rt: any) => rt.RukunWargaId === selectedRW);
-  }, [selectedRW, rukunTetangga]);
+  const handleRWChange = (val: string) => {
+    setSelectedRW(val);
+    accountForm.setFieldValue('rt', undefined); // Reset RT saat RW berubah
+  };
 
   const onAccountFinish = () => {
     setShowModal(true);
@@ -131,6 +154,11 @@ export default function Register() {
     );
   }
 
+  const filterOption = (input: string, option: any) => {
+    const labelStr = String(option?.label ?? '');
+    return labelStr.toLowerCase().includes(input.toLowerCase());
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-lg rounded-xl">
@@ -140,7 +168,7 @@ export default function Register() {
 
         {error && (
           <Alert
-            message="Gagal Mendaftar"
+            title="Gagal Mendaftar"
             description={renderErrorContent(error)}
             type="error"
             showIcon
@@ -243,18 +271,13 @@ export default function Register() {
             >
               <Select
                 placeholder="Pilih RW"
-                loading={isLoadRw}
-                onChange={(value) => {
-                  setSelectedRW(value);
-                  accountForm.setFieldValue('rt', null);
-                }}
-              >
-                {rukunWarga?.data?.map((rw: any) => (
-                  <Option key={rw.id} value={rw.id}>
-                    RW {rw.name}
-                  </Option>
-                ))}
-              </Select>
+                onChange={handleRWChange}
+                options={rwOptions}
+                loading={loadingRW}
+                onPopupScroll={onRWScroll}
+                notFoundContent={fetchingNextRW ? <Spin size="small" /> : null}
+                showSearch={{ filterOption }}
+              />
             </Form.Item>
 
             <Form.Item
@@ -265,13 +288,12 @@ export default function Register() {
               <Select
                 placeholder={selectedRW ? 'Pilih RT' : 'Pilih RW Dulu'}
                 disabled={!selectedRW}
-              >
-                {filteredRTList?.map((rt: any) => (
-                  <Option key={rt.id} value={rt.id}>
-                    RT {rt.name}
-                  </Option>
-                ))}
-              </Select>
+                options={rtOptions}
+                loading={loadingRT}
+                onPopupScroll={onRTScroll}
+                notFoundContent={fetchingNextRT ? <Spin size="small" /> : null}
+                showSearch={{ filterOption }}
+              />
             </Form.Item>
           </div>
 
@@ -375,7 +397,7 @@ export default function Register() {
             rules={[{ required: true, message: 'Pilih status pernikahan' }]}
           >
             <Radio.Group>
-              {masterData.marriageStatuses.data?.map((status) => (
+              {marriageList?.map((status: any) => (
                 <Radio key={status.id} value={status.id}>
                   {status.name}
                 </Radio>
@@ -393,7 +415,7 @@ export default function Register() {
             rules={[{ required: true, message: 'Pilih pendidikan' }]}
           >
             <Select placeholder="Pilih Pendidikan">
-              {masterData.educations.data?.map((edu) => (
+              {educationList?.map((edu) => (
                 <Option key={edu.id} value={edu.id}>
                   {edu.name}
                 </Option>
@@ -415,7 +437,7 @@ export default function Register() {
             rules={[{ required: true, message: 'Pilih rentang gaji' }]}
           >
             <Select placeholder="Pilih Rentang Gaji">
-              {masterData.salaryRanges.data?.map((salary) => (
+              {salaryList?.map((salary) => (
                 <Option key={salary.id} value={salary.id}>
                   Rp {parseInt(salary.minRange).toLocaleString()} - Rp{' '}
                   {parseInt(salary.maxRange).toLocaleString()}
