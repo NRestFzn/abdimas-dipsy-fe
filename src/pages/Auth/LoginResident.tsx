@@ -22,9 +22,13 @@ export default function LoginResident() {
         password: values.password,
       });
 
-      const userRoleId = response?.data?.RoleId;
+      const userData = response?.data;
+      const roles = userData.roles || [];
+      console.log(userData)
 
-      if (userRoleId === ROLE_ID.WARGA) {
+      const isWarga = roles.some((role: any) => role.id === ROLE_ID.WARGA);
+
+      if (isWarga) {
         navigate("/", { replace: true });
       } else {
         navigate("/", { replace: true });

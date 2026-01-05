@@ -4,22 +4,26 @@ import { ROLE_ID } from "../constants";
 import Loading from "../pages/Loading";
 
 export const RootRedirect = () => {
-  const { user, isLoadingUser } = useAuth();
+  const { user, isLoadingUser, activeRole } = useAuth();
 
   if (isLoadingUser) return <Loading />;
 
-  if (!user) return null;
+  if (!user || !activeRole) return null;
 
-  if (user.RoleId === ROLE_ID.ADMIN_DESA) {
+  if (activeRole.id === ROLE_ID.ADMIN_DESA) {
     return <Navigate to="/admin" replace />;
   }
 
-  if (user.RoleId === ROLE_ID.ADMIN_MEDIS) {
+  if (activeRole.id === ROLE_ID.ADMIN_MEDIS) {
     return <Navigate to="/admin-medis" replace />;
   }
 
-  if (user.RoleId === ROLE_ID.WARGA) {
-    return null; 
+  if (activeRole.id === ROLE_ID.KADER) {
+    return <Navigate to="/kader" replace />; // Asumsi route kader nanti /kader
+  }
+
+  if (activeRole.id === ROLE_ID.WARGA) {
+    return null;
   }
 
   return <Navigate to="/unauthorized" replace />;

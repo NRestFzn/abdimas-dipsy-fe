@@ -11,7 +11,7 @@ interface RoleGuardProps {
 }
 
 export const RoleGuard = ({ children, allowedRoleIds, loginPath = "/masuk" }: RoleGuardProps) => {
-  const { user, isLoadingUser } = useAuth();
+  const { user, activeRole, isLoadingUser } = useAuth();
   const location = useLocation();
 
   if (isLoadingUser) {
@@ -31,11 +31,11 @@ export const RoleGuard = ({ children, allowedRoleIds, loginPath = "/masuk" }: Ro
     );
   }
 
-  if (!user) {
+  if (!user || !activeRole) {
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
-  if (!allowedRoleIds.includes(user.RoleId)) {
+  if (!allowedRoleIds.includes(activeRole.id)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

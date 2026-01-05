@@ -5,7 +5,7 @@ import { Mail, Lock, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import { getErrorMessage } from "../../../utils/getErrorMessage";
 import { ROLE_ID } from "../../../constants";
-import type { LoginPayload } from "../../../types/AuthTypes/authTypes";
+import type { LoginPayload, Role } from "../../../types/AuthTypes/authTypes";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -24,16 +24,19 @@ export default function Login() {
         password: values.password,
       });
 
-      const userRoleId = response?.data?.RoleId;
+      const userData = response?.data;
+      const roles = userData.roles || [];
 
-      if (userRoleId === ROLE_ID.ADMIN_DESA) {
-        navigate("/admin/responden");
-      } else if (userRoleId === ROLE_ID.ADMIN_MEDIS) {
-        navigate("/admin-medis/responden");
-      } else {
-        console.warn("Role ID tidak dikenali:", userRoleId);
-        navigate("/");
-      }
+      const getRedirectPath = (userRoles: Role[]) => {
+        if (userRoles.some(r => r.id === ROLE_ID.ADMIN_DESA)) return "/admin/responden";
+        if (userRoles.some(r => r.id === ROLE_ID.ADMIN_MEDIS)) return "/admin-medis/responden";
+        if (userRoles.some(r => r.id === ROLE_ID.KADER)) return "/kader/dashboard";
+
+        return "/";
+      };
+
+      const targetPath = getRedirectPath(roles);
+      navigate(targetPath, { replace: true });
     } catch (err) {
       console.error("Login error:", err);
       setFormError(getErrorMessage(err));
