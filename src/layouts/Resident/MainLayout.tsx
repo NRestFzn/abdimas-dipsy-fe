@@ -13,7 +13,10 @@ export default function ResidentLayout() {
 
   const { data: response, isLoading } = useResident();
 
-  const isQuizPage = location.pathname.includes("/quiz") || location.pathname.includes("/result");
+  const shouldHideHeader =
+    location.pathname.includes("/quiz") ||
+    location.pathname.includes("/result") ||
+    location.pathname === "/pilih-peran";
 
   const handleLogout = () => {
     Modal.confirm({
@@ -53,7 +56,7 @@ export default function ResidentLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {!isQuizPage &&
+      {!shouldHideHeader &&
         <HomeHeader
           fullname={profile?.fullname || user?.fullname || "Warga"}
           profileUrl={profilePictureUrl}

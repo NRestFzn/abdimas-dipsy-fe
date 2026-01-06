@@ -38,15 +38,19 @@ export const getResidentColumns = ({
         },
         {
             title: 'Jenis Kelamin',
-            dataIndex: 'gender',
+            dataIndex: ['userDetail', 'gender'],
             key: 'gender',
             width: 120,
             align: 'center',
-            render: (gender: string) => (
-                <Tag color={gender === 'm' ? 'blue' : 'magenta'}>
-                    {gender === 'm' ? 'Laki-laki' : 'Perempuan'}
-                </Tag>
-            ),
+            render: (gender: string) => {
+                return (
+                    (
+                        <Tag color={gender === 'm' ? 'blue' : 'magenta'}>
+                            {gender === 'm' ? 'Laki-laki' : 'Perempuan'}
+                        </Tag>
+                    )
+                )
+            },
         },
         {
             title: 'NIK',

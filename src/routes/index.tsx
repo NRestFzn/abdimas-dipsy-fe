@@ -38,11 +38,15 @@ const router = createBrowserRouter([
     children: [
       {
         element: (
-          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA]} loginPath="/masuk-warga">
+          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA, ROLE_ID.KADER]} loginPath="/masuk-warga">
             <ResidentLayout />
           </RoleGuard>
         ),
         children: [
+          {
+            path: "pilih-peran",
+            element: <Loadable Component={Pages.RoleSelection} />,
+          },
           {
             index: true, element: (
               <>

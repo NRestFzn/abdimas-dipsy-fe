@@ -18,11 +18,11 @@ import {
   HomeOutlined,
   IdcardOutlined,
 } from '@ant-design/icons';
-import { useAuth } from '../../context/AuthContext';
-import { useMasterData } from '../../hooks/useMasterData';
+import { useAuth } from '../../../context/AuthContext';
+import { useMasterData } from '../../../hooks/useMasterData';
 import { useNavigate } from 'react-router';
-import type { RegisterPayload } from '../../types/AuthTypes/authTypes';
-import { useInfiniteSelectOptions } from '../../hooks/Common/useInfiniteSelectOptions';
+import type { RegisterPayload } from '../../../types/AuthTypes/authTypes';
+import { useInfiniteSelectOptions } from '../../../hooks/Common/useInfiniteSelectOptions';
 
 const { Option } = Select;
 

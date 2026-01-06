@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Form, Input, Button, Alert, Typography } from "antd";
 import { Lock, SquareUserRound, ChevronRight } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
-import { getErrorMessage } from "../../utils/getErrorMessage";
-import { ROLE_ID } from "../../constants";
-import type { LoginResidentPayload } from "../../types/AuthTypes/authTypes";
+import { useAuth } from "../../../context/AuthContext";
+import { getErrorMessage } from "../../../utils/getErrorMessage";
+import { ROLE_ID } from "../../../constants";
+import type { LoginResidentPayload } from "../../../types/AuthTypes/authTypes";
 
 const { Title, Text } = Typography;
 
@@ -22,14 +22,11 @@ export default function LoginResident() {
         password: values.password,
       });
 
-      const userData = response?.data;
-      const roles = userData.roles || [];
-      console.log(userData)
+      const roleIds = response?.data?.roles
+      const isKader = roleIds.includes(ROLE_ID.KADER);
 
-      const isWarga = roles.some((role: any) => role.id === ROLE_ID.WARGA);
-
-      if (isWarga) {
-        navigate("/", { replace: true });
+      if (isKader) {
+        navigate("/pilih-peran", { replace: true });
       } else {
         navigate("/", { replace: true });
       }

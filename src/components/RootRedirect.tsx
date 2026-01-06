@@ -19,7 +19,7 @@ export const RootRedirect = () => {
   }
 
   if (activeRole.id === ROLE_ID.KADER) {
-    return <Navigate to="/kader" replace />; // Asumsi route kader nanti /kader
+    return <Navigate to="/pilih-peran" replace />;
   }
 
   if (activeRole.id === ROLE_ID.WARGA) {
