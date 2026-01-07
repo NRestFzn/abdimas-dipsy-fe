@@ -130,6 +130,7 @@ export default function Home() {
                   disabled={quiz?.isAvailable as boolean}
                   availableAt={quiz?.availableAt as string}
                   onRefresh={refetch}
+                  category={quiz.category?.name}
                 />
               ))}
             </div>
