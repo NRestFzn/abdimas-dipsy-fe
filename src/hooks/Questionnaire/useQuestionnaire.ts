@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { questionnaireService } from "../../service/Questionnaire/questionnaireService";
 import type { GetPublicQuestionnaireParams, GetQuestionnaireParams, Questionnaire, QuestionnairePayload } from "../../types/Questionnaire/questionnaireTypes";
+import type { SubmitParams } from "../../types/Questionnaire/submissionTypes";
 
 export const useQuestionnaire = () => {
   const query = useQuery({
@@ -38,6 +39,20 @@ export const useAdminQuestionnaire = (params: GetQuestionnaireParams) => {
   return query
 }
 
+export const useQuestionnaireDetail = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ["questionnaire-detail", id],
+    queryFn: () => {
+      if (!id) throw new Error("ID is required");
+      // Panggil service yang punya logika fallback
+      return questionnaireService.getDetailWithFallback(id);
+    },
+    enabled: !!id, // Hanya jalan jika ID ada
+    staleTime: 1000 * 60 * 5, // Cache 5 menit
+    retry: 1, // Retry 1 kali saja jika gagal total
+  });
+};
+
 export const useQuestionnaireMutation = () => {
   const queryClient = useQueryClient();
 
@@ -63,9 +78,21 @@ export const useQuestionnaireMutation = () => {
     },
   });
 
+  const submitMutation = useMutation({
+    mutationFn: ({ id, answers, residentId, activeRoleId }: SubmitParams) =>
+      questionnaireService.submitAnswers(id, answers, residentId, activeRoleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["history-me"] });
+      queryClient.invalidateQueries({ queryKey: ["questionnaires-me"] });
+      queryClient.invalidateQueries({ queryKey: ["public-questionnaires"] });
+    },
+  });
+
   return {
     createMutation,
     updateMutation,
-    deleteMutation
+    deleteMutation,
+
+    submitMutation
   };
 };

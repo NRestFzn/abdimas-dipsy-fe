@@ -11,13 +11,13 @@ import {
   Button,
 } from "antd";
 import { Filter, HistoryIcon, Loader2 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
 import { QuestionnaireCard, WelcomeHeader } from "./partials/HomeComponent";
 import { getHistoryColumn } from "./columns/HistoryColumn";
 import { MobileFilterDrawer } from "./partials/MobileFilterDrawer";
-import { useHistory } from "../../hooks/Questionnaire/useHistory";
-import type { QuestionnaireHistoryResponse } from "../../types/Questionnaire/questionnaireTypes";
-import { useQuestionnaire } from "../../hooks/Questionnaire/useQuestionnaire";
+import type { QuestionnaireHistoryResponse } from "../../../types/Questionnaire/questionnaireTypes";
+import { useAuth } from "../../../context/AuthContext";
+import { useQuestionnaire } from "../../../hooks/Questionnaire/useQuestionnaire";
+import { useHistory } from "../../../hooks/Questionnaire/useHistory";
 
 // const { RangePicker } = DatePicker;
 

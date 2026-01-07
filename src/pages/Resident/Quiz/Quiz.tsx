@@ -1,74 +1,46 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
-import {
-    questionnaireService,
-    type QuestionnaireDetail,
-    validateQuestionnaireData,
-} from "../../service/questionnaireService";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { AlertTriangle, ArrowLeft, Loader2, Send } from "lucide-react";
 import { Button, message, Modal, Spin } from "antd";
 import { QuizProgressBar } from "./Partials/ProgressBar";
 import { QuizHeader } from "./Partials/QuizHeader";
 import { QuizInstruction } from "./Partials/QuizInstruction";
 import { QuestionCard } from "./Partials/QuestionCard";
+import { useAuth } from "../../../context/AuthContext";
+import { useQuestionnaireDetail, useQuestionnaireMutation } from "../../../hooks/Questionnaire/useQuestionnaire";
 
 export default function Quiz() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
 
-    const [quiz, setQuiz] = useState<QuestionnaireDetail | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { submitMutation } = useQuestionnaireMutation();
+
+    const {
+        data: quiz,
+        isLoading,
+        isError,
+        error
+    } = useQuestionnaireDetail(id);
+
+    const { activeRole } = useAuth();
+    const location = useLocation();
+    const targetResident = location.state?.targetResident;
+
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        const fetchQuiz = async () => {
-            if (!id) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                setLoading(true);
-
-                let quizData;
-
-                try {
-                    quizData = await questionnaireService.getPublicQuestionnaireById(id);
-                } catch (publicErr) {
-                    console.log("Public API failed, trying regular endpoint...");
-                    quizData = await questionnaireService.getQuestionnaireById(id);
+        if (quiz?.questions) {
+            quiz.questions.forEach((question) => {
+                if (question.id && question.questionText) {
+                    setAnswers(prev => ({
+                        ...prev,
+                        [question.id]: prev[question.id] || ""
+                    }));
                 }
-
-                const validatedData = validateQuestionnaireData(quizData);
-
-                if (!validatedData.questions || validatedData.questions.length === 0) {
-                    console.warn("No questions found in questionnaire");
-                    throw new Error("Kuisioner tidak memiliki pertanyaan");
-                }
-
-                setQuiz(validatedData);
-
-                const initialAnswers: Record<string, string> = {};
-                validatedData.questions.forEach((question) => {
-                    if (question.id && question.questionText) {
-                        initialAnswers[question.id] = "";
-                    } else {
-                        console.warn("Invalid question skipped:", question);
-                    }
-                });
-
-                setAnswers(initialAnswers);
-            } catch (err: any) {
-                console.error(err);
-                message.error(err.message || "Gagal memuat kuisioner");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchQuiz();
-    }, [id]);
+            });
+        }
+    }, [quiz]);
 
     const handleAnswerChange = (questionId: string, value: string) => {
         setAnswers((prev) => ({
@@ -129,12 +101,18 @@ export default function Quiz() {
 
         try {
             setSubmitting(true);
-            const response = await questionnaireService.submitAnswers(id, answers);
+            const response = await submitMutation.mutateAsync({
+                id: id!,
+                answers: answers,
+                residentId: targetResident?.id,
+                activeRoleId: activeRole?.id
+            });
 
             navigate(`/result/${response.data?.id}`, {
                 state: {
                     submissionData: response.data,
                     questionnaireTitle: quiz.title,
+                    targetResident: targetResident
                 },
             });
         } catch (err: any) {
@@ -149,7 +127,7 @@ export default function Quiz() {
     const answeredCount = Object.values(answers).filter(a => a !== "").length;
     const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
                 <Spin indicator={<Loader2 className="animate-spin text-[#70B748]" size={48} />} />
@@ -158,11 +136,14 @@ export default function Quiz() {
         );
     }
 
-    if (!quiz) {
+    if (isError || !quiz) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                <p className="text-gray-500 mb-4">Kuisioner tidak ditemukan</p>
-                <Button onClick={() => navigate("/")}>Kembali ke Beranda</Button>
+                <div className="text-center">
+                    <p className="text-red-500 font-bold mb-2">Gagal Memuat Kuesioner</p>
+                    <p className="text-gray-500 mb-4">{error?.message || "Terjadi kesalahan"}</p>
+                    <Button onClick={() => navigate("/")}>Kembali ke Beranda</Button>
+                </div>
             </div>
         );
     }

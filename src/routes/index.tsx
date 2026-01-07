@@ -55,6 +55,14 @@ const router = createBrowserRouter([
               </>
             )
           },
+          {
+            path: "kader",
+            element: (
+              <RoleGuard allowedRoleIds={[ROLE_ID.KADER]}>
+                <Loadable Component={Pages.HomeKader} />
+              </RoleGuard>
+            ),
+          },
           { path: "profile", element: <Loadable Component={Pages.Profile} /> },
           { path: "quiz/:id", element: <Loadable Component={Pages.Quiz} /> },
           {

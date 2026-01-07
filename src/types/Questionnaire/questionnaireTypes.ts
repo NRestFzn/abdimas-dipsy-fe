@@ -10,6 +10,15 @@ export interface QuestionnaireHistoryResponse {
     id: string,
     UserId: string,
     QuestionnaireId: string
+    isAssisted: boolean
+    submittedBy: {
+        id: string,
+        createdAt: string
+        updatedAt: string
+        fullname: string
+        email: string
+        profilePicture: string
+    }
     questionnaire: Partial<Questionnaire>
     createdAt: string,
     updatedAt: string,
@@ -81,4 +90,22 @@ export interface GetCategoryParams {
     page?: number;
     pageSize?: number;
     order?: string;
+}
+
+export interface Question {
+    id: string;
+    questionText: string;
+    questionType: string;
+    options?: string[];
+    status: string;
+    order: number;
+    QuestionnaireId: string;
+}
+
+export interface QuestionnaireDetail {
+    id: string;
+    title: string;
+    description: string;
+    status: string;
+    questions: Question[];
 }

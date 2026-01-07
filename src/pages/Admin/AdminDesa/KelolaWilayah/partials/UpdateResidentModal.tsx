@@ -350,7 +350,7 @@ export default function EditResidentModal({
 
             <div className="my-4 border-t border-gray-100" />
 
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
               <Row align="middle" gutter={[16, 0]}>
                 <Col flex="auto">
                   <Form.Item
@@ -359,14 +359,14 @@ export default function EditResidentModal({
                     className="!mb-0"
                   >
                     <Checkbox className="!text-gray-800 font-semibold text-base">
-                      Warga Perlu Pendampingan Kader?
+                      Tetapkan Sebagai Petugas Kader?
                     </Checkbox>
                   </Form.Item>
                 </Col>
               </Row>
               <Typography.Text className="text-gray-500 text-xs mt-1 block pl-6">
-                Centang jika warga ini <b>tidak memiliki perangkat</b>.
-                Data warga ini nantinya akan dikelola dan diinputkan oleh petugas Kader melalui fitur Switch User.
+                Jika dicentang, warga ini akan memiliki akses ganda sebagai <b>Kader Kesehatan</b>.
+                Mereka dapat masuk ke dashboard khusus untuk membantu warga lain mengisi kuisioner.
               </Typography.Text>
             </div>
           </Row>

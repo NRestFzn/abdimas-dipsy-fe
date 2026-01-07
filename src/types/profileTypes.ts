@@ -10,7 +10,7 @@ export interface UserMe {
     fullname: string;
     email: string;
     RoleId: string;
-    role: Role;
+    roles: Role[];
     profilePicture: string;
     createdAt: string;
     updatedAt: string;

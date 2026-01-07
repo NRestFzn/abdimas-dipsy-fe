@@ -240,10 +240,10 @@ export interface AdminProfile {
   gender: 'm' | 'f';
   birthDate: string;
   profilePicture?: string;
-  role: {
+  roles: {
     id: string;
     name: string;
-  };
+  }[];
   createdAt: string;
 }
 

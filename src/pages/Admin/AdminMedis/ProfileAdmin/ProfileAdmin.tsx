@@ -76,6 +76,10 @@ export default function AdminProfile() {
   const data = response?.data;
   const profilePictureUrl = getImageUrl(data.profilePicture);
 
+  const primaryRole = data?.roles && data.roles.length > 0 ? data.roles[0] : null;
+  const displayRoleName = primaryRole?.name || "Admin";
+
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
@@ -125,7 +129,7 @@ export default function AdminProfile() {
                 color="green"
                 className="px-4 py-1 rounded-full text-sm border-0 bg-green-100 text-green-700 font-semibold capitalize"
               >
-                {data.role.name}
+                {displayRoleName}
               </Tag>
             </div>
 
@@ -138,7 +142,7 @@ export default function AdminProfile() {
                 </p>
                 <p className="font-medium text-gray-700 capitalize flex items-center justify-center gap-2">
                   <ShieldCheck size={16} className="text-[#70B748]" />
-                  {data.role.name}
+                  {displayRoleName}
                 </p>
               </div>
               <div className="p-4 text-center">

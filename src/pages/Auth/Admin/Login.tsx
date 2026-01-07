@@ -30,7 +30,6 @@ export default function Login() {
       const getRedirectPath = (userRoles: Role[]) => {
         if (userRoles.some(r => r.id === ROLE_ID.ADMIN_DESA)) return "/admin/responden";
         if (userRoles.some(r => r.id === ROLE_ID.ADMIN_MEDIS)) return "/admin-medis/responden";
-        if (userRoles.some(r => r.id === ROLE_ID.KADER)) return "/kader/dashboard";
 
         return "/";
       };

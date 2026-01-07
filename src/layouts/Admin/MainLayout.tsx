@@ -27,15 +27,14 @@ const items: MenuProps["items"] = [
 ];
 
 interface ProfileComponentProps {
-  role?: string;
+  role?: string | undefined;
   fullname?: string;
   profileUrl?: string;
+  logout: () => void
 }
 
 const ProfileComponent = (props: ProfileComponentProps) => {
-  const { role, fullname, profileUrl } = props
-
-  const { logout } = useAuth();
+  const { role, fullname, profileUrl, logout } = props
 
   const navigate = useNavigate();
 
@@ -98,9 +97,10 @@ interface MainLayoutProps {
 function MainLayout(props: MainLayoutProps) {
   const { children, startAction } = props;
 
+  const { logout, activeRole } = useAuth();
   const { data } = useAdminMedisProfile();
 
-  const role = data?.data?.role?.name;
+  const roleName = activeRole?.name
   const fullname = data?.data?.fullname;
   const profileUrl = getImageUrl(data?.data?.profilePicture);
 
@@ -113,7 +113,7 @@ function MainLayout(props: MainLayoutProps) {
           {!startAction && (
             <a
               className="flex items-center space-x-2 md:space-x-4 cursor-pointer"
-              href={`${role === "admin medis" ? "/admin-medis/responden" : "/admin/responden"}`}
+              href={`${roleName === "admin medis" ? "/admin-medis/responden" : "/admin/responden"}`}
             >
               <div className="flex items-center gap-3">
                 <img
@@ -128,7 +128,7 @@ function MainLayout(props: MainLayoutProps) {
             </a>
           )}
         </section>
-        <ProfileComponent role={role} fullname={fullname} profileUrl={profileUrl} />
+        <ProfileComponent logout={logout} role={roleName} fullname={fullname} profileUrl={profileUrl} />
       </Header>
       <Layout className="h-full overflow-hidden">{children}</Layout>
     </Layout>

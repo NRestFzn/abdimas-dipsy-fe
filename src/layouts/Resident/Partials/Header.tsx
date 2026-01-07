@@ -1,17 +1,45 @@
-import { Avatar, Dropdown, type MenuProps } from "antd";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { Avatar, Dropdown, Modal, Tag, type MenuProps } from "antd";
+import { AlertTriangle, ChevronDown, LogOut, SwitchCamera, User } from "lucide-react";
+import type { Role, UserMeResponse } from "../../../types/AuthTypes/authTypes";
+import { ROLE_ID } from "../../../constants";
 import { useNavigate } from "react-router";
 
 interface HeaderProps {
   fullname: string;
   profileUrl?: string;
   onLogout: () => void;
+  activeRole: Role;
+  switchRole: (role: Role) => void
+  user: UserMeResponse
 }
 
-export const HomeHeader = ({ fullname, onLogout, profileUrl }: HeaderProps) => {
+export const HomeHeader = ({ fullname, onLogout, profileUrl, activeRole, user, switchRole }: HeaderProps) => {
   const navigate = useNavigate();
 
-  const items: MenuProps["items"] = [
+  const getRoleLabel = () => {
+    if (activeRole?.id === ROLE_ID.KADER) return "Petugas Kader";
+    if (activeRole?.id === ROLE_ID.WARGA) return "Warga Desa";
+    return "User";
+  };
+
+  const getRoleColor = () => {
+    if (activeRole?.id === ROLE_ID.KADER) return "blue";
+    return "green";
+  };
+
+  const items: MenuProps['items'] = [
+    {
+      key: 'role-info',
+      label: (
+        <div className="flex flex-col px-1 py-1 cursor-default">
+          <span className="text-xs text-gray-400 font-medium">Masuk sebagai</span>
+          <Tag color={getRoleColor()} className="!mt-1 !w-fit !border-none !px-2 !py-0.5 !font-semibold">
+            {getRoleLabel()}
+          </Tag>
+        </div>
+      ),
+      disabled: true,
+    },
     {
       key: "profile",
       label: "Lihat Profil Saya",
@@ -19,13 +47,59 @@ export const HomeHeader = ({ fullname, onLogout, profileUrl }: HeaderProps) => {
       onClick: () => navigate("/profile"),
     },
     {
-      type: "divider",
+      type: 'divider',
     },
+    ...(user?.roles && user.roles.length > 1 ? [
+      {
+        key: 'switch-role',
+        label: (
+          <span className="text-gray-600 font-medium">
+            Ganti ke {activeRole?.id === ROLE_ID.WARGA ? "Mode Kader" : "Mode Warga"}
+          </span>
+        ),
+        icon: <SwitchCamera size={16} className="text-gray-500" />,
+        onClick: () => {
+          const targetRoleId = activeRole?.id === ROLE_ID.WARGA ? ROLE_ID.KADER : ROLE_ID.WARGA;
+          const targetRole = user.roles.find((r: any) => r.id === targetRoleId);
+          const targetLabel = targetRoleId === ROLE_ID.KADER ? "Mode Kader" : "Mode Warga";
+
+          if (targetRole) {
+            Modal.confirm({
+              title: 'Ganti Mode Aplikasi',
+              icon: <AlertTriangle className="text-yellow-500 mr-2" size={24} />,
+              content: (
+                <div className="text-gray-600 mt-2">
+                  Anda akan berpindah ke <b>{targetLabel}</b>. Halaman akan dialihkan.
+                  <br />
+                  Apakah Anda yakin?
+                </div>
+              ),
+              okText: 'Ya, Ganti',
+              cancelText: 'Batal',
+              okButtonProps: {
+                className: targetRoleId === ROLE_ID.KADER ? "bg-blue-500 hover:!bg-blue-600" : "bg-[#70B748] hover:!bg-green-600"
+              },
+              centered: true,
+              onOk() {
+                switchRole(targetRole);
+                requestAnimationFrame(() => {
+                  if (targetRole.id === ROLE_ID.KADER) {
+                    navigate("/kader");
+                  } else {
+                    navigate("/");
+                  }
+                });
+              },
+            });
+          }
+        }
+      },
+      { type: 'divider' } as any
+    ] : []),
     {
-      key: "logout",
-      label: "Keluar",
-      icon: <LogOut size={16} />,
-      danger: true,
+      key: 'logout',
+      label: <span className="text-red-600 font-medium">Logout</span>,
+      icon: <LogOut size={16} className="text-red-500" />,
       onClick: onLogout,
     },
   ];
@@ -46,31 +120,26 @@ export const HomeHeader = ({ fullname, onLogout, profileUrl }: HeaderProps) => {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-4">
-            <Dropdown
-              menu={{ items }}
-              trigger={["click"]}
-              placement="bottomRight"
-            >
-              <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200 group">
-                <div className="text-right hidden md:block">
-                  <div className="text-sm font-semibold text-gray-700 group-hover:text-[#70B748] transition-colors">
+            <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight" arrow>
+              <div className="flex items-center gap-3 cursor-pointer p-1.5 pr-3 transition-colors">
+
+                <div className="hidden md:flex flex-col items-end">
+                  <span className="text-sm font-bold text-gray-700 leading-tight">
                     {fullname}
-                  </div>
-                  <div className="text-xs text-gray-500">Warga</div>
+                  </span>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${activeRole?.id === ROLE_ID.KADER ? 'text-blue-500' : 'text-green-600'}`}>
+                    {getRoleLabel()}
+                  </span>
                 </div>
 
                 <Avatar
-                  size="large"
                   src={profileUrl}
-                  className="bg-gray-200 text-gray-600 group-hover:bg-[#70B748] group-hover:text-white transition-colors"
-                >
-                  {fullname?.charAt(0)?.toUpperCase() || <User />}
-                </Avatar>
-
-                <ChevronDown
-                  size={16}
-                  className="text-gray-400 group-hover:text-[#70B748] transition-colors"
+                  icon={!profileUrl && <User size={20} />}
+                  className={`flex-shrink-0 border-2 ${activeRole?.id === ROLE_ID.KADER ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-green-100 text-green-600 border-green-200'}`}
+                  size={40}
                 />
+
+                <ChevronDown size={16} className="text-gray-400 hidden sm:block" />
               </div>
             </Dropdown>
           </div>

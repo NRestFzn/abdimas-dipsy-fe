@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	const getPriorityRole = (roles: Role[]): Role | null => {
 		if (!roles || roles.length === 0) return null;
 
-		const priorityOrder = [ROLE_ID.ADMIN_DESA, ROLE_ID.ADMIN_MEDIS, ROLE_ID.KADER, ROLE_ID.WARGA];
+		const priorityOrder = [ROLE_ID.KADER, ROLE_ID.WARGA];
 
 		for (const roleId of priorityOrder) {
 			const found = roles.find(r => r.id === roleId);
@@ -52,13 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			setUserState(userData);
 			if (userData.roles && userData.roles.length > 0) {
 				const savedRoleId = localStorage.getItem("activeRoleId");
-				const savedRole = userData.roles.find(r => r.id === savedRoleId);
+				const savedRole = userData.roles.find(r => String(r.id) === savedRoleId);
 
 				const nextRole = savedRole || getPriorityRole(userData.roles);
 				setActiveRole(nextRole);
 
 				if (nextRole) {
-					localStorage.setItem("activeRoleId", nextRole.id);
+					localStorage.setItem("activeRoleId", String(nextRole.id));
 				}
 			}
 
@@ -85,7 +85,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	const switchRole = (role: Role) => {
 		setActiveRole(role);
 		localStorage.setItem("activeRoleId", role.id);
-		window.location.reload();
 	};
 
 	useEffect(() => {

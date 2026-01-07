@@ -13,11 +13,11 @@ export const Register = lazy(() => import("../pages/Auth/Resident/Register"));
 
 // Resident
 export const RoleSelection = lazy(() => import("../pages/Auth/Resident/RoleSelection"));
-export const HomeKader = lazy(() => import("../pages/Kader/HomeKader"));
-export const Home = lazy(() => import("../pages/Home/Home"));
-export const Profile = lazy(() => import("../pages/Profile/Profile"));
-export const Quiz = lazy(() => import("../pages/Quiz/Quiz"));
-export const Result = lazy(() => import("../pages/Result/Result"));
+export const HomeKader = lazy(() => import("../pages/Resident/Kader/HomeKader"));
+export const Home = lazy(() => import("../pages/Resident/Home/Home"));
+export const Profile = lazy(() => import("../pages/Resident/Profile/Profile"));
+export const Quiz = lazy(() => import("../pages/Resident/Quiz/Quiz"));
+export const Result = lazy(() => import("../pages/Resident/Result/Result"));
 
 // Admin General
 export const AdminDesaResponden = lazy(

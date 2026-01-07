@@ -10,19 +10,21 @@ export const RootRedirect = () => {
 
   if (!user || !activeRole) return null;
 
-  if (activeRole.id === ROLE_ID.ADMIN_DESA) {
+  const currentRoleId = String(activeRole.id);
+
+  if (currentRoleId === ROLE_ID.ADMIN_DESA) {
     return <Navigate to="/admin" replace />;
   }
 
-  if (activeRole.id === ROLE_ID.ADMIN_MEDIS) {
+  if (currentRoleId === ROLE_ID.ADMIN_MEDIS) {
     return <Navigate to="/admin-medis" replace />;
   }
 
-  if (activeRole.id === ROLE_ID.KADER) {
-    return <Navigate to="/pilih-peran" replace />;
+  if (currentRoleId === ROLE_ID.KADER) {
+    return <Navigate to="/kader" replace />;
   }
 
-  if (activeRole.id === ROLE_ID.WARGA) {
+  if (currentRoleId === ROLE_ID.WARGA) {
     return null;
   }
 

@@ -35,7 +35,9 @@ export const RoleGuard = ({ children, allowedRoleIds, loginPath = "/masuk" }: Ro
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
-  if (!allowedRoleIds.includes(activeRole.id)) {
+  const currentRoleId = String(activeRole.id);
+
+  if (!allowedRoleIds.includes(currentRoleId)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
