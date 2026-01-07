@@ -150,6 +150,7 @@ export default function HomeKader() {
                                     disabled={quiz?.isAvailable as boolean}
                                     availableAt={quiz?.availableAt as string}
                                     onRefresh={refetch}
+                                    category={quiz.category?.name}
                                 />
                             ))}
                         </div>

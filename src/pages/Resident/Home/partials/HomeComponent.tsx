@@ -1,8 +1,9 @@
-import { Button, Card, Modal, Tag } from "antd";
-import { Clock, Coffee, FileText, Heart, Info, PlayCircle } from "lucide-react";
+import { Button, Card, Modal, Tooltip } from "antd";
+import { AlertCircle, Clock, Coffee, FileText, Heart, Info, PlayCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
+import { PiFolderStarLight } from "react-icons/pi";
 
 dayjs.extend(duration);
 
@@ -128,6 +129,7 @@ interface QuestionnaireCardProps {
   description: string;
   disabled: boolean;
   availableAt: string | null;
+  category?: string;
   onStart: (id: string) => void;
   onRefresh: () => void;
 }
@@ -139,6 +141,7 @@ export const QuestionnaireCard = ({
   onStart,
   disabled,
   availableAt,
+  category,
   onRefresh,
 }: QuestionnaireCardProps) => {
   const [timerString, setTimerString] = useState<string>("");
@@ -158,49 +161,34 @@ export const QuestionnaireCard = ({
       }
 
       const dur = dayjs.duration(diff);
-
-      if (dur.asYears() >= 1) {
-        setTimerString(`${Math.floor(dur.asYears())} Tahun`);
-      } else if (dur.asMonths() >= 1) {
-        const daysLeft = Math.floor(dur.asDays() % 30);
-        setTimerString(
-          `${Math.floor(dur.asMonths())} Bulan ${daysLeft > 0 ? `${daysLeft} Hari` : ""
-          }`
-        );
+      if (dur.asYears() >= 1) setTimerString(`${Math.floor(dur.asYears())} Tahun`);
+      else if (dur.asMonths() >= 1) {
+        const days = Math.floor(dur.asDays() % 30);
+        setTimerString(`${Math.floor(dur.asMonths())} Bulan ${days > 0 ? `${days} Hari` : ""}`);
       } else if (dur.asWeeks() >= 1) {
-        const daysLeft = Math.floor(dur.asDays() % 7);
-        setTimerString(
-          `${Math.floor(dur.asWeeks())} Minggu ${daysLeft > 0 ? `${daysLeft} Hari` : ""
-          }`
-        );
+        const days = Math.floor(dur.asDays() % 7);
+        setTimerString(`${Math.floor(dur.asWeeks())} Minggu ${days > 0 ? `${days} Hari` : ""}`);
       } else if (dur.asDays() >= 1) {
-        setTimerString(
-          `${Math.floor(dur.asDays())} Hari ${dur.hours() > 0 ? `${dur.hours()} Jam` : ""
-          }`
-        );
+        setTimerString(`${Math.floor(dur.asDays())} Hari ${dur.hours() > 0 ? `${dur.hours()} Jam` : ""}`);
       } else {
-        const hours = Math.floor(dur.asHours());
-        const minutes = dur.minutes();
-        const seconds = dur.seconds();
-
+        const h = Math.floor(dur.asHours());
+        const m = dur.minutes();
+        const s = dur.seconds();
         const parts = [];
-        if (hours > 0) parts.push(`${hours} Jam`);
-        if (minutes > 0) parts.push(`${minutes} Menit`);
-        parts.push(`${seconds} Detik`);
-
+        if (h > 0) parts.push(`${h}j`);
+        if (m > 0) parts.push(`${m}m`);
+        parts.push(`${s}s`);
         setTimerString(parts.join(" "));
       }
     };
 
     updateTimer();
-
     const intervalId = setInterval(updateTimer, 1000);
-
     return () => clearInterval(intervalId);
   }, [disabled, availableAt, onRefresh]);
 
   const handleCardClick = () => {
-    setIsModalOpen(true);
+    if (disabled) setIsModalOpen(true);
   };
 
   const handleConfirmStart = () => {
@@ -212,47 +200,52 @@ export const QuestionnaireCard = ({
     <>
       <Card
         hoverable
-        className={`h-full flex flex-col border-gray-200 transition-all duration-300 group ${disabled ? "hover:border-[#70B748]" : "opacity-80 bg-gray-50"
+        className={`h-full flex flex-col border border-gray-200 rounded-2xl transition-all duration-300 group overflow-hidden ${disabled ? "hover:border-[#70B748] hover:shadow-md bg-white" : "bg-gray-50/80"
           }`}
         styles={{
           body: {
             display: "flex",
             flexDirection: "column",
             height: "100%",
-            padding: "24px",
-          }
+            padding: "20px",
+          },
         }}
       >
-        <div className="flex items-start justify-between mb-4">
-          <div
-            className={`p-3 rounded-lg transition-colors duration-300 ${disabled ? "bg-green-50 group-hover:bg-[#70B748]" : "bg-gray-200"
-              }`}
-          >
-            <FileText
-              className={`w-6 h-6 transition-colors ${disabled
-                ? "text-[#70B748] group-hover:text-white"
-                : "text-gray-500"
-                }`}
-            />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+            <PiFolderStarLight size={14} className="text-blue-500" />
+            <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+              {category || "Umum"}
+            </span>
           </div>
 
           {disabled ? (
-            <Tag color="success" className="mr-0">
-              Tersedia
-            </Tag>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs font-bold">Tersedia</span>
+            </div>
           ) : (
-            <Tag color="warning" className="mr-0">
-              Cooldown
-            </Tag>
+            <Tooltip title="Anda baru saja mengerjakan ini. Harap tunggu waktu cooldown berakhir.">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100 cursor-help">
+                <AlertCircle size={12} />
+                <span className="text-xs font-bold">Cooldown</span>
+              </div>
+            </Tooltip>
           )}
         </div>
 
-        <div className="flex-1 mb-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
+        <div className="flex-1 mb-5">
+          <h3
+            className={`text-lg font-bold mb-2 line-clamp-2 leading-snug transition-colors ${disabled ? "text-gray-800 group-hover:text-[#70B748]" : "text-gray-500"
+              }`}
+          >
             {title}
           </h3>
           <p className="text-gray-500 text-sm line-clamp-3 leading-relaxed">
-            {description || "Tidak ada deskripsi tersedia."}
+            {description || "Tidak ada deskripsi tersedia untuk kuesioner ini."}
           </p>
         </div>
 
@@ -260,26 +253,31 @@ export const QuestionnaireCard = ({
           type="primary"
           size="large"
           disabled={!disabled}
-          className={`border-none h-10 font-medium !flex items-center justify-center gap-2 ${disabled
-            ? "!bg-[#70B748] !hover:bg-[#5a9639]"
-            : "!bg-gray-300 !text-gray-600 cursor-not-allowed"
-            }`}
           onClick={handleCardClick}
+          className={`!w-full h-11 font-semibold rounded-xl border-none shadow-none transition-all duration-300 !flex !items-center !justify-center gap-2 ${disabled
+            ? "bg-[#70B748] hover:!bg-[#5a9639] hover:shadow-lg hover:shadow-green-200 hover:-translate-y-0.5"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
         >
           {disabled ? (
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center justify-center gap-x-2">
               <PlayCircle size={18} />
-              Mulai Mengerjakan
+              <span>Mulai Mengerjakan</span>
             </div>
           ) : (
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center justify-center gap-x-2">
               <Clock size={18} />
-              {timerString ? `Tersedia dlm ${timerString}` : "Sedang Cooldown"}
+              <span className="text-sm">{timerString || "Menunggu..."}</span>
             </div>
           )}
         </Button>
       </Card>
-      <AttentionModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleConfirmStart} />
+
+      <AttentionModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmStart}
+      />
     </>
   );
 };
