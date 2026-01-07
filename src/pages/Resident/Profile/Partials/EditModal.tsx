@@ -1,10 +1,10 @@
 import {useEffect, useState} from 'react';
 import {Modal, Form, Input, Button, Alert, Row, Col, Select} from 'antd';
 import {Info} from 'lucide-react';
-import {useUpdateProfile} from '../../../hooks/useResident';
-import {getErrorMessage} from '../../../utils/getErrorMessage';
-import {useMasterData} from '../../../hooks/useMasterData';
-import type { ResidentMe } from '../../../types/Resident/residentType';
+import type { ResidentMe } from '../../../../types/Resident/residentType';
+import { useUpdateProfile } from '../../../../hooks/useResident';
+import { useMasterData } from '../../../../hooks/useMasterData';
+import { getErrorMessage } from '../../../../utils/getErrorMessage';
 
 interface EditProfileModalProps {
   open: boolean;

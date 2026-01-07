@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Form, Input, Button, Alert, Typography } from "antd";
 import { Lock, SquareUserRound, ChevronRight } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
-import { getErrorMessage } from "../../utils/getErrorMessage";
-import { ROLE_ID } from "../../constants";
-import type { LoginResidentPayload } from "../../types/AuthTypes/authTypes";
+import { useAuth } from "../../../context/AuthContext";
+import { getErrorMessage } from "../../../utils/getErrorMessage";
+import type { LoginResidentPayload } from "../../../types/AuthTypes/authTypes";
+import { ROLE_ID } from "../../../constants";
 
 const { Title, Text } = Typography;
 
@@ -22,13 +22,16 @@ export default function LoginResident() {
         password: values.password,
       });
 
-      const userRoleId = response?.data?.RoleId;
+      const userData = response?.data;
+      const roles = userData?.roles || [];
+      const hasKaderRole = roles.some((role: any) => role.id === ROLE_ID.KADER);
 
-      if (userRoleId === ROLE_ID.WARGA) {
-        navigate("/", { replace: true });
+      if (hasKaderRole) {
+        navigate("/pilih-peran", { replace: true });
       } else {
         navigate("/", { replace: true });
       }
+      
     } catch (err) {
       console.error("Resident Login error:", err);
       setFormError(getErrorMessage(err));

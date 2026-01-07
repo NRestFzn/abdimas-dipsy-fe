@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Select, DatePicker, Row, Col, Spin } from "antd";
+import { Modal, Form, Input, Select, DatePicker, Row, Col, Spin, Checkbox, Typography, message } from "antd";
 import { useState } from "react";
 import { useMasterData } from "../../../../../hooks/useMasterData";
 import { useResident } from "../../../../../hooks/Admin/AdminDesa/useResident";
@@ -56,14 +56,17 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
     const handleCreate = (values: any) => {
         const payload: CreateResidentPayload = {
             ...values,
+            email: values.email || null,
+            isKader: !!values.isKader || false,
             birthDate: values.birthDate ? values.birthDate.format("YYYY-MM-DD") : "",
-            password: "password123",
-            confirmPassword: "password123"
+            password: values.password,
+            confirmPassword: values.confirmPassword
         };
 
         createResidentMutation.mutate(payload, {
             onSuccess: () => {
                 handleCancel();
+                message.success(`Warga atas nama ${payload.fullname} Berhasil`)
             },
         });
     };
@@ -102,13 +105,48 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
 
                 <Row gutter={[16, 16]}>
                     <Col xs={24} md={12}>
-                        <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}>
+                        <Form.Item label="Email (Opsional)" name="email">
                             <Input placeholder="email@contoh.com" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} md={12}>
                         <Form.Item label="Nomor Telepon" name="phoneNumber" rules={[{ required: true }]}>
                             <Input placeholder="089147823524" style={{ width: '100%' }} />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            label="Kata Sandi"
+                            name="password"
+                            rules={[
+                                { required: true, message: "Mohon masukkan kata sandi" },
+                                { min: 6, message: "Kata sandi minimal 6 karakter" }
+                            ]}
+                        >
+                            <Input.Password placeholder="Masukkan kata sandi" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            label="Konfirmasi Kata Sandi"
+                            name="confirmPassword"
+                            dependencies={['password']}
+                            rules={[
+                                { required: true, message: "Mohon konfirmasi kata sandi" },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        if (!value || getFieldValue('password') === value) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error('Kata sandi tidak cocok!'));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Input.Password placeholder="Ulangi kata sandi" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -202,6 +240,30 @@ export default function CreateResidentModal({ open, onCancel }: CreateResidentMo
                         </Form.Item>
                     </Col>
                 </Row>
+
+                <div className="my-4 border-t border-gray-100" />
+
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <Row align="middle" gutter={[16, 0]}>
+                        <Col flex="auto">
+                            <Form.Item
+                                name="isKader"
+                                valuePropName="checked"
+                                className="!mb-0"
+                            >
+                                <Checkbox className="!text-gray-800 font-bold text-base flex items-center gap-2">
+                                    <span className="flex items-center gap-2">
+                                        Tetapkan Sebagai Petugas Kader?
+                                    </span>
+                                </Checkbox>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Typography.Text className="text-gray-600 text-xs mt-2 block pl-6 leading-relaxed">
+                        Jika dicentang, warga ini akan memiliki akses ganda sebagai <b>Kader Kesehatan</b>.
+                        Mereka dapat masuk ke dashboard khusus untuk membantu warga lain mengisi kuisioner.
+                    </Typography.Text>
+                </div>
             </Form>
         </Modal>
     );

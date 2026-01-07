@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { residentService } from "../service/residentService";
 import { message } from "antd";
 import type { UpdateProfileResidentPayload } from "../types/Resident/residentType";
@@ -9,6 +9,32 @@ export const useResident = () => {
     queryFn: residentService.getResidentProfile,
     staleTime: 1000 * 60 * 5,
     retry: 1,
+  });
+};
+
+export const useInfiniteResidents = (search: string = "") => {
+  return useInfiniteQuery({
+    queryKey: ["residents", "list", search],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam = 1 }) => {
+      return await residentService.getAllResidents({
+        page: pageParam as number,
+        pageSize: 10,
+        fullname: search,
+      });
+    },
+    getNextPageParam: (lastPage) => {
+      const meta = lastPage.meta?.pagination;
+
+      if (!meta) return undefined;
+
+      if (meta.page < meta.pageCount) {
+        return meta.page + 1;
+      }
+
+      return undefined;
+    },
+    staleTime: 1000 * 60 * 1,
   });
 };
 

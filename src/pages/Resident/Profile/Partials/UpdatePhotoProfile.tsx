@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Modal, Button, Upload, Avatar, message } from "antd";
 import { UploadCloud } from "lucide-react";
 import type { RcFile } from "antd/es/upload/interface";
-import { useUpdateProfilePicture } from "../../../hooks/useResident";
+import { useUpdateProfilePicture } from "../../../../hooks/useResident";
 
 interface UpdatePhotoModalProps {
     open: boolean;

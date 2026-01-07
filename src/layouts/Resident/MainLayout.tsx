@@ -5,15 +5,19 @@ import { useResident } from "../../hooks/useResident";
 import { useAuth } from "../../context/AuthContext";
 import { getImageUrl } from "../../utils/imageHelper";
 import { HomeHeader } from "./Partials/Header";
+import { HomeFooter } from "./Partials/Footer";
 
 export default function ResidentLayout() {
-  const { logout, user } = useAuth();
+  const { logout, activeRole, user, switchRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const { data: response, isLoading } = useResident();
 
-  const isQuizPage = location.pathname.includes("/quiz") || location.pathname.includes("/result");
+  const isCleanLayout =
+    location.pathname.includes("/quiz") ||
+    location.pathname.includes("/result") ||
+    location.pathname === "/pilih-peran";
 
   const handleLogout = () => {
     Modal.confirm({
@@ -53,17 +57,22 @@ export default function ResidentLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {!isQuizPage &&
+      {!isCleanLayout &&
         <HomeHeader
           fullname={profile?.fullname || user?.fullname || "Warga"}
           profileUrl={profilePictureUrl}
+          activeRole={activeRole!}
           onLogout={handleLogout}
+          user={user}
+          switchRole={switchRole}
         />
       }
 
       <div className="flex-1">
         <Outlet />
       </div>
+
+      {!isCleanLayout && <HomeFooter />}
     </div>
   );
 }

@@ -9,7 +9,7 @@ export interface Questionnaire {
 	title: string;
 	description: string;
 	status: "draft" | "publish";
-    riskThreshold?: number;
+	riskThreshold?: number;
 	availableAt: string;
 	isAvailable: boolean
 }
@@ -132,14 +132,14 @@ api.interceptors.request.use(
 export const validateQuestionnaireData = (data: any): QuestionnaireDetail => {
 	const questions = Array.isArray(data.questions)
 		? data.questions.map((q: any) => ({
-				id: q.id || `temp-${Math.random()}`,
-				questionText: q.questionText || q.question || "Pertanyaan tidak tersedia",
-				questionType: q.questionType || q.type || "radio",
-				status: q.status || "publish",
-				order: q.order || 0,
-				QuestionnaireId: q.QuestionnaireId || "",
-				options: Array.isArray(q.options) ? q.options : ["Ya", "Tidak"],
-		  }))
+			id: q.id || `temp-${Math.random()}`,
+			questionText: q.questionText || q.question || "Pertanyaan tidak tersedia",
+			questionType: q.questionType || q.type || "radio",
+			status: q.status || "publish",
+			order: q.order || 0,
+			QuestionnaireId: q.QuestionnaireId || "",
+			options: Array.isArray(q.options) ? q.options : ["Ya", "Tidak"],
+		}))
 		: [];
 
 	return {
@@ -195,10 +195,12 @@ export const questionnaireService = {
 		return data;
 	},
 
-	async submitAnswers(
+	submitAnswers: async (
 		questionnaireId: string,
-		answers: Record<string, string>
-	): Promise<ApiResponse<SubmissionResponseData>> {
+		answers: Record<string, string>,
+		residentId?: string,
+		activeRoleId?: string 
+	): Promise<ApiResponse<SubmissionResponseData>> => {
 		const formattedAnswers: AnswerSubmission[] = Object.entries(answers).map(
 			([questionId, answerValue]) => {
 				let convertedValue = answerValue;
@@ -217,11 +219,21 @@ export const questionnaireService = {
 
 		const requestData: SubmitAnswersRequest = {
 			answers: formattedAnswers,
+			...(residentId && { UserId: residentId }),
 		};
+
+		const config: any = {};
+
+		if (residentId && activeRoleId) {
+			config.headers = {
+				"x-active-role": activeRoleId
+			};
+		}
 
 		const response = await api.post<ApiResponse<SubmissionResponseData>>(
 			`/v1/questionnaire-submission/${questionnaireId}/submit`,
-			requestData
+			requestData,
+			config
 		);
 
 		return response.data;

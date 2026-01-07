@@ -1,9 +1,17 @@
+export interface UserHasRoles {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  RoleId: string;
+  UserId: string;
+}
 
 export interface Role {
   id: string;
   createdAt: string;
   updatedAt: string;
   name: string;
+  UserHasRoles?: UserHasRoles;
 }
 
 export interface UserMeResponse {
@@ -12,11 +20,10 @@ export interface UserMeResponse {
   updatedAt: string;
   fullname: string;
   email: string;
-  RoleId: string;
   gender: string;
   birthDate: string;
   profilePicture: string | null;
-  role: Role;
+  roles: Role[];
   accessToken?: string;
 }
 
@@ -24,7 +31,7 @@ export interface AuthResponse {
   uid: string;
   fullname: string;
   email: string;
-  RoleId?: string;
+  RoleIds: string[]
   accessToken?: string;
   expiresAt?: string;
   expiresIn?: number

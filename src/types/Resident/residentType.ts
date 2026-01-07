@@ -62,4 +62,5 @@ export interface CreateResidentPayload {
     EducationId: string;
     SalaryRangeId: string;
     nik: string;
+    isKader: boolean;
 }

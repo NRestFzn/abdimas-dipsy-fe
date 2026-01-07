@@ -2,15 +2,18 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { authService } from "../service/authService";
 import type { APIError } from "../types/ErrorFallbackType";
 import { useQueryClient } from "@tanstack/react-query";
-import type { LoginPayload, LoginResidentPayload, RegisterPayload, UserMeResponse } from "../types/AuthTypes/authTypes";
+import type { LoginPayload, LoginResidentPayload, RegisterPayload, Role, UserMeResponse } from "../types/AuthTypes/authTypes";
+import { ROLE_ID } from "../constants";
 
 interface AuthContextType {
 	user: UserMeResponse | null;
+	activeRole: Role | null;
 	isAuthenticated: boolean;
 	login: (data: LoginPayload) => Promise<any>;
 	loginResident: (data: LoginResidentPayload) => Promise<any>;
 	register: (data: RegisterPayload) => Promise<void>;
 	logout: () => void;
+	switchRole: (role: Role) => void;
 	isLoadingUser: boolean;
 	isLoading: boolean;
 	error: APIError | null
@@ -24,23 +27,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	const queryClient = useQueryClient();
 
 	const [user, setUserState] = useState<UserMeResponse | null>(null);
+	const [activeRole, setActiveRole] = useState<Role | null>(null);
 	const [isLoading, setIsLoading] = useState({
 		loadingUser: true,
 		loadingBtn: false
 	});
 	const [error, setError] = useState<APIError | null>(null);
 
+	const getPriorityRole = (roles: Role[]): Role | null => {
+		if (!roles || roles.length === 0) return null;
+
+		const priorityOrder = [ROLE_ID.KADER, ROLE_ID.WARGA];
+
+		for (const roleId of priorityOrder) {
+			const found = roles.find(r => r.id === roleId);
+			if (found) return found;
+		}
+
+		return roles[0];
+	};
+
 	const setUser = useCallback((userData: UserMeResponse | null) => {
 		if (userData) {
 			setUserState(userData);
+			if (userData.roles && userData.roles.length > 0) {
+				const savedRoleId = localStorage.getItem("activeRoleId");
+				const savedRole = userData.roles.find(r => String(r.id) === savedRoleId);
+
+				const nextRole = savedRole || getPriorityRole(userData.roles);
+				setActiveRole(nextRole);
+
+				if (nextRole) {
+					localStorage.setItem("activeRoleId", String(nextRole.id));
+				}
+			}
+
 			if (userData.accessToken) {
 				localStorage.setItem("authToken", userData.accessToken);
 			}
-			localStorage.setItem("userData", JSON.stringify(userData));
+
+			const { accessToken, ...rest } = userData;
+			localStorage.setItem("userData", JSON.stringify(rest));
 		} else {
 			setUserState(null);
+			setActiveRole(null);
 			localStorage.removeItem("authToken");
 			localStorage.removeItem("userData");
+			localStorage.removeItem("activeRoleId");
 		}
 	}, []);
 
@@ -48,6 +81,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		setUser(null);
 		queryClient.clear();
 	}, [queryClient, setUser]);
+
+	const switchRole = (role: Role) => {
+		setActiveRole(role);
+		localStorage.setItem("activeRoleId", role.id);
+	};
 
 	useEffect(() => {
 		const initAuth = async () => {
@@ -156,10 +194,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			value={{
 				user,
 				isAuthenticated: !!user,
+				activeRole,
 				login,
 				loginResident,
 				register,
 				logout,
+				switchRole,
 				isLoading: isLoading.loadingBtn,
 				isLoadingUser: isLoading.loadingUser,
 				error,

@@ -13,12 +13,12 @@ import { ArrowLeft, Edit, Camera } from "lucide-react";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 
-import { useResident } from "../../hooks/useResident";
 import { useState } from "react";
 import EditProfileModal from "./Partials/EditModal";
 import { BsGenderFemale, BsGenderMale } from "react-icons/bs";
 import UpdatePhotoModal from "./Partials/UpdatePhotoProfile";
-import { getImageUrl } from "../../utils/imageHelper";
+import { useResident } from "../../../hooks/useResident";
+import { getImageUrl } from "../../../utils/imageHelper";
 
 export default function Profile() {
   const navigate = useNavigate();

@@ -38,11 +38,15 @@ const router = createBrowserRouter([
     children: [
       {
         element: (
-          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA]} loginPath="/masuk-warga">
+          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA, ROLE_ID.KADER]} loginPath="/masuk-warga">
             <ResidentLayout />
           </RoleGuard>
         ),
         children: [
+          {
+            path: "pilih-peran",
+            element: <Loadable Component={Pages.RoleSelection} />,
+          },
           {
             index: true, element: (
               <>
@@ -50,6 +54,14 @@ const router = createBrowserRouter([
                 <Loadable Component={Pages.Home} />
               </>
             )
+          },
+          {
+            path: "kader",
+            element: (
+              <RoleGuard allowedRoleIds={[ROLE_ID.KADER]}>
+                <Loadable Component={Pages.HomeKader} />
+              </RoleGuard>
+            ),
           },
           { path: "profile", element: <Loadable Component={Pages.Profile} /> },
           { path: "quiz/:id", element: <Loadable Component={Pages.Quiz} /> },

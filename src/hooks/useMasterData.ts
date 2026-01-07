@@ -35,7 +35,7 @@ export const useMasterData = () => {
 			queryKey: ["rukunTetangga", params],
 			queryFn: () => masterDataService.getRukunTetangga(params),
 			placeholderData: keepPreviousData,
-			// enabled: !!params?.RukunWargaId
+			enabled: !!params?.RukunWargaId
 		});
 	}
 

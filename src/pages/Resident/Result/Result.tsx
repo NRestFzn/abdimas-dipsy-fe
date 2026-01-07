@@ -1,10 +1,10 @@
 import { useNavigate, useParams } from "react-router";
 import { useEffect, useState } from "react";
-import { questionnaireService } from "../../service/questionnaireService";
+import { questionnaireService } from "../../../service/questionnaireService";
 import { AlertCircle, ArrowLeft, CheckCircle2, FileText } from "lucide-react";
 import { Button, Card, Empty, Spin, Table, Tag, Typography } from "antd";
 import { getUserResultColumns } from "./columns/ResultColumn";
-import ResultPieChart from "../../components/Charts/ResultPieChart";
+import ResultPieChart from "../../../components/Charts/ResultPieChart";
 
 const { Title, Text, Paragraph } = Typography;
 

@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import {
   Modal,
   Form,
@@ -10,11 +10,14 @@ import {
   Spin,
   Row,
   Col,
+  Checkbox,
+  Typography,
 } from 'antd';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import {adminDesaService} from '../../../../../service/adminDesaService';
-import {useMasterData} from '../../../../../hooks/useMasterData';
+import { adminDesaService } from '../../../../../service/adminDesaService';
+import { useMasterData } from '../../../../../hooks/useMasterData';
+import { useInfiniteSelectOptions } from '../../../../../hooks/Common/useInfiniteSelectOptions';
 
 interface EditResidentModalProps {
   open: boolean;
@@ -30,26 +33,40 @@ export default function EditResidentModal({
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  const {educations, salaryRanges, marriageStatuses} = useMasterData();
+  const { educations, salaryRanges, marriageStatuses, infiniteRukunWarga, infiniteRukunTetangga } = useMasterData();
 
   const [selectedRW, setSelectedRW] = useState<string | null>(null);
 
-  const {data: rwList} = useQuery({
-    queryKey: ['rw-list'],
-    queryFn: () => adminDesaService.getAllRW(),
-    enabled: open,
+  const rwQuery = infiniteRukunWarga(20);
+  const {
+    options: rwOptions,
+    onPopupScroll: onRWScroll,
+    isLoading: loadingRW,
+    isFetchingNextPage: fetchingNextRW
+  } = useInfiniteSelectOptions({
+    queryResult: rwQuery,
+    labelKey: (item: any) => `RW ${item.name}`,
+    valueKey: 'id'
   });
 
-  const {data: rtList} = useQuery({
-    queryKey: ['rt-list', selectedRW],
-    queryFn: () =>
-      selectedRW
-        ? adminDesaService.getRT({order: "[['createdAt', 'desc']]"}, selectedRW)
-        : null,
-    enabled: !!selectedRW,
+  const rtQuery = infiniteRukunTetangga(20, selectedRW);
+  const {
+    options: rtOptions,
+    onPopupScroll: onRTScroll,
+    isLoading: loadingRT,
+    isFetchingNextPage: fetchingNextRT
+  } = useInfiniteSelectOptions({
+    queryResult: rtQuery,
+    labelKey: (item: any) => `RT ${item.name}`,
+    valueKey: 'id'
   });
 
-  const {data: residentDetail, isLoading: isFetchingDetail} = useQuery({
+  const handleRWChange = (val: string) => {
+    setSelectedRW(val);
+    form.setFieldValue("RukunTetanggaId", undefined);
+  };
+
+  const { data: residentDetail, isLoading: isFetchingDetail } = useQuery({
     queryKey: ['resident-detail', residentId],
     queryFn: () => adminDesaService.getResidentDetail(residentId!),
     enabled: !!residentId && open,
@@ -60,7 +77,7 @@ export default function EditResidentModal({
       adminDesaService.updateResident(residentId!, values),
     onSuccess: () => {
       message.success('Data warga berhasil diperbarui');
-      queryClient.invalidateQueries({queryKey: ['residents']});
+      queryClient.invalidateQueries({ queryKey: ['residents'] });
       onClose();
       form.resetFields();
     },
@@ -110,7 +127,7 @@ export default function EditResidentModal({
       onCancel={onClose}
       footer={null}
       width={800}
-      style={{top: 20}}
+      style={{ top: 20 }}
       centered
     >
       {isFetchingDetail ? (
@@ -128,7 +145,7 @@ export default function EditResidentModal({
               <Form.Item
                 label="Nama Lengkap"
                 name="fullname"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Input />
               </Form.Item>
@@ -137,7 +154,7 @@ export default function EditResidentModal({
               <Form.Item
                 label="Email"
                 name="email"
-                rules={[{required: true, type: 'email'}]}
+                rules={[{ required: true, type: 'email' }]}
               >
                 <Input />
               </Form.Item>
@@ -146,9 +163,9 @@ export default function EditResidentModal({
               <Form.Item
                 label="Nomor Telepon"
                 name="phoneNumber"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
-                <Input style={{width: '100%'}} />
+                <Input style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -157,7 +174,7 @@ export default function EditResidentModal({
             <Col xs={24} md={12}>
               <Form.Item
                 rules={[
-                  {min: 8, message: 'Password minimal berisi 8 karakter'},
+                  { min: 8, message: 'Password minimal berisi 8 karakter' },
                 ]}
                 label="Password Baru (Opsional)"
                 name="password"
@@ -171,7 +188,7 @@ export default function EditResidentModal({
                 name="confirmPassword"
                 dependencies={['password']}
                 rules={[
-                  ({getFieldValue}) => ({
+                  ({ getFieldValue }) => ({
                     validator(_, value) {
                       if (!value || getFieldValue('password') === value) {
                         return Promise.resolve();
@@ -194,20 +211,20 @@ export default function EditResidentModal({
 
           <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Form.Item label="NIK" name="nik" rules={[{required: true}]}>
-                <Input style={{width: '100%'}} />
+              <Form.Item label="NIK" name="nik" rules={[{ required: true }]}>
+                <Input style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
                 label="Jenis Kelamin"
                 name="gender"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Select
                   options={[
-                    {label: 'Laki-laki', value: 'm'},
-                    {label: 'Perempuan', value: 'f'},
+                    { label: 'Laki-laki', value: 'm' },
+                    { label: 'Perempuan', value: 'f' },
                   ]}
                 />
               </Form.Item>
@@ -216,11 +233,11 @@ export default function EditResidentModal({
               <Form.Item
                 label="Tanggal Lahir"
                 name="birthDate"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <DatePicker
                   className="w-full"
-                  style={{width: '100%'}}
+                  style={{ width: '100%' }}
                   format="DD MMMM YYYY"
                 />
               </Form.Item>
@@ -229,7 +246,7 @@ export default function EditResidentModal({
               <Form.Item
                 label="Status Pernikahan"
                 name="MarriageStatusId"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Select
                   loading={marriageStatuses.isLoading}
@@ -244,7 +261,7 @@ export default function EditResidentModal({
               <Form.Item
                 label="Pekerjaan"
                 name="profession"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Input />
               </Form.Item>
@@ -253,7 +270,7 @@ export default function EditResidentModal({
               <Form.Item
                 label="Pendidikan"
                 name="EducationId"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Select
                   loading={educations.isLoading}
@@ -268,7 +285,7 @@ export default function EditResidentModal({
               <Form.Item
                 label="Rentang Gaji"
                 name="SalaryRangeId"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Select
                   loading={salaryRanges.isLoading}
@@ -294,17 +311,19 @@ export default function EditResidentModal({
               <Form.Item
                 label="Rukun Warga (RW)"
                 name="RukunWargaId"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Select
-                  onChange={(val) => {
-                    setSelectedRW(val);
-                    form.setFieldValue('RukunTetanggaId', null);
+                  placeholder="Pilih RW"
+                  onChange={handleRWChange}
+                  options={rwOptions}
+                  loading={loadingRW}
+                  onPopupScroll={onRWScroll}
+                  notFoundContent={fetchingNextRW ? <Spin size="small" /> : null}
+                  showSearch={{
+                    filterOption: (input, option) =>
+                      (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
                   }}
-                  options={rwList?.data?.map((rw: any) => ({
-                    label: `RW ${rw.name}`,
-                    value: rw.id,
-                  }))}
                 />
               </Form.Item>
             </Col>
@@ -312,18 +331,44 @@ export default function EditResidentModal({
               <Form.Item
                 label="Rukun Tetangga (RT)"
                 name="RukunTetanggaId"
-                rules={[{required: true}]}
+                rules={[{ required: true }]}
               >
                 <Select
+                  placeholder={!selectedRW ? "Pilih RW Terlebih Dahulu" : "Pilih RT"}
                   disabled={!selectedRW}
-                  loading={!rtList && !!selectedRW}
-                  options={rtList?.data?.rukunTetangga?.map((rt: any) => ({
-                    label: `RT ${rt.name}`,
-                    value: rt.id,
-                  }))}
+                  options={rtOptions}
+                  loading={loadingRT}
+                  onPopupScroll={onRTScroll}
+                  notFoundContent={fetchingNextRT ? <Spin size="small" /> : null}
+                  showSearch={{
+                    filterOption: (input, option) =>
+                      (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+                  }}
                 />
               </Form.Item>
             </Col>
+
+            <div className="my-4 border-t border-gray-100" />
+
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+              <Row align="middle" gutter={[16, 0]}>
+                <Col flex="auto">
+                  <Form.Item
+                    name="isKader"
+                    valuePropName="checked"
+                    className="!mb-0"
+                  >
+                    <Checkbox className="!text-gray-800 font-semibold text-base">
+                      Tetapkan Sebagai Petugas Kader?
+                    </Checkbox>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Typography.Text className="text-gray-500 text-xs mt-1 block pl-6">
+                Jika dicentang, warga ini akan memiliki akses ganda sebagai <b>Kader Kesehatan</b>.
+                Mereka dapat masuk ke dashboard khusus untuk membantu warga lain mengisi kuisioner.
+              </Typography.Text>
+            </div>
           </Row>
 
           <div className="flex justify-end gap-2 mt-6">
