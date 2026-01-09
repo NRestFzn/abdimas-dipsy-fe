@@ -165,7 +165,7 @@ export default function ResidentTab() {
                         />
 
                         <Select
-                            placeholder={filterRW ? "Filter RT" : "Pilih RW Dulu"}
+                            placeholder="Pilih RW Dulu"
                             className="w-full md:w-40"
                             allowClear
                             value={filterRT}
