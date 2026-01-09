@@ -286,7 +286,7 @@ export default function Register() {
               rules={[{ required: true, message: 'Pilih RT' }]}
             >
               <Select
-                placeholder={selectedRW ? 'Pilih RT' : 'Pilih RW Dulu'}
+                placeholder="Pilih RW Dulu"
                 disabled={!selectedRW}
                 options={rtOptions}
                 loading={loadingRT}

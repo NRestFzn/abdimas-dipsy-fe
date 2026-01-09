@@ -93,14 +93,14 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
         const payload = {
             title: values.title,
             description: values.description,
-            status: values.status,
+            status: "draft" as "draft" | "publish",
             riskThreshold: Number(values.riskThreshold),
             cooldownInMinutes: calculatedMinutes,
             CategoryId: values.CategoryId,
         };
 
         if (isEditMode && editingData) {
-            updateMutation.mutate({ id: editingData.id, payload }, {
+            updateMutation.mutate({ id: editingData.id, payload: { ...payload, status: values.status } }, {
                 onSuccess: () => {
                     message.success("Kuisioner berhasil diperbarui")
                     onCancel()
@@ -196,12 +196,12 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
                     </Form.Item>
                 </div>
 
-                <Form.Item label="Status" name="status">
+                {/* <Form.Item label="Status" name="status">
                     <Select>
                         <Select.Option value="draft">Draft</Select.Option>
                         <Select.Option value="publish">Publish</Select.Option>
                     </Select>
-                </Form.Item>
+                </Form.Item> */}
 
                 <div className="flex justify-end gap-2 mt-4">
                     <Button onClick={onCancel}>Batal</Button>

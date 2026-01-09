@@ -97,7 +97,7 @@ export default function EditResidentModal({
         fullname: data.fullname,
         email: data.email,
         phoneNumber: detail.phoneNumber,
-        gender: data.gender,
+        gender: detail.gender,
         birthDate: dayjs(data.birthDate),
         nik: detail.nik,
         profession: detail.profession,
