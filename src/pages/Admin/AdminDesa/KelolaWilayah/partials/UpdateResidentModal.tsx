@@ -91,21 +91,22 @@ export default function EditResidentModal({
       const data = residentDetail.data;
       const detail = data.userDetail;
 
-      setSelectedRW(detail.RukunWargaId);
+      setSelectedRW(detail?.RukunWargaId);
 
       form.setFieldsValue({
         fullname: data.fullname,
         email: data.email,
-        phoneNumber: detail.phoneNumber,
-        gender: detail.gender,
+        phoneNumber: detail?.phoneNumber,
+        gender: detail?.gender,
         birthDate: dayjs(data.birthDate),
-        nik: detail.nik,
-        profession: detail.profession,
-        MarriageStatusId: detail.MarriageStatusId,
-        RukunWargaId: detail.RukunWargaId,
-        RukunTetanggaId: detail.RukunTetanggaId,
-        EducationId: detail.EducationId,
-        SalaryRangeId: detail.SalaryRangeId,
+        nik: detail?.nik,
+        isKader: detail?.isKader,
+        profession: detail?.profession,
+        MarriageStatusId: detail?.MarriageStatusId,
+        RukunWargaId: detail?.RukunWargaId,
+        RukunTetanggaId: detail?.RukunTetanggaId,
+        EducationId: detail?.EducationId,
+        SalaryRangeId: detail?.SalaryRangeId,
       });
     }
   }, [residentDetail, form]);
