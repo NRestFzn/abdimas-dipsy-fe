@@ -4,6 +4,7 @@ import type { APIError } from "../types/ErrorFallbackType";
 import { useQueryClient } from "@tanstack/react-query";
 import type { LoginPayload, LoginResidentPayload, RegisterPayload, Role, UserMeResponse } from "../types/AuthTypes/authTypes";
 import { ROLE_ID } from "../constants";
+import { residentService } from "../service/residentService";
 
 interface AuthContextType {
 	user: UserMeResponse | null;
@@ -87,6 +88,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		localStorage.setItem("activeRoleId", role.id);
 	};
 
+	const fetchUserProfile = async (_: string, isResidentLogin: boolean = false) => {
+		try {
+			if (isResidentLogin) {
+				const residentResponse = await residentService.getResidentProfile();
+				return residentResponse.data;
+			} else {
+				const profileResponse = await authService.getProfile();
+				return profileResponse.data;
+			}
+		} catch (error) {
+			console.error("Failed to fetch specific profile, falling back...", error);
+			const fallbackResponse = await authService.getProfile();
+			return fallbackResponse.data;
+		}
+	};
+
 	useEffect(() => {
 		const initAuth = async () => {
 			const token = localStorage.getItem("authToken");
@@ -98,13 +115,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 			try {
 				const response = await authService.getProfile();
+				let userData = response.data;
 
-				if (response.data) {
+				const isResidentOrKader = userData?.roles?.some(r =>
+					r.id === ROLE_ID.WARGA || r.id === ROLE_ID.KADER
+				);
+
+				if (isResidentOrKader) {
+					try {
+						const residentRes = await residentService.getResidentProfile();
+						if (residentRes.data) userData = residentRes.data;
+					} catch (e) {
+						console.error("Failed to fetch resident profile:", e);
+					}
+				}
+
+				if (userData) {
 					const userDataWithToken: UserMeResponse = {
-						...response.data,
+						...userData,
 						accessToken: token
 					};
-
 					setUser(userDataWithToken);
 				}
 			} catch (error) {
@@ -124,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		try {
 			const response = await authService.login(loginData);
-			return await handleLoginSuccess(response)
+			return await handleLoginSuccess(response, false)
 		} catch (err: any) {
 			console.error("Login Error:", err);
 			setError(err as APIError);
@@ -139,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		try {
 			const response = await authService.loginResident(loginData)
-			return await handleLoginSuccess(response)
+			return await handleLoginSuccess(response, true)
 		} catch (error) {
 			console.error("Resident Login Error:", error);
 			setError(error as APIError);
@@ -167,18 +197,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	};
 
-	const handleLoginSuccess = async (response: any) => {
+	const handleLoginSuccess = async (response: any, isResidentLogin: boolean) => {
 		if (response?.statusCode === 200 && response?.data) {
 			const loginResponseData = response.data;
 			const token = loginResponseData.accessToken;
 
 			localStorage.setItem("authToken", token as string);
 
-			const profileResponse = await authService.getProfile();
+			const userData = await fetchUserProfile(token, isResidentLogin);
 
-			if (profileResponse.data) {
+			if (userData) {
 				const fullUserData: UserMeResponse = {
-					...profileResponse.data,
+					...userData,
 					accessToken: token
 				};
 				setUser(fullUserData);

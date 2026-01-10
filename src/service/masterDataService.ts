@@ -22,9 +22,16 @@ export interface RukunTetangga extends MasterData {
 export type RukunWargaResponse = ResponseData<RukunWargaWithCount[]>;
 export type RukunTetanggaResponse = ResponseData<RukunTetanggaWithCount[]>;
 
+export type SingleRukunTetanggaResponse = ResponseData<RukunTetangga>
+
 export const masterDataService = {
 	getRukunWarga: async (params?: GetRWParams) => {
 		const response = await api.get<RukunWargaResponse>("/v1/rukun-warga", { params });
+		return response.data;
+	},
+
+	getRukunTetanggaById: async (id: string) => {
+		const response = await api.get<SingleRukunTetanggaResponse>(`/v1/rukun-tetangga/${id}`);
 		return response.data;
 	},
 
