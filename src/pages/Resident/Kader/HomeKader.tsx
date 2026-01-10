@@ -4,19 +4,23 @@ import {
     Spin,
     Card,
     Statistic,
+    Table,
+    Pagination,
 } from "antd";
 import {
     Loader2,
     ClipboardCheck,
     Users,
     Activity,
-    Info
+    Info,
+    History
 } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
-import { useQuestionnaire } from "../../../hooks/Questionnaire/useQuestionnaire";
+import { usePublicQuestionnaire, useQuestionnaire } from "../../../hooks/Questionnaire/useQuestionnaire";
 import { QuestionnaireCard } from "../Home/partials/HomeComponent";
 import { useState } from "react";
 import { ResidentSelectionModal } from "./Partials/ResidentSelectionModal";
+import { getKaderHistoryColumn } from "./Columns/publicQuestionnaireColumn";
 
 export default function HomeKader() {
     const navigate = useNavigate();
@@ -24,12 +28,24 @@ export default function HomeKader() {
 
     const [isResidentModalOpen, setIsResidentModalOpen] = useState(false);
     const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        pageSize: 10,
+    });
 
     const {
         questionnaires,
         loading: quizLoading,
         refetch,
     } = useQuestionnaire();
+
+    const {
+        data: publicQuizData,
+        isLoading: isTableLoading
+    } = usePublicQuestionnaire({
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+    });
 
     const handleStartQuiz = (quizId: string) => {
         setSelectedQuizId(quizId);
@@ -48,6 +64,16 @@ export default function HomeKader() {
         }
     };
 
+    const rwId = user?.userDetail?.RukunWargaId
+    const handleDetailClick = (id: string) => {
+        navigate(`/summary-rw/${id}/${rwId}`);
+    };
+
+    const tableColumns = getKaderHistoryColumn({
+        onDetail: handleDetailClick,
+        pagination: pagination,
+    });
+
     if (quizLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
@@ -60,6 +86,9 @@ export default function HomeKader() {
     const publishedQuestionnaires = Array.isArray(questionnaires)
         ? questionnaires.filter((q) => q.status === "publish")
         : [];
+
+    const dataSource = publicQuizData?.data || [];
+    const totalData = publicQuizData?.meta?.pagination?.total || 0;
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 font-sans">
@@ -92,14 +121,14 @@ export default function HomeKader() {
                             title={<span className="text-gray-500 font-medium flex items-center gap-2"><Activity size={16} /> Kuesioner Aktif</span>}
                             value={publishedQuestionnaires.length}
                             suffix="Topik"
-                            valueStyle={{ fontWeight: 'bold', color: '#2563EB' }} // Blue-600
+                            styles={{ content: { fontWeight: 'bold', color: '#2563EB' } }}
                         />
                     </Card>
                     <Card variant="borderless" className="shadow-sm rounded-2xl hover:shadow-md transition-shadow">
                         <Statistic
                             title={<span className="text-gray-500 font-medium flex items-center gap-2"><Users size={16} /> Target Survei</span>}
                             value="Warga Desa"
-                            valueStyle={{ fontWeight: 'bold', color: '#4B5563', fontSize: '20px' }}
+                            styles={{ content: { fontWeight: 'bold', color: '#4B5563', fontSize: '20px' } }}
                         />
                     </Card>
                     <Card variant="borderless" className="bg-blue-50 border border-blue-100 shadow-sm rounded-2xl flex items-center">
@@ -163,6 +192,45 @@ export default function HomeKader() {
                         Sistem Siap • Mode Petugas Lapangan
                     </p>
                 </div>
+
+                <section className="my-12">
+                    <Card
+                        className="shadow-sm border-gray-200 rounded-2xl overflow-hidden !p-0"
+                        styles={{ body: { padding: 0 } }}
+                        title={
+                            <div className="flex items-center gap-3 py-4">
+                                <div className="bg-blue-50 p-2 rounded-lg text-blue-500">
+                                    <History size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800 leading-tight">Data Hasil Kuesioner</h3>
+                                    <p className="text-xs text-gray-400 font-normal">Daftar semua kuesioner yang tersedia untuk publik</p>
+                                </div>
+                            </div>
+                        }
+                    >
+                        <Table
+                            columns={tableColumns}
+                            dataSource={dataSource}
+                            rowKey="id"
+                            loading={isTableLoading}
+                            pagination={false}
+                            scroll={{ x: 800 }}
+                            rowClassName="hover:bg-gray-50 transition-colors"
+                        />
+
+                        <div className="p-4 border-t border-gray-100 flex justify-end bg-white">
+                            <Pagination
+                                current={pagination.page}
+                                pageSize={pagination.pageSize}
+                                total={totalData}
+                                showSizeChanger
+                                onChange={(page, pageSize) => setPagination({ page, pageSize })}
+                                size="small"
+                            />
+                        </div>
+                    </Card>
+                </section>
 
                 <ResidentSelectionModal
                     open={isResidentModalOpen}

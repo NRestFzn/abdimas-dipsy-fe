@@ -18,6 +18,8 @@ export const Home = lazy(() => import("../pages/Resident/Home/Home"));
 export const Profile = lazy(() => import("../pages/Resident/Profile/Profile"));
 export const Quiz = lazy(() => import("../pages/Resident/Quiz/Quiz"));
 export const Result = lazy(() => import("../pages/Resident/Result/Result"));
+export const SummaryRWDashboard = lazy(() => import("../pages/Resident/Kader/Summary/RWSummaryDashboard"));
+export const SummaryRTDashboard = lazy(() => import("../pages/Resident/Kader/Summary/RTSummaryDashboard"));
 
 // Admin General
 export const AdminDesaResponden = lazy(

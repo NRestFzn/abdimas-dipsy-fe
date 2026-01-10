@@ -1,3 +1,5 @@
+import type { UserDetail } from "../Resident/residentType";
+
 export interface UserHasRoles {
   id: string;
   createdAt: string;
@@ -20,11 +22,12 @@ export interface UserMeResponse {
   updatedAt: string;
   fullname: string;
   email: string;
-  gender: string;
-  birthDate: string;
+  gender?: string;
+  birthDate?: string;
   profilePicture: string | null;
   roles: Role[];
   accessToken?: string;
+  userDetail?: UserDetail
 }
 
 export interface AuthResponse {

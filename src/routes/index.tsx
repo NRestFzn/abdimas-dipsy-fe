@@ -63,6 +63,8 @@ const router = createBrowserRouter([
               </RoleGuard>
             ),
           },
+          { path: "summary-rw/:questionnaireId/:rwId", element: <Loadable Component={Pages.SummaryRWDashboard} /> },
+          { path: "summary-rt/:questionnaireId/:rwId/:rtId", element: <Loadable Component={Pages.SummaryRTDashboard} /> },
           { path: "profile", element: <Loadable Component={Pages.Profile} /> },
           { path: "quiz/:id", element: <Loadable Component={Pages.Quiz} /> },
           {

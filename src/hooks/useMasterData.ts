@@ -14,6 +14,15 @@ export const useMasterData = () => {
 		});
 	}
 
+	const rukunTetanggaById = (id?: string) => {
+		return useQuery({
+			queryKey: ["rukunTetangga", "detail", id],
+			queryFn: () => masterDataService.getRukunTetanggaById(id!),
+			enabled: !!id,
+			staleTime: 1000 * 60 * 5,
+		});
+	}
+
 	const createRWMutation = useMutation({
 		mutationFn: (count: number) => masterDataService.createRukunWarga(count),
 		onSuccess: () => {
@@ -119,6 +128,7 @@ export const useMasterData = () => {
 		deleteRWMutation,
 
 		rukunTetangga,
+		rukunTetanggaById,
 		createRTMutation,
 		deleteRTMutation,
 
