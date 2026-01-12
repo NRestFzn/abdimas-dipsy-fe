@@ -13,7 +13,7 @@ export default function RoleSelection() {
 
     useEffect(() => {
         if (!isLoadingUser && !user) {
-            navigate("/masuk-warga", { replace: true });
+            navigate("/masuk", { replace: true });
         }
     }, [user, isLoadingUser, navigate]);
 

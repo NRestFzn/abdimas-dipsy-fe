@@ -23,8 +23,8 @@ const Loadable = ({ Component }: LoadableProps) => {
 };
 
 const router = createBrowserRouter([
-  { path: "/masuk", element: <Loadable Component={Pages.Login} /> },
-  { path: "/masuk-warga", element: <Loadable Component={Pages.LoginResident} /> },
+  { path: "/masuk-admin", element: <Loadable Component={Pages.Login} /> },
+  { path: "/masuk", element: <Loadable Component={Pages.LoginResident} /> },
   { path: "/daftar", element: <Loadable Component={Pages.Register} /> },
   {
     path: "/unauthorized",
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
     children: [
       {
         element: (
-          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA, ROLE_ID.KADER]} loginPath="/masuk-warga">
+          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA, ROLE_ID.KADER]}>
             <ResidentLayout />
           </RoleGuard>
         ),
@@ -77,7 +77,7 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: (
-          <RoleGuard allowedRoleIds={[ROLE_ID.ADMIN_DESA]}>
+          <RoleGuard allowedRoleIds={[ROLE_ID.ADMIN_DESA]} loginPath="/masuk-admin">
             <AdminDesaLayout />
           </RoleGuard>
         ),

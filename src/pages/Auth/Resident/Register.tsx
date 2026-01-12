@@ -313,7 +313,7 @@ export default function Register() {
         <div className="text-center mt-4">
           <span className="text-gray-600">Sudah punya akun? </span>
           <a
-            href="/masuk-warga"
+            href="/masuk"
             className="!text-[#70B748] font-medium hover:underline"
           >
             Masuk
