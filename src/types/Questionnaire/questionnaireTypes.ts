@@ -41,6 +41,7 @@ export interface Questionnaire {
     cooldownInMinutes: number,
     CategoryId: string;
     category?: { id: string; name: string };
+    questions?: Question[]
 
     submissions?: Submission[];
     isAvailable?: boolean;
