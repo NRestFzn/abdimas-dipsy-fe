@@ -29,4 +29,11 @@ export const residentService = {
         const response = await api.delete(`/v1/resident/${id}`);
         return response.data;
     },
+
+    revealResidentNik: async (id: string, password: string) => {
+        const response = await api.post(`/v1/resident/${id}/reveal-nik`, {
+            password
+        });
+        return response.data;
+    },
 };

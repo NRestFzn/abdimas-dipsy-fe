@@ -147,6 +147,8 @@ export const getKuisionerColumns = ({
       fixed: "right",
       width: 80,
       render: (_, record) => {
+        const isQuestionsEmpty = (record?.questions || []).length === 0;
+
         const items: MenuProps['items'] = [
           {
             key: 'manage',
@@ -171,6 +173,7 @@ export const getKuisionerColumns = ({
           },
           {
             key: 'status',
+            disabled: record.status !== 'publish' && isQuestionsEmpty,
             label: record.status === 'publish' ? 'Ubah ke Draft' : 'Ubah ke Publish',
             icon: record.status === 'publish' ? <XCircle size={16} className="text-orange-500" /> : <CheckCircle size={16} className="text-green-500" />,
             onClick: () => onEditStatus(record.id, record.status)
