@@ -28,7 +28,7 @@ export default function ResidentLayout() {
       okButtonProps: { danger: true },
       onOk: () => {
         logout();
-        navigate("/masuk-warga");
+        navigate("/masuk");
       },
     });
   };
@@ -49,7 +49,7 @@ export default function ResidentLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/masuk-warga" state={{ from: location }} replace />;
+    return <Navigate to="/masuk-masuk" state={{ from: location }} replace />;
   }
 
   const profile = response?.data;
