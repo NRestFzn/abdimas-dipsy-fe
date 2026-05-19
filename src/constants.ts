@@ -3,6 +3,7 @@ export const ROLE_ID = {
     ADMIN_MEDIS: "b40a9513-a2bc-447a-956c-9c4d1462a1f7",
     ADMIN_DESA: "b74c04a0-9e0c-4760-8473-56107110b33",
     KADER: "bdf1ffd5-8284-404b-9026-84157d536d5a",
+    KEPALA_KELUARGA: "1c591b5e-15e1-4b8d-99ea-d2919bf5b1b6",
 }
 
 export const getRoleName = (roleId: string) => {
@@ -11,6 +12,7 @@ export const getRoleName = (roleId: string) => {
         case ROLE_ID.ADMIN_MEDIS: return "Admin Medis";
         case ROLE_ID.ADMIN_DESA: return "Admin Desa";
         case ROLE_ID.KADER: return "Kader";
+        case ROLE_ID.KEPALA_KELUARGA: return "Kepala Keluarga";
         default: return "Unknown Role";
     }
 };

@@ -53,7 +53,7 @@ export interface LoginResidentPayload {
 
 export interface RegisterPayload {
   fullname: string;
-  email: string;
+  email?: string | null;
   password: string;
   confirmPassword: string;
   gender: "m" | "f";
@@ -65,5 +65,5 @@ export interface RegisterPayload {
   EducationId: string;
   SalaryRangeId: string;
   nik: string;
-  phoneNumber: number;
+  phoneNumber?: string | null;
 }

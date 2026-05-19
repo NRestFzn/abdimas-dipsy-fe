@@ -1,5 +1,5 @@
-import { Avatar, Dropdown, Modal, Tag, type MenuProps } from "antd";
-import { AlertTriangle, ChevronDown, LogOut, SwitchCamera, User } from "lucide-react";
+import { Avatar, Dropdown, Tag, type MenuProps } from "antd";
+import { ChevronDown, LogOut, SwitchCamera, User } from "lucide-react";
 import type { Role, UserMeResponse } from "../../../types/AuthTypes/authTypes";
 import { ROLE_ID } from "../../../constants";
 import { useNavigate } from "react-router";
@@ -13,18 +13,32 @@ interface HeaderProps {
   user: UserMeResponse
 }
 
-export const HomeHeader = ({ fullname, onLogout, profileUrl, activeRole, user, switchRole }: HeaderProps) => {
+export const HomeHeader = ({ fullname, onLogout, profileUrl, activeRole, user }: HeaderProps) => {
   const navigate = useNavigate();
 
   const getRoleLabel = () => {
     if (activeRole?.id === ROLE_ID.KADER) return "Petugas Kader";
+    if (activeRole?.id === ROLE_ID.KEPALA_KELUARGA) return "Kepala Keluarga";
     if (activeRole?.id === ROLE_ID.WARGA) return "Warga Desa";
     return "User";
   };
 
   const getRoleColor = () => {
     if (activeRole?.id === ROLE_ID.KADER) return "blue";
+    if (activeRole?.id === ROLE_ID.KEPALA_KELUARGA) return "gold";
     return "green";
+  };
+
+  const getRoleTextClass = () => {
+    if (activeRole?.id === ROLE_ID.KADER) return "text-blue-500";
+    if (activeRole?.id === ROLE_ID.KEPALA_KELUARGA) return "text-amber-500";
+    return "text-green-600";
+  };
+
+  const getAvatarClass = () => {
+    if (activeRole?.id === ROLE_ID.KADER) return "bg-blue-100 text-blue-600 border-blue-200";
+    if (activeRole?.id === ROLE_ID.KEPALA_KELUARGA) return "bg-amber-100 text-amber-600 border-amber-200";
+    return "bg-green-100 text-green-600 border-green-200";
   };
 
   const items: MenuProps['items'] = [
@@ -52,49 +66,11 @@ export const HomeHeader = ({ fullname, onLogout, profileUrl, activeRole, user, s
     ...(user?.roles && user.roles.length > 1 ? [
       {
         key: 'switch-role',
-        label: (
-          <span className="text-gray-600 font-medium">
-            Ganti ke {activeRole?.id === ROLE_ID.WARGA ? "Mode Kader" : "Mode Warga"}
-          </span>
-        ),
+        label: <span className="text-gray-600 font-medium">Ganti Peran</span>,
         icon: <SwitchCamera size={16} className="text-gray-500" />,
-        onClick: () => {
-          const targetRoleId = activeRole?.id === ROLE_ID.WARGA ? ROLE_ID.KADER : ROLE_ID.WARGA;
-          const targetRole = user.roles.find((r: any) => r.id === targetRoleId);
-          const targetLabel = targetRoleId === ROLE_ID.KADER ? "Mode Kader" : "Mode Warga";
-
-          if (targetRole) {
-            Modal.confirm({
-              title: 'Ganti Mode Aplikasi',
-              icon: <AlertTriangle className="text-yellow-500 mr-2" size={24} />,
-              content: (
-                <div className="text-gray-600 mt-2">
-                  Anda akan berpindah ke <b>{targetLabel}</b>. Halaman akan dialihkan.
-                  <br />
-                  Apakah Anda yakin?
-                </div>
-              ),
-              okText: 'Ya, Ganti',
-              cancelText: 'Batal',
-              okButtonProps: {
-                className: targetRoleId === ROLE_ID.KADER ? "bg-blue-500 hover:!bg-blue-600" : "bg-[#70B748] hover:!bg-green-600"
-              },
-              centered: true,
-              onOk() {
-                switchRole(targetRole);
-                requestAnimationFrame(() => {
-                  if (targetRole.id === ROLE_ID.KADER) {
-                    navigate("/kader");
-                  } else {
-                    navigate("/");
-                  }
-                });
-              },
-            });
-          }
-        }
+        onClick: () => navigate("/pilih-peran"),
       },
-      { type: 'divider' } as any
+      { type: 'divider' } as any,
     ] : []),
     {
       key: 'logout',
@@ -127,7 +103,7 @@ export const HomeHeader = ({ fullname, onLogout, profileUrl, activeRole, user, s
                   <span className="text-sm font-bold text-gray-700 leading-tight">
                     {fullname}
                   </span>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${activeRole?.id === ROLE_ID.KADER ? 'text-blue-500' : 'text-green-600'}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${getRoleTextClass()}`}>
                     {getRoleLabel()}
                   </span>
                 </div>
@@ -135,7 +111,7 @@ export const HomeHeader = ({ fullname, onLogout, profileUrl, activeRole, user, s
                 <Avatar
                   src={profileUrl}
                   icon={!profileUrl && <User size={20} />}
-                  className={`flex-shrink-0 border-2 ${activeRole?.id === ROLE_ID.KADER ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-green-100 text-green-600 border-green-200'}`}
+                  className={`flex-shrink-0 border-2 ${getAvatarClass()}`}
                   size={40}
                 />
 

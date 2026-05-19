@@ -19,6 +19,12 @@ export interface QuestionnaireHistoryResponse {
         email: string
         profilePicture: string
     }
+    user?: {
+        id: string,
+        fullname: string
+        email: string
+        profilePicture: string
+    }
     questionnaire: Partial<Questionnaire>
     createdAt: string,
     updatedAt: string,

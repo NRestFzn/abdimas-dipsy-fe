@@ -32,6 +32,8 @@ export default function RoleSelection() {
             switchRole(selectedRole);
             if (roleId === ROLE_ID.KADER) {
                 navigate("/kader", { replace: true });
+            } else if (roleId === ROLE_ID.KEPALA_KELUARGA) {
+                navigate("/keluarga", { replace: true });
             } else {
                 navigate("/", { replace: true });
             }
@@ -63,80 +65,124 @@ export default function RoleSelection() {
                     </Text>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 px-2 sm:px-0">
+                <div className="flex flex-wrap justify-center gap-6 sm:gap-8 px-2 sm:px-0">
+                    
+                    {user.roles.some(r => r.id === ROLE_ID.WARGA) && (
+                        <div
+                            onClick={() => handleSelectRole(ROLE_ID.WARGA)}
+                            className="group relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2rem] p-8 shadow-xl shadow-green-900/5 hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden flex-1 min-w-[280px] max-w-[400px]"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    <div
-                        onClick={() => handleSelectRole(ROLE_ID.WARGA)}
-                        className="group relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2rem] p-8 shadow-xl shadow-green-900/5 hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="relative z-10 flex flex-col h-full items-center text-center">
+                                <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-green-50 to-white shadow-inner border border-green-100 group-hover:scale-110 transition-transform duration-300">
+                                    <User size={48} className="text-[#70B748]" />
+                                </div>
 
-                        <div className="relative z-10 flex flex-col h-full items-center text-center">
-                            <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-green-50 to-white shadow-inner border border-green-100 group-hover:scale-110 transition-transform duration-300">
-                                <User size={48} className="text-[#70B748]" />
+                                <Title level={3} className="!mb-3 !text-gray-800 !font-bold">Warga Desa</Title>
+
+                                <div className="flex-grow space-y-4 mb-8">
+                                    <Text className="text-gray-500 block leading-relaxed">
+                                        Akses dashboard pribadi Anda untuk memantau kesehatan dan riwayat pemeriksaan sendiri.
+                                    </Text>
+                                    <ul className="text-sm text-gray-400 space-y-1 hidden sm:block">
+                                        <li className="flex items-center justify-center gap-1.5"><CheckCircle2 size={14} className="text-green-500" /> Isi Kuesioner Mandiri</li>
+                                        <li className="flex items-center justify-center gap-1.5"><CheckCircle2 size={14} className="text-green-500" /> Lihat Riwayat Hasil</li>
+                                    </ul>
+                                </div>
+
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    className="!h-12 !rounded-xl !text-base !font-bold !bg-gradient-to-r !from-[#70B748] !to-green-600 !border-none !shadow-lg !shadow-green-500/30 group-hover:!shadow-green-500/50 w-full flex items-center justify-center gap-2 transition-all duration-300 transform group-hover:scale-[1.02]"
+                                >
+                                    Masuk Dashboard Warga <ChevronRight size={18} strokeWidth={3} />
+                                </Button>
                             </div>
-
-                            <Title level={3} className="!mb-3 !text-gray-800 !font-bold">Warga Desa</Title>
-
-                            <div className="flex-grow space-y-4 mb-8">
-                                <Text className="text-gray-500 block leading-relaxed">
-                                    Akses dashboard pribadi Anda untuk memantau kesehatan dan riwayat pemeriksaan sendiri.
-                                </Text>
-                                <ul className="text-sm text-gray-400 space-y-1 hidden sm:block">
-                                    <li className="flex items-center justify-center gap-1.5"><CheckCircle2 size={14} className="text-green-500" /> Isi Kuesioner Mandiri</li>
-                                    <li className="flex items-center justify-center gap-1.5"><CheckCircle2 size={14} className="text-green-500" /> Lihat Riwayat Hasil</li>
-                                </ul>
-                            </div>
-
-                            <Button
-                                type="primary"
-                                size="large"
-                                className="!h-12 !rounded-xl !text-base !font-bold !bg-gradient-to-r !from-[#70B748] !to-green-600 !border-none !shadow-lg !shadow-green-500/30 group-hover:!shadow-green-500/50 w-full flex items-center justify-center gap-2 transition-all duration-300 transform group-hover:scale-[1.02]"
-                            >
-                                Masuk Dashboard Warga <ChevronRight size={18} strokeWidth={3} />
-                            </Button>
                         </div>
-                    </div>
+                    )}
 
-                    <div
-                        onClick={() => handleSelectRole(ROLE_ID.KADER)}
-                        className="group relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2rem] p-8 shadow-xl shadow-blue-900/5 hover:shadow-2xl hover:shadow-blue-900/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    {user.roles.some(r => r.id === ROLE_ID.KEPALA_KELUARGA) && (
+                        <div
+                            onClick={() => handleSelectRole(ROLE_ID.KEPALA_KELUARGA)}
+                            className="group relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2rem] p-8 shadow-xl shadow-amber-900/5 hover:shadow-2xl hover:shadow-amber-900/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden flex-1 min-w-[280px] max-w-[400px]"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                        <div className="relative z-10 flex flex-col h-full items-center text-center">
-                            <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-white shadow-inner border border-blue-100 group-hover:scale-110 transition-transform duration-300">
-                                <UsersRound size={48} className="text-blue-500" />
+                            <div className="relative z-10 flex flex-col h-full items-center text-center">
+                                <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-white shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
+                                    <UsersRound size={48} className="text-amber-500" />
+                                </div>
+
+                                <Title level={3} className="!mb-3 !text-gray-800 !font-bold">Kepala Keluarga</Title>
+
+                                <div className="flex-grow space-y-4 mb-8">
+                                    <Text className="text-gray-500 block leading-relaxed">
+                                        Kelola anggota keluarga dan isi kuesioner atas nama anggota keluarga Anda.
+                                    </Text>
+                                    <ul className="text-sm text-gray-400 space-y-1 hidden sm:block">
+                                        <li className="flex items-center justify-center gap-1.5">
+                                            <CheckCircle2 size={14} className="text-amber-500" />
+                                            Kelola Anggota Keluarga
+                                        </li>
+                                        <li className="flex items-center justify-center gap-1.5">
+                                            <CheckCircle2 size={14} className="text-amber-500" />
+                                            Bantu Isi Kuesioner
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    className="!h-12 !rounded-xl !text-base !font-bold !bg-gradient-to-r !from-amber-500 !to-amber-600 !border-none !shadow-lg !shadow-amber-500/30 group-hover:!shadow-amber-500/50 w-full flex items-center justify-center gap-2 transition-all duration-300 transform group-hover:scale-[1.02]"
+                                >
+                                    Masuk Dashboard Keluarga <ChevronRight size={18} strokeWidth={3} />
+                                </Button>
                             </div>
-
-                            <Title level={3} className="!mb-3 !text-gray-800 !font-bold">Kader Kesehatan</Title>
-
-                            <div className="flex-grow space-y-4 mb-8">
-                                <Text className="text-gray-500 block leading-relaxed">
-                                    Mode fasilitator untuk <b>membantu warga lain</b> mengisi kuesioner menggunakan perangkat ini.
-                                </Text>
-                                <ul className="text-sm text-gray-400 space-y-1 hidden sm:block">
-                                    <li className="flex items-center justify-center gap-1.5">
-                                        <CheckCircle2 size={14} className="text-blue-500" />
-                                        Bantu Input Kuesioner Warga
-                                    </li>
-                                    <li className="flex items-center justify-center gap-1.5">
-                                        <CheckCircle2 size={14} className="text-blue-500" />
-                                        Fasilitasi Warga Tanpa Gawai
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <Button
-                                type="primary"
-                                size="large"
-                                className="!h-12 !rounded-xl !text-base !font-bold !bg-gradient-to-r !from-blue-500 !to-blue-600 !border-none !shadow-lg !shadow-blue-500/30 group-hover:!shadow-blue-500/50 w-full flex items-center justify-center gap-2 transition-all duration-300 transform group-hover:scale-[1.02]"
-                            >
-                                Masuk Mode Petugas <ChevronRight size={18} strokeWidth={3} />
-                            </Button>
                         </div>
-                    </div>
+                    )}
 
+                    {user.roles.some(r => r.id === ROLE_ID.KADER) && (
+                        <div
+                            onClick={() => handleSelectRole(ROLE_ID.KADER)}
+                            className="group relative bg-white/80 backdrop-blur-xl border border-white/60 rounded-[2rem] p-8 shadow-xl shadow-blue-900/5 hover:shadow-2xl hover:shadow-blue-900/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden flex-1 min-w-[280px] max-w-[400px]"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                            <div className="relative z-10 flex flex-col h-full items-center text-center">
+                                <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-white shadow-inner border border-blue-100 group-hover:scale-110 transition-transform duration-300">
+                                    <UsersRound size={48} className="text-blue-500" />
+                                </div>
+
+                                <Title level={3} className="!mb-3 !text-gray-800 !font-bold">Kader Kesehatan</Title>
+
+                                <div className="flex-grow space-y-4 mb-8">
+                                    <Text className="text-gray-500 block leading-relaxed">
+                                        Mode fasilitator untuk <b>membantu warga lain</b> mengisi kuesioner menggunakan perangkat ini.
+                                    </Text>
+                                    <ul className="text-sm text-gray-400 space-y-1 hidden sm:block">
+                                        <li className="flex items-center justify-center gap-1.5">
+                                            <CheckCircle2 size={14} className="text-blue-500" />
+                                            Bantu Input Kuesioner Warga
+                                        </li>
+                                        <li className="flex items-center justify-center gap-1.5">
+                                            <CheckCircle2 size={14} className="text-blue-500" />
+                                            Fasilitasi Warga Tanpa Gawai
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    className="!h-12 !rounded-xl !text-base !font-bold !bg-gradient-to-r !from-blue-500 !to-blue-600 !border-none !shadow-lg !shadow-blue-500/30 group-hover:!shadow-blue-500/50 w-full flex items-center justify-center gap-2 transition-all duration-300 transform group-hover:scale-[1.02]"
+                                >
+                                    Masuk Mode Petugas <ChevronRight size={18} strokeWidth={3} />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="mt-12 text-center">

@@ -38,6 +38,14 @@ export const questionnaireService = {
     return response.data;
   },
 
+  getFamilyHistory: async (params: QuestionnaireHistoryParams) => {
+    const response = await api.get<HistoryApiResponse>(
+      "/v1/questionnaire-submission/history-submitted",
+      { params }
+    );
+    return response.data;
+  },
+
   getPublicQuestionnaireById: async (id: string) => {
     const response = await api.get<SingleQuestionnaireDetailResponse>(
       `/v1/questionnaire/${id}/public`

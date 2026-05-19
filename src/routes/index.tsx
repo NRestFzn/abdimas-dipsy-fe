@@ -38,7 +38,7 @@ const router = createBrowserRouter([
     children: [
       {
         element: (
-          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA, ROLE_ID.KADER]}>
+          <RoleGuard allowedRoleIds={[ROLE_ID.WARGA, ROLE_ID.KADER, ROLE_ID.KEPALA_KELUARGA]}>
             <ResidentLayout />
           </RoleGuard>
         ),
@@ -60,6 +60,14 @@ const router = createBrowserRouter([
             element: (
               <RoleGuard allowedRoleIds={[ROLE_ID.KADER]}>
                 <Loadable Component={Pages.HomeKader} />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "keluarga",
+            element: (
+              <RoleGuard allowedRoleIds={[ROLE_ID.KEPALA_KELUARGA]}>
+                <Loadable Component={Pages.HomeKepalaKeluarga} />
               </RoleGuard>
             ),
           },
@@ -118,6 +126,19 @@ const router = createBrowserRouter([
               {
                 path: "preview-warga/:residentId",
                 element: <Loadable Component={Pages.PreviewResident} />,
+              },
+            ],
+          },
+          {
+            path: "kelola-keluarga",
+            children: [
+              {
+                index: true,
+                element: <Loadable Component={Pages.KelolaKeluarga} />,
+              },
+              {
+                path: ":familyId",
+                element: <Loadable Component={Pages.DetailKeluarga} />,
               },
             ],
           },

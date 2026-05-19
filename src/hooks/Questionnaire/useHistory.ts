@@ -10,3 +10,12 @@ export const useHistory = (params: QuestionnaireHistoryParams) => {
     staleTime: 5000,
   });
 };
+
+export const useFamilyHistory = (params: QuestionnaireHistoryParams) => {
+  return useQuery({
+    queryKey: ["family-history", params],
+    queryFn: () => questionnaireService.getFamilyHistory(params),
+    placeholderData: keepPreviousData,
+    staleTime: 5000,
+  });
+};
