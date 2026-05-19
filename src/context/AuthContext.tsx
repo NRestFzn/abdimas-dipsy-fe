@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	const getPriorityRole = (roles: Role[]): Role | null => {
 		if (!roles || roles.length === 0) return null;
 
-		const priorityOrder = [ROLE_ID.KADER, ROLE_ID.WARGA];
+		const priorityOrder = [ROLE_ID.KADER, ROLE_ID.KEPALA_KELUARGA, ROLE_ID.WARGA];
 
 		for (const roleId of priorityOrder) {
 			const found = roles.find(r => r.id === roleId);
@@ -118,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				let userData = response.data;
 
 				const isResidentOrKader = userData?.roles?.some(r =>
-					r.id === ROLE_ID.WARGA || r.id === ROLE_ID.KADER
+					r.id === ROLE_ID.WARGA || r.id === ROLE_ID.KADER || r.id === ROLE_ID.KEPALA_KELUARGA
 				);
 
 				if (isResidentOrKader) {
@@ -185,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		try {
 			const response = await authService.register(registerData);
 			if (response.statusCode === 200 || response.statusCode === 201) {
-				await login({ email: registerData.email, password: registerData.password });
+				await loginResident({ nik: registerData.nik, password: registerData.password });
 			} else {
 				throw new Error(response.message || "Registration failed");
 			}

@@ -24,10 +24,14 @@ export default function LoginResident() {
 
       const userData = response?.data;
       const roles = userData?.roles || [];
+      const hasMultipleRoles = roles.length > 1;
       const hasKaderRole = roles.some((role: any) => role.id === ROLE_ID.KADER);
+      const hasKepalaKeluargaRole = roles.some((role: any) => role.id === ROLE_ID.KEPALA_KELUARGA);
 
-      if (hasKaderRole) {
+      if (hasMultipleRoles || hasKaderRole) {
         navigate("/pilih-peran", { replace: true });
+      } else if (hasKepalaKeluargaRole) {
+        navigate("/keluarga", { replace: true });
       } else {
         navigate("/", { replace: true });
       }
@@ -157,10 +161,10 @@ export default function LoginResident() {
             <div className="flex items-center justify-center gap-2">
               <Text className="text-gray-400 text-xs">Anda Petugas Desa?</Text>
               <Link
-                to="/masuk"
+                to="/masuk-admin"
                 className="!text-gray-500 font-semibold text-xs !hover:text-[#70B748] !hover:underline transition-colors"
               >
-                Login Petugas
+                Masuk Petugas
               </Link>
             </div>
           </div>

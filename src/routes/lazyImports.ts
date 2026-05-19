@@ -14,6 +14,7 @@ export const Register = lazy(() => import("../pages/Auth/Resident/Register"));
 // Resident
 export const RoleSelection = lazy(() => import("../pages/Auth/Resident/RoleSelection"));
 export const HomeKader = lazy(() => import("../pages/Resident/Kader/HomeKader"));
+export const HomeKepalaKeluarga = lazy(() => import("../pages/Resident/KepalaKeluarga/HomeKepalaKeluarga"));
 export const Home = lazy(() => import("../pages/Resident/Home/Home"));
 export const Profile = lazy(() => import("../pages/Resident/Profile/Profile"));
 export const Quiz = lazy(() => import("../pages/Resident/Quiz/Quiz"));
@@ -53,6 +54,12 @@ export const PreviewResident = lazy(
 );
 export const AdminDesaProfile = lazy(
   () => import("../pages/Admin/AdminDesa/ProfileAdmin/ProfileAdmin")
+);
+export const KelolaKeluarga = lazy(
+  () => import("../pages/Admin/AdminDesa/KelolaKeluarga/KelolaKeluarga")
+);
+export const DetailKeluarga = lazy(
+  () => import("../pages/Admin/AdminDesa/KelolaKeluarga/DetailKeluarga")
 );
 
 // Admin Medis Dashboards
