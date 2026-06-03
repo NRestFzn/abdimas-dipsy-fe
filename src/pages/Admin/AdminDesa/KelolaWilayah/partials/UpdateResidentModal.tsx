@@ -12,15 +12,12 @@ import {
   Col,
   Checkbox,
   Typography,
-  Space,
 } from 'antd';
-import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { adminDesaService } from '../../../../../service/adminDesaService';
 import { useMasterData } from '../../../../../hooks/useMasterData';
 import { useInfiniteSelectOptions } from '../../../../../hooks/Common/useInfiniteSelectOptions';
-import { residentService } from '../../../../../service/Admin/AdminDesa/residentServices';
 
 interface EditResidentModalProps {
   open: boolean;
@@ -34,12 +31,8 @@ export default function EditResidentModal({
   residentId,
 }: EditResidentModalProps) {
   const [form] = Form.useForm();
-  const [revealForm] = Form.useForm();
 
   const queryClient = useQueryClient();
-
-  const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
-  const [isNikRevealed, setIsNikRevealed] = useState(false);
 
   const { educations, salaryRanges, marriageStatuses, infiniteRukunWarga, infiniteRukunTetangga } = useMasterData();
 
@@ -94,33 +87,12 @@ export default function EditResidentModal({
     },
   });
 
-  const revealMutation = useMutation({
-    mutationFn: (password: string) => residentService.revealResidentNik(residentId!, password),
-    onSuccess: (response) => {
-      message.success("Verifikasi berhasil, NIK ditampilkan");
-
-      const realNik = response.data.userDetail.nik;
-
-      form.setFieldValue('nik', realNik);
-
-      setIsNikRevealed(true);
-
-      setIsRevealModalOpen(false);
-      revealForm.resetFields();
-    },
-    onError: (err: any) => {
-      message.error(err.response?.data?.message || "Password salah atau terjadi kesalahan");
-    }
-  });
-
   useEffect(() => {
     if (residentDetail?.data) {
       const data = residentDetail.data;
       const detail = data.userDetail;
 
       setSelectedRW(detail?.RukunWargaId);
-
-      setIsNikRevealed(false);
 
       form.setFieldsValue({
         fullname: data.fullname,
@@ -141,11 +113,6 @@ export default function EditResidentModal({
   }, [residentDetail, form]);
 
   const handleSubmit = (values: any) => {
-    if (values.nik.includes('*')) {
-      message.error("Harap buka sensor NIK terlebih dahulu sebelum menyimpan perubahan.");
-      return;
-    }
-
     const payload = {
       ...values,
       birthDate: values.birthDate.format('YYYY-MM-DD'),
@@ -155,27 +122,22 @@ export default function EditResidentModal({
     updateMutation.mutate(payload);
   };
 
-  const handleRevealSubmit = (values: { passwordReveal: string }) => {
-    revealMutation.mutate(values.passwordReveal);
-  };
-
   return (
-    <>
-      <Modal
-        title="Edit Data Warga"
-        open={open}
-        onCancel={onClose}
-        footer={null}
-        width={800}
-        style={{ top: 20 }}
-        centered
-      >
-        {isFetchingDetail ? (
-          <div className="flex justify-center p-8">
-            <Spin />
-          </div>
-        ) : (
-          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+    <Modal
+      title="Edit Data Warga"
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+      style={{ top: 20 }}
+      centered
+    >
+      {isFetchingDetail ? (
+        <div className="flex justify-center p-8">
+          <Spin />
+        </div>
+      ) : (
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <h3 className="font-bold text-gray-700 mb-4 border-b pb-2">
               Informasi Akun
             </h3>
@@ -253,36 +215,14 @@ export default function EditResidentModal({
               <Col xs={24} md={12}>
                 <Form.Item
                   label="NIK"
-                  required
-                  help={!isNikRevealed ? "NIK disensor demi keamanan." : null}
-                  style={{ marginBottom: 24 }} // Menjaga spacing agar error message tidak dempet
+                  name="nik"
+                  rules={[
+                    { required: true, message: 'NIK wajib diisi' },
+                    { len: 16, message: 'NIK harus 16 digit' },
+                    { pattern: /^[0-9]+$/, message: 'NIK harus berupa angka' },
+                  ]}
                 >
-                  <Space.Compact style={{ width: '100%' }}>
-                    <Form.Item
-                      name="nik"
-                      noStyle
-                      rules={[{ required: true }]}
-                    >
-                      <Input
-                        style={{ width: 'calc(100% - 90px)' }}
-                        disabled={!isNikRevealed}
-                        placeholder="NIK Warga"
-                      />
-                    </Form.Item>
-
-                    <Button
-                      style={{ width: '90px' }}
-                      icon={isNikRevealed ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                      onClick={() => {
-                        if (!isNikRevealed) {
-                          setIsRevealModalOpen(true);
-                        }
-                      }}
-                      disabled={isNikRevealed}
-                    >
-                      {isNikRevealed ? "Terbuka" : "Buka"}
-                    </Button>
-                  </Space.Compact>
+                  <Input placeholder="16 digit NIK" maxLength={16} />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -455,45 +395,5 @@ export default function EditResidentModal({
           </Form>
         )}
       </Modal>
-
-      <Modal
-        title="Verifikasi Keamanan"
-        open={isRevealModalOpen}
-        onCancel={() => {
-          setIsRevealModalOpen(false);
-          revealForm.resetFields();
-        }}
-        footer={null}
-        width={400}
-        centered
-        zIndex={1050} // Pastikan di atas modal edit (default antd modal z-index biasanya 1000)
-      >
-        <Typography.Text className="block mb-4">
-          Masukkan password Admin Anda untuk melihat dan mengedit NIK warga ini.
-        </Typography.Text>
-
-        <Form form={revealForm} layout="vertical" onFinish={handleRevealSubmit}>
-          <Form.Item
-            name="passwordReveal"
-            label="Password Admin"
-            rules={[{ required: true, message: 'Password wajib diisi' }]}
-          >
-            <Input.Password placeholder="Masukkan password Anda" autoFocus />
-          </Form.Item>
-
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => setIsRevealModalOpen(false)}>Batal</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={revealMutation.isPending}
-              className="bg-blue-600"
-            >
-              Verifikasi
-            </Button>
-          </div>
-        </Form>
-      </Modal>
-    </>
   );
 }

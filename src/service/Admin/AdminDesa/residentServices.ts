@@ -15,6 +15,11 @@ export const residentService = {
         return response.data;
     },
 
+    getResidentByNik: async (nik: string) => {
+        const response = await api.get<{ data: ResidentData }>(`/v1/resident/by-nik/${encodeURIComponent(nik)}`);
+        return response.data;
+    },
+
     createResident: async (data: any) => {
         const response = await api.post("/v1/resident", data);
         return response.data;
@@ -27,13 +32,6 @@ export const residentService = {
 
     deleteResident: async (id: string) => {
         const response = await api.delete(`/v1/resident/${id}`);
-        return response.data;
-    },
-
-    revealResidentNik: async (id: string, password: string) => {
-        const response = await api.post(`/v1/resident/${id}/reveal-nik`, {
-            password
-        });
         return response.data;
     },
 };

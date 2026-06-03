@@ -36,10 +36,10 @@ export default function DetailKeluarga() {
         onRemove: handleRemoveMember,
     });
 
-    if (isLoading) return <div>Memuat...</div>;
+    if (isLoading) return <div className="p-4 md:p-6">Memuat...</div>;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-4 md:p-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                 <div className="flex items-center gap-3">
                     <Button
@@ -68,11 +68,11 @@ export default function DetailKeluarga() {
                         />
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-2 sm:shrink-0">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:shrink-0">
                     <Button
                         icon={<UserCog size={16} />}
                         onClick={() => setIsChangeHeadModalOpen(true)}
-                        className="border-blue-600 text-blue-600 hover:text-blue-700 hover:border-blue-700"
+                        className="w-full justify-center border-blue-600 text-blue-600 hover:text-blue-700 hover:border-blue-700 sm:w-auto"
                     >
                         <span className="hidden sm:inline">Ganti Kepala Keluarga</span>
                         <span className="sm:hidden">Ganti Kepala</span>
@@ -80,7 +80,7 @@ export default function DetailKeluarga() {
                     <Button
                         icon={<Plus size={16} />}
                         onClick={() => setIsAddMemberModalOpen(true)}
-                        className="border-blue-600 text-blue-600 hover:text-blue-700 hover:border-blue-700"
+                        className="w-full justify-center border-blue-600 text-blue-600 hover:text-blue-700 hover:border-blue-700 sm:w-auto"
                     >
                         Tambah Anggota
                     </Button>
