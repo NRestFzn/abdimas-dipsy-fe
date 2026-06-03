@@ -1,4 +1,5 @@
-import { Button, Dropdown, Modal, Tag, type MenuProps } from "antd";
+import { Button, Dropdown, Tag, type MenuProps } from "antd";
+import type { HookAPI } from "antd/es/modal/useModal";
 import { Edit, Eye, MoreVertical, Trash2 } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
 import type { ResidentData } from "../../../../../types/Resident/residentType";
@@ -6,6 +7,7 @@ import type { ResidentData } from "../../../../../types/Resident/residentType";
 
 interface ResidentColumnProps {
     pagination: { current: number; pageSize: number };
+    modal: HookAPI;
     onViewDetail: (id: string) => void;
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
@@ -13,6 +15,7 @@ interface ResidentColumnProps {
 
 export const getResidentColumns = ({
     pagination,
+    modal,
     onViewDetail,
     onDelete,
     onEdit
@@ -85,7 +88,7 @@ export const getResidentColumns = ({
                         icon: <Trash2 size={16} />,
                         danger: true,
                         onClick: () => {
-                            Modal.confirm({
+                            modal.confirm({
                                 title: 'Hapus Warga?',
                                 content: `Apakah Anda yakin ingin menghapus data warga "${record.fullname}"? Tindakan ini tidak dapat dibatalkan.`,
                                 okText: 'Ya, Hapus',

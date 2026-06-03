@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
+    App,
     Table,
     Button,
     Select,
     Card,
-    message,
     Pagination,
     Spin,
 } from "antd";
@@ -22,6 +22,7 @@ import type { ResidentData } from "../../../../../../types/Resident/residentType
 import { useInfiniteSelectOptions } from "../../../../../../hooks/Common/useInfiniteSelectOptions";
 
 export default function ResidentTab() {
+    const { message, modal } = App.useApp();
     const navigate = useNavigate();
 
     const { infiniteRukunWarga, infiniteRukunTetangga } = useMasterData();
@@ -138,6 +139,7 @@ export default function ResidentTab() {
 
     const columns = getResidentColumns({
         pagination,
+        modal,
         onViewDetail: (id) => {
             navigate(`/admin/kelola-wilayah/preview-warga/residentId=${id}`);
         },
