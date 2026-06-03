@@ -11,3 +11,51 @@
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+.odgj-calendar-modal .ant-picker-calendar-date-content {
+  min-height: 88px;
+  max-height: 118px;
+  overflow-y: auto;
+}
+
+.odgj-calendar-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.odgj-calendar-event {
+  overflow: hidden;
+  border-left: 3px solid #2563eb;
+  border-radius: 4px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 2px 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.odgj-calendar-event-completed {
+  background: #f0f7e9;
+  border-left-color: #70b748;
+  color: #37651f;
+}
+
+.odgj-calendar-event-missed {
+  background: #fff7ed;
+  border-left-color: #f97316;
+  color: #c2410c;
+}
+
+.odgj-calendar-event-scheduled {
+  background: #eff6ff;
+  border-left-color: #2563eb;
+  color: #1d4ed8;
+}
+
+.odgj-calendar-event-active {
+  font-weight: 600;
+}

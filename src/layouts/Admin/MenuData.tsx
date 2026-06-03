@@ -1,4 +1,4 @@
-import { Database, File, FileHeartIcon, HouseIcon, Tags } from "lucide-react";
+import { Brain, Database, File, FileHeartIcon, HouseIcon, Tags } from "lucide-react";
 
 interface SidebarItemProps {
     key: string;
@@ -20,6 +20,12 @@ export const ADMIN_DESA_MENU: SidebarItemProps[] = [
         label: "Kelola Wilayah",
         path: "/admin/kelola-wilayah",
         icon: HouseIcon,
+    },
+    {
+        key: 'odgj',
+        label: "Warga ODGJ",
+        path: "/admin/odgj",
+        icon: Brain,
     },
 ];
 

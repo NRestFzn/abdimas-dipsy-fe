@@ -7,7 +7,8 @@ import {
     HouseIcon,
     Database,
     Tags,
-    UsersRound
+    UsersRound,
+    Brain
 } from "lucide-react";
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -41,6 +42,7 @@ export default function AdminSideBar({ responsiveSidebar }: { responsiveSidebar:
         getItem('Responden', '/admin/responden', <FileHeartIcon size={20} />),
         getItem('Kelola Wilayah', '/admin/kelola-wilayah', <HouseIcon size={20} />),
         getItem('Manajemen Keluarga', '/admin/kelola-keluarga', <UsersRound size={20} />),
+        getItem('Warga ODGJ', '/admin/odgj', <Brain size={20} />),
     ];
 
     const itemsAdminMedis: MenuItem[] = [
