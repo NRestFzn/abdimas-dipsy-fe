@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { AlertTriangle, ArrowLeft, Loader2, Send } from "lucide-react";
-import { Button, message, Modal, Spin } from "antd";
+import { App, Button, Spin } from "antd";
 import { QuizProgressBar } from "./Partials/ProgressBar";
 import { QuizHeader } from "./Partials/QuizHeader";
 import { QuizInstruction } from "./Partials/QuizInstruction";
@@ -10,6 +10,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useQuestionnaireDetail, useQuestionnaireMutation } from "../../../hooks/Questionnaire/useQuestionnaire";
 
 export default function Quiz() {
+    const { message, modal } = App.useApp();
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
 
@@ -50,7 +51,7 @@ export default function Quiz() {
     };
 
     const handleExit = () => {
-        Modal.confirm({
+        modal.confirm({
             title: null,
             icon: null,
             content: (
@@ -90,7 +91,7 @@ export default function Quiz() {
 
         const unansweredCount = Object.values(answers).filter(val => val === "").length;
         if (unansweredCount > 0) {
-            Modal.warning({
+            modal.warning({
                 title: "Belum Selesai",
                 content: `Masih ada ${unansweredCount} pertanyaan yang belum dijawab. Mohon lengkapi semua jawaban.`,
                 okText: "Saya Mengerti",

@@ -1,10 +1,12 @@
-import { Button, Dropdown, Modal, Tag, type MenuProps } from "antd";
+import { Button, Dropdown, Tag, type MenuProps } from "antd";
+import type { HookAPI } from "antd/es/modal/useModal";
 import { CheckCircle, Clock, Edit, Eye, MoreHorizontal, Settings, Trash2, XCircle } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
 import type { Questionnaire } from "../../../../../types/Questionnaire/questionnaireTypes";
 
 interface KuisionerColumnProps {
   pagination: { current: number; pageSize: number };
+  modal: HookAPI;
   onManageQuestions: (record: Questionnaire) => void;
   onEditStatus: (id: string, currentStatus: string) => void;
   onEditData: (record: Questionnaire) => void;
@@ -41,6 +43,7 @@ const formatDuration = (totalMinutes: number) => {
 
 export const getKuisionerColumns = ({
   pagination,
+  modal,
   onManageQuestions,
   onEditStatus,
   onEditData,
@@ -184,7 +187,7 @@ export const getKuisionerColumns = ({
             icon: <Trash2 size={16} />,
             danger: true,
             onClick: () => {
-              Modal.confirm({
+              modal.confirm({
                 title: "Hapus Kuisioner",
                 content: `Yakin ingin menghapus "${record.title}"?`,
                 okText: "Ya, Hapus",

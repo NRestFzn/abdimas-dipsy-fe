@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Input, Table, Pagination, message, Modal } from "antd";
+import { App, Button, Card, Input, Table, Pagination } from "antd";
 import { Plus, Search, AlertTriangle } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import type { SorterResult } from "antd/es/table/interface";
@@ -9,6 +9,7 @@ import { useCategory } from "../../../../../hooks/MasterData/useCategory";
 import { getCategoryColumns } from "./Column/CategoryColumn";
 
 export default function CategoryPage() {
+    const { message, modal } = App.useApp();
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
     const [searchText, setSearchText] = useState("");
     const [debouncedSearch] = useDebounce(searchText, 500);
@@ -41,7 +42,7 @@ export default function CategoryPage() {
     };
 
     const handleDelete = (id: string, name: string) => {
-        Modal.confirm({
+        modal.confirm({
             title: "Hapus Kategori?",
             icon: <AlertTriangle className="text-red-500" />,
             content: `Apakah Anda yakin ingin menghapus kategori "${name}"?`,

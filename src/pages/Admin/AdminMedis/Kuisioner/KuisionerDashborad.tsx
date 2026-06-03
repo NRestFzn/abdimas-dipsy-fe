@@ -1,10 +1,10 @@
 import { useState } from "react";
 import {
+  App,
   Button,
   Card,
   Input,
   Table,
-  message,
   Pagination,
 } from "antd";
 import { Plus, Search, ArrowLeft } from "lucide-react";
@@ -19,6 +19,7 @@ import type { SorterResult } from "antd/es/table/interface";
 import CreateQuestionnaireModal from "./Partials/CreateQuestionnaireModal";
 
 export default function Kuisioner() {
+  const { message, modal } = App.useApp();
   const navigate = useNavigate();
 
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
@@ -120,6 +121,7 @@ export default function Kuisioner() {
 
   const columns = getKuisionerColumns({
     pagination,
+    modal,
     onManageQuestions: handleManage,
     onEditStatus: handleToggleStatus,
     onEditData: handleOpenEdit,

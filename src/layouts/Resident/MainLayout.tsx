@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, Navigate, useLocation } from "react-router";
-import { Modal, Spin } from "antd";
+import { App, Spin } from "antd";
 import { Loader2 } from "lucide-react";
 import { useResident } from "../../hooks/useResident";
 import { useAuth } from "../../context/AuthContext";
@@ -8,6 +8,7 @@ import { HomeHeader } from "./Partials/Header";
 import { HomeFooter } from "./Partials/Footer";
 
 export default function ResidentLayout() {
+  const { modal } = App.useApp();
   const { logout, activeRole, user, switchRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,7 +21,7 @@ export default function ResidentLayout() {
     location.pathname === "/pilih-peran";
 
   const handleLogout = () => {
-    Modal.confirm({
+    modal.confirm({
       title: "Konfirmasi Keluar",
       content: "Apakah Anda yakin ingin keluar dari aplikasi?",
       okText: "Ya, Keluar",
