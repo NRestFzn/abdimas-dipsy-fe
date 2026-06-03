@@ -84,7 +84,12 @@ export default function RWTab() {
                     allowClear
                     className="w-full sm:w-64"
                 />
-                <Button type="primary" icon={<Plus size={16} />} className="!bg-[#70B748]" onClick={() => setIsModalOpen(true)}>
+                <Button
+                    type="primary"
+                    icon={<Plus size={16} />}
+                    className="w-full !bg-[#70B748] sm:w-auto"
+                    onClick={() => setIsModalOpen(true)}
+                >
                     Tambah RW
                 </Button>
             </div>

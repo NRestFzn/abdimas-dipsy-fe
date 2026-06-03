@@ -14,6 +14,12 @@ export const getFamilyMemberColumns = ({ headOfFamilyId, onRemove }: Props): Col
         key: "fullname",
     },
     {
+        title: "NIK",
+        dataIndex: "nik",
+        key: "nik",
+        render: (nik: string) => nik || "-",
+    },
+    {
         title: "Email",
         dataIndex: ["user", "email"],
         key: "email",

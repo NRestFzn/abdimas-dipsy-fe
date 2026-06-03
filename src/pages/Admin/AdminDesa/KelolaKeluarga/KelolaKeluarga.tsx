@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
     Table,
@@ -7,11 +7,17 @@ import {
     Modal,
     Input,
     message,
-    Breadcrumb
+    Breadcrumb,
+    Select,
+    Spin,
+    Empty,
 } from "antd";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 import { useAdminFamilies, useAdminCreateFamily } from "../../../../hooks/Family/useAdminFamily";
-import { api } from "../../../../service/api";
+import { residentService } from "../../../../service/Admin/AdminDesa/residentServices";
+import type { ResidentData } from "../../../../types/Resident/residentType";
 
 export default function KelolaKeluarga() {
     const navigate = useNavigate();
@@ -19,33 +25,80 @@ export default function KelolaKeluarga() {
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [familyCardNumber, setFamilyCardNumber] = useState("");
-    const [searchNik, setSearchNik] = useState("");
-    const [searchResult, setSearchResult] = useState<any>(null);
-    const [isSearching, setIsSearching] = useState(false);
+    const [selectedHeadOfFamilyId, setSelectedHeadOfFamilyId] = useState<string>();
+    const [residentSearch, setResidentSearch] = useState("");
+    const [debouncedResidentSearch] = useDebounce(residentSearch.trim(), 400);
     
     const { data: families, isLoading } = useAdminFamilies();
     const createFamily = useAdminCreateFamily();
 
-    const handleSearchResident = async () => {
-        if (!searchNik) {
-            messageApi.error("NIK wajib diisi");
-            return;
-        }
-        setIsSearching(true);
-        setSearchResult(null);
-        try {
-            const response = await api.get("/v1/resident", { params: { search: searchNik } });
-            const residents = response.data?.data?.data || response.data?.data || [];
-            if (residents.length > 0) {
-                setSearchResult(residents[0]);
-            } else {
-                messageApi.warning("Penduduk tidak ditemukan");
-            }
-        } catch {
-            messageApi.error("Gagal mencari penduduk");
-        } finally {
-            setIsSearching(false);
-        }
+    const { data: headOfFamilyCandidates = [], isFetching: isFetchingResidents } = useQuery({
+        queryKey: ["family-head-resident-options", debouncedResidentSearch],
+        enabled: isCreateModalOpen,
+        queryFn: async () => {
+            const params = {
+                page: 1,
+                pageSize: 20,
+                order: '[["fullname", "asc"]]',
+            };
+
+            const responses = await Promise.all([
+                residentService.getAllResidents({
+                    ...params,
+                    fullname: debouncedResidentSearch || undefined,
+                }),
+                ...(debouncedResidentSearch
+                    ? [
+                        residentService.getAllResidents({
+                            ...params,
+                            nik: debouncedResidentSearch,
+                        }),
+                    ]
+                    : []),
+            ]);
+
+            const residents = new Map<string, ResidentData>();
+            responses.forEach((response) => {
+                response.data?.forEach((resident) => {
+                    residents.set(resident.id, resident);
+                });
+            });
+
+            const candidates = Array.from(residents.values());
+
+            if (!debouncedResidentSearch) return candidates;
+
+            const loweredSearch = debouncedResidentSearch.toLowerCase();
+            return candidates.filter((resident) => {
+                const fullname = resident.fullname.toLowerCase();
+                const nik = resident.userDetail?.nik || "";
+
+                return fullname.includes(loweredSearch) || nik.includes(debouncedResidentSearch);
+            });
+        },
+    });
+
+    const residentOptions = useMemo(
+        () =>
+            headOfFamilyCandidates.map((resident) => ({
+                value: resident.id,
+                label: (
+                    <div className="flex flex-col leading-tight">
+                        <span className="font-medium text-gray-800">{resident.fullname}</span>
+                        <span className="text-xs text-gray-500">
+                            NIK {resident.userDetail?.nik || "-"}
+                        </span>
+                    </div>
+                ),
+            })),
+        [headOfFamilyCandidates]
+    );
+
+    const resetCreateFamilyForm = () => {
+        setIsCreateModalOpen(false);
+        setFamilyCardNumber("");
+        setSelectedHeadOfFamilyId(undefined);
+        setResidentSearch("");
     };
 
     const handleCreateFamily = async () => {
@@ -54,21 +107,18 @@ export default function KelolaKeluarga() {
             return;
         }
 
-        if (!searchResult?.id) {
-            messageApi.error("Silakan cari calon kepala keluarga berdasarkan NIK terlebih dahulu");
+        if (!selectedHeadOfFamilyId) {
+            messageApi.error("Kepala keluarga wajib dipilih");
             return;
         }
 
         try {
             await createFamily.mutateAsync({
                 familyCardNumber,
-                headOfFamilyId: searchResult.id
+                headOfFamilyId: selectedHeadOfFamilyId
             });
             messageApi.success("Berhasil membuat keluarga baru");
-            setIsCreateModalOpen(false);
-            setFamilyCardNumber("");
-            setSearchNik("");
-            setSearchResult(null);
+            resetCreateFamilyForm();
         } catch (error: any) {
             messageApi.error(error?.response?.data?.message || "Gagal membuat keluarga");
         }
@@ -106,7 +156,7 @@ export default function KelolaKeluarga() {
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-4 md:p-6">
             {contextHolder}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div>
@@ -142,16 +192,13 @@ export default function KelolaKeluarga() {
             <Modal
                 title="Buat Keluarga Baru"
                 open={isCreateModalOpen}
-                onCancel={() => {
-                    setIsCreateModalOpen(false);
-                    setFamilyCardNumber("");
-                    setSearchNik("");
-                    setSearchResult(null);
-                }}
+                onCancel={resetCreateFamilyForm}
                 onOk={handleCreateFamily}
                 confirmLoading={createFamily.isPending}
                 okText="Buat Keluarga"
                 cancelText="Batal"
+                width={560}
+                destroyOnHidden
             >
                 <div className="space-y-4 mt-4">
                     <div>
@@ -163,31 +210,31 @@ export default function KelolaKeluarga() {
                         />
                     </div>
                     
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Cari Calon Kepala Keluarga</label>
-                        <div className="flex flex-col xs:flex-row gap-2">
-                            <Input
-                                value={searchNik}
-                                onChange={(e) => setSearchNik(e.target.value)}
-                                placeholder="Masukkan NIK Kepala Keluarga"
-                            />
-                            <Button
-                                type="primary"
-                                icon={<Search size={16} />}
-                                onClick={handleSearchResident}
-                                loading={isSearching}
-                                className="shrink-0"
-                            >
-                                Cari
-                            </Button>
-                        </div>
-
-                        {searchResult && (
-                            <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
-                                <p className="text-sm text-gray-600">Ditemukan:</p>
-                                <p className="font-semibold text-gray-800">{searchResult.fullname}</p>
-                            </div>
-                        )}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Kepala Keluarga</label>
+                        <Select
+                            showSearch
+                            allowClear
+                            value={selectedHeadOfFamilyId}
+                            filterOption={false}
+                            placeholder="Cari nama atau NIK kepala keluarga"
+                            options={residentOptions}
+                            loading={isFetchingResidents}
+                            onSearch={setResidentSearch}
+                            onChange={(value) => setSelectedHeadOfFamilyId(value)}
+                            onClear={() => {
+                                setSelectedHeadOfFamilyId(undefined);
+                                setResidentSearch("");
+                            }}
+                            notFoundContent={
+                                isFetchingResidents ? (
+                                    <Spin size="small" />
+                                ) : (
+                                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                                )
+                            }
+                            className="w-full"
+                        />
                     </div>
                 </div>
             </Modal>
