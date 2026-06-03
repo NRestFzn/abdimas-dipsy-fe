@@ -61,6 +61,9 @@ export const KelolaKeluarga = lazy(
 export const DetailKeluarga = lazy(
   () => import("../pages/Admin/AdminDesa/KelolaKeluarga/DetailKeluarga")
 );
+export const AdminDesaOdgj = lazy(
+  () => import("../pages/Admin/AdminDesa/Odgj/OdgjManagement")
+);
 
 // Admin Medis Dashboards
 export const RWDashboard = lazy(

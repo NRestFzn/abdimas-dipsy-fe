@@ -6,7 +6,7 @@ import "./index.css";
 import axios from "axios";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConfigProvider } from "antd";
+import { App, ConfigProvider } from "antd";
 import idID from "antd/locale/id_ID";
 import router from "./routes";
 
@@ -35,7 +35,9 @@ createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <ConfigProvider theme={antdTheme} locale={idID}>
-        <RouterProvider router={router} />
+        <App>
+          <RouterProvider router={router} />
+        </App>
       </ConfigProvider>
     </AuthProvider>
   </QueryClientProvider>

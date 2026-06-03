@@ -142,6 +142,10 @@ const router = createBrowserRouter([
               },
             ],
           },
+          {
+            path: "odgj",
+            element: <Loadable Component={Pages.AdminDesaOdgj} />,
+          },
         ],
       },
 
