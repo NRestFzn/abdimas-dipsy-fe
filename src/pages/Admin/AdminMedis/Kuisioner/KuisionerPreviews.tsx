@@ -35,7 +35,7 @@ export default function KuisionerPreview() {
             }
 
         } catch (error) {
-            console.error("Gagal memuat preview", error);
+            console.error("Gagal memuat pratinjau", error);
         } finally {
             setLoading(false);
         }
@@ -45,7 +45,7 @@ export default function KuisionerPreview() {
         return (
             <div className="h-screen flex flex-col justify-center items-center bg-gray-50">
                 <Spin size="large" />
-                <p className="mt-4 text-gray-500">Memuat preview...</p>
+                <p className="mt-4 text-gray-500">Memuat pratinjau...</p>
             </div>
         );
     }
@@ -83,7 +83,7 @@ export default function KuisionerPreview() {
                         <div>
                             <div className="flex items-center gap-2 mb-2 opacity-90">
                                 <FileText size={20} />
-                                <span className="font-medium tracking-wide text-sm uppercase">Preview Mode</span>
+                                <span className="font-medium tracking-wide text-sm uppercase">Mode Pratinjau</span>
                             </div>
                             <h1 className="text-3xl font-bold mb-2">{detail.title}</h1>
                             <p className="text-green-50 text-lg leading-relaxed opacity-90">
@@ -91,7 +91,7 @@ export default function KuisionerPreview() {
                             </p>
                         </div>
                         <Tag color={detail.status === 'publish' ? 'success' : 'warning'} className="border-none px-3 py-1">
-                            {detail.status === 'publish' ? 'Published' : 'Draft'}
+                            {detail.status === 'publish' ? 'Terbit' : 'Konsep'}
                         </Tag>
                     </div>
                 </div>
@@ -112,13 +112,22 @@ export default function KuisionerPreview() {
 
                                     <div className="ml-11 space-y-3">
                                         {q.questionType === 'radio' && (
-                                            <div className="flex gap-4">
-                                                <button disabled className="px-6 py-2 rounded-lg border border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed w-32">
-                                                    Ya
-                                                </button>
-                                                <button disabled className="px-6 py-2 rounded-lg border border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed w-32">
-                                                    Tidak
-                                                </button>
+                                            <div className="flex flex-wrap gap-4">
+                                                {(detail.scoringType === 'weighted_score'
+                                                    ? detail.scoringConfig?.answerOptions || []
+                                                    : [
+                                                        { value: 'true', label: 'Ya' },
+                                                        { value: 'false', label: 'Tidak' },
+                                                    ]
+                                                ).map((option) => (
+                                                    <button
+                                                        key={option.value}
+                                                        disabled
+                                                        className="px-6 py-2 rounded-lg border border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed min-w-32"
+                                                    >
+                                                        {option.label}
+                                                    </button>
+                                                ))}
                                             </div>
                                         )}
 

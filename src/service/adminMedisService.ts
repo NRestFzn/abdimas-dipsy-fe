@@ -209,6 +209,8 @@ export const adminMedisService = {
 			questionType: q.questionType,
 			status: (q.id === questionId ? status : q.status) as "publish" | "draft",
 			order: q.order ?? index + 1,
+			scoringCategory: q.scoringCategory || null,
+			scoreOverrides: q.scoreOverrides || null,
 		}));
 
 		const response = await api.put<ApiResponse<QuestionnaireQuestion[]>>(

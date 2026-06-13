@@ -36,7 +36,7 @@ export const getDesaRwDashboardColumn = ({
         align: 'center',
     },
     {
-        title: 'Submit Kuisioner',
+        title: 'Pengisian Kuisioner',
         dataIndex: 'submitCount',
         key: 'submitCount',
         align: 'center',

@@ -11,38 +11,65 @@ import {
     Dropdown,
     Modal,
     Pagination,
+    InputNumber,
+    Switch,
 } from "antd";
 import { GripVertical, Plus, Trash2, Save, Edit, MoreHorizontal, CheckCircle, XCircle } from "lucide-react";
 import type { CreateQuestionPayload, QuestionnaireQuestion } from "../../../../../types/adminMedisService";
 import { adminMedisService } from "../../../../../service/adminMedisService";
+import type { Questionnaire } from "../../../../../types/Questionnaire/questionnaireTypes";
+import {
+    getQuestionnaireQuestionTypeLabel,
+    getQuestionnaireStatusLabel,
+} from "../../../../../utils/questionnaireDisplay";
 
 interface QuestionManagerProps {
-    questionnaireId: string;
+    questionnaire: Questionnaire;
 }
 
 interface AddQuestionFormProps {
-    questionnaireId: string;
+    questionnaire: Questionnaire;
     onAdd: (payload: CreateQuestionPayload) => Promise<void>;
     disabled: boolean;
 }
 
-const AddQuestionForm = ({ questionnaireId, onAdd, disabled }: AddQuestionFormProps) => {
+const AddQuestionForm = ({ questionnaire, onAdd, disabled }: AddQuestionFormProps) => {
+    const questionnaireId = questionnaire.id;
+    const scoringConfig = questionnaire.scoringConfig;
+    const isWeighted = questionnaire.scoringType === "weighted_score";
     const [isAdding, setIsAdding] = useState(false);
     const [newQuestion, setNewQuestion] = useState<CreateQuestionPayload>({
         questionText: "",
         questionType: "radio",
         status: "draft",
         QuestionnaireId: questionnaireId,
-        order: 0
+        order: 0,
+        scoringCategory: null,
+        scoreOverrides: null,
     });
 
     useEffect(() => {
-        setNewQuestion(prev => ({ ...prev, QuestionnaireId: questionnaireId }));
-    }, [questionnaireId]);
+        setNewQuestion(prev => ({
+            ...prev,
+            QuestionnaireId: questionnaireId,
+            questionType: isWeighted ? "radio" : prev.questionType,
+            scoringCategory:
+                prev.scoringCategory || scoringConfig?.categories?.[0]?.key || null,
+        }));
+    }, [questionnaireId, isWeighted, scoringConfig]);
 
     const handleSubmit = async () => {
         if (!newQuestion.questionText.trim()) {
             message.error("Teks pertanyaan wajib diisi");
+            return;
+        }
+
+        if (
+            isWeighted &&
+            (scoringConfig?.categories?.length || 0) > 0 &&
+            !newQuestion.scoringCategory
+        ) {
+            message.error("Kelompok penilaian wajib dipilih");
             return;
         }
 
@@ -75,11 +102,13 @@ const AddQuestionForm = ({ questionnaireId, onAdd, disabled }: AddQuestionFormPr
                             onChange={(val) => setNewQuestion(prev => ({ ...prev, questionType: val }))}
                             className="flex-1 md:flex-none md:w-48"
                             disabled={disabled || isAdding}
-                            options={[
-                                { value: 'radio', label: 'Radio (Ya/Tidak)' },
-                                { value: 'checkbox', label: 'Checkbox' },
-                                { value: 'text', label: 'Text' },
-                            ]}
+                            options={isWeighted
+                                ? [{ value: 'radio', label: 'Pilihan Berbobot' }]
+                                : [
+                                    { value: 'radio', label: 'Pilihan Tunggal (Ya/Tidak)' },
+                                    { value: 'checkbox', label: 'Kotak Centang' },
+                                    { value: 'text', label: 'Jawaban Teks' },
+                                ]}
                         />
                         <Select
                             value={newQuestion.status}
@@ -87,8 +116,8 @@ const AddQuestionForm = ({ questionnaireId, onAdd, disabled }: AddQuestionFormPr
                             className="flex-1 md:flex-none md:w-32"
                             disabled={disabled || isAdding}
                             options={[
-                                { value: 'draft', label: 'Draft' },
-                                { value: 'publish', label: 'Publish' },
+                                { value: 'draft', label: 'Konsep' },
+                                { value: 'publish', label: 'Terbit' },
                             ]}
                         />
                     </div>
@@ -103,6 +132,71 @@ const AddQuestionForm = ({ questionnaireId, onAdd, disabled }: AddQuestionFormPr
                         <span>Tambah</span>
                     </Button>
                 </div>
+
+                {isWeighted && (
+                    <div className="border-t border-gray-100 pt-3 space-y-3">
+                        {(scoringConfig?.categories?.length || 0) > 0 && (
+                            <Select
+                                value={newQuestion.scoringCategory || undefined}
+                                onChange={(value) =>
+                                    setNewQuestion((prev) => ({ ...prev, scoringCategory: value }))
+                                }
+                                placeholder="Pilih kelompok penilaian"
+                                options={scoringConfig?.categories.map((category) => ({
+                                    value: category.key,
+                                    label: category.label,
+                                }))}
+                                className="w-full"
+                            />
+                        )}
+
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-medium text-gray-700">Skor khusus pertanyaan</p>
+                                <p className="text-xs text-gray-500">Aktifkan untuk membalik nilai jawaban atau memakai bobot yang berbeda.</p>
+                            </div>
+                            <Switch
+                                checked={!!newQuestion.scoreOverrides}
+                                onChange={(checked) =>
+                                    setNewQuestion((prev) => ({
+                                        ...prev,
+                                        scoreOverrides: checked
+                                            ? Object.fromEntries(
+                                                (scoringConfig?.answerOptions || []).map((option) => [
+                                                    option.value,
+                                                    option.score,
+                                                ])
+                                            )
+                                            : null,
+                                    }))
+                                }
+                            />
+                        </div>
+
+                        {newQuestion.scoreOverrides && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                {(scoringConfig?.answerOptions || []).map((option) => (
+                                    <label key={option.value} className="text-xs text-gray-600">
+                                        {option.label}
+                                        <InputNumber
+                                            value={newQuestion.scoreOverrides?.[option.value]}
+                                            onChange={(score) =>
+                                                setNewQuestion((prev) => ({
+                                                    ...prev,
+                                                    scoreOverrides: {
+                                                        ...(prev.scoreOverrides || {}),
+                                                        [option.value]: Number(score || 0),
+                                                    },
+                                                }))
+                                            }
+                                            className="!w-full mt-1"
+                                        />
+                                    </label>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -114,9 +208,12 @@ interface EditQuestionModalProps {
     onCancel: () => void;
     onSave: (updatedQuestion: QuestionnaireQuestion) => Promise<void>;
     loading: boolean;
+    questionnaire: Questionnaire;
 }
 
-const EditQuestionModal = ({ open, question, onCancel, onSave, loading }: EditQuestionModalProps) => {
+const EditQuestionModal = ({ open, question, onCancel, onSave, loading, questionnaire }: EditQuestionModalProps) => {
+    const isWeighted = questionnaire.scoringType === "weighted_score";
+    const scoringConfig = questionnaire.scoringConfig;
     const [localQuestion, setLocalQuestion] = useState<QuestionnaireQuestion | null>(null);
 
     useEffect(() => {
@@ -133,7 +230,7 @@ const EditQuestionModal = ({ open, question, onCancel, onSave, loading }: EditQu
 
     return (
         <Modal
-            title="Edit Pertanyaan"
+            title="Ubah Pertanyaan"
             open={open}
             onCancel={onCancel}
             onOk={handleSave}
@@ -162,11 +259,13 @@ const EditQuestionModal = ({ open, question, onCancel, onSave, loading }: EditQu
                                 className="w-full"
                                 value={localQuestion.questionType}
                                 onChange={(val) => setLocalQuestion(prev => prev ? ({ ...prev, questionType: val }) : null)}
-                                options={[
-                                    { value: 'radio', label: 'Radio (Ya/Tidak)' },
-                                    { value: 'checkbox', label: 'Checkbox' },
-                                    { value: 'text', label: 'Text' },
-                                ]}
+                                options={isWeighted
+                                    ? [{ value: 'radio', label: 'Pilihan Berbobot' }]
+                                    : [
+                                        { value: 'radio', label: 'Pilihan Tunggal (Ya/Tidak)' },
+                                        { value: 'checkbox', label: 'Kotak Centang' },
+                                        { value: 'text', label: 'Jawaban Teks' },
+                                    ]}
                             />
                         </div>
                         <div>
@@ -176,19 +275,99 @@ const EditQuestionModal = ({ open, question, onCancel, onSave, loading }: EditQu
                                 value={localQuestion.status}
                                 onChange={(val) => setLocalQuestion(prev => prev ? ({ ...prev, status: val as "draft" | "publish" }) : null)}
                                 options={[
-                                    { value: 'draft', label: 'Draft' },
-                                    { value: 'publish', label: 'Publish' },
+                                    { value: 'draft', label: 'Konsep' },
+                                    { value: 'publish', label: 'Terbit' },
                                 ]}
                             />
                         </div>
                     </div>
+
+                    {isWeighted && (
+                        <div className="border-t border-gray-100 pt-4 space-y-4">
+                            {(scoringConfig?.categories?.length || 0) > 0 && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kelompok Penilaian
+                                    </label>
+                                    <Select
+                                        className="w-full"
+                                        value={localQuestion.scoringCategory || undefined}
+                                        onChange={(value) =>
+                                            setLocalQuestion((prev) =>
+                                                prev ? { ...prev, scoringCategory: value } : null
+                                            )
+                                        }
+                                        options={scoringConfig?.categories.map((category) => ({
+                                            value: category.key,
+                                            label: category.label,
+                                        }))}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700">Skor khusus pertanyaan</p>
+                                    <p className="text-xs text-gray-500">Gunakan untuk membalik nilai jawaban atau memakai bobot khusus.</p>
+                                </div>
+                                <Switch
+                                    checked={!!localQuestion.scoreOverrides}
+                                    onChange={(checked) =>
+                                        setLocalQuestion((prev) =>
+                                            prev
+                                                ? {
+                                                    ...prev,
+                                                    scoreOverrides: checked
+                                                        ? Object.fromEntries(
+                                                            (scoringConfig?.answerOptions || []).map((option) => [
+                                                                option.value,
+                                                                option.score,
+                                                            ])
+                                                        )
+                                                        : null,
+                                                }
+                                                : null
+                                        )
+                                    }
+                                />
+                            </div>
+
+                            {localQuestion.scoreOverrides && (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {(scoringConfig?.answerOptions || []).map((option) => (
+                                        <label key={option.value} className="text-xs text-gray-600">
+                                            {option.label}
+                                            <InputNumber
+                                                value={localQuestion.scoreOverrides?.[option.value]}
+                                                onChange={(score) =>
+                                                    setLocalQuestion((prev) =>
+                                                        prev
+                                                            ? {
+                                                                ...prev,
+                                                                scoreOverrides: {
+                                                                    ...(prev.scoreOverrides || {}),
+                                                                    [option.value]: Number(score || 0),
+                                                                },
+                                                            }
+                                                            : null
+                                                    )
+                                                }
+                                                className="!w-full mt-1"
+                                            />
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
         </Modal>
     );
 };
 
-export default function QuestionManager({ questionnaireId }: QuestionManagerProps) {
+export default function QuestionManager({ questionnaire }: QuestionManagerProps) {
+    const questionnaireId = questionnaire.id;
     const [questions, setQuestions] = useState<QuestionnaireQuestion[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -283,7 +462,7 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                 newStatus,
                 updatedQuestions
             );
-            message.success(`Status diubah menjadi ${newStatus}`);
+            message.success(`Status diubah menjadi ${getQuestionnaireStatusLabel(newStatus)}`);
         } catch (error) {
             setQuestions(previousQuestions);
             message.error("Gagal mengubah status");
@@ -312,7 +491,9 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                 questionText: q.questionText,
                 questionType: q.questionType,
                 status: q.status as "draft" | "publish",
-                order: q.order ?? (index + 1)
+                order: q.order ?? (index + 1),
+                scoringCategory: q.scoringCategory || null,
+                scoreOverrides: q.scoreOverrides || null,
             }));
 
             const res = await adminMedisService.bulkUpdateQuestions(payload);
@@ -367,7 +548,9 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                 questionText: q.questionText,
                 questionType: q.questionType,
                 status: q.status as "draft" | "publish",
-                order: index + 1
+                order: index + 1,
+                scoringCategory: q.scoringCategory || null,
+                scoreOverrides: q.scoreOverrides || null,
             }));
 
             const updatedList = await adminMedisService.bulkUpdateQuestions(payload);
@@ -395,7 +578,7 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
         <div className="space-y-6 pb-20">
 
             <AddQuestionForm
-                questionnaireId={questionnaireId}
+                questionnaire={questionnaire}
                 onAdd={handleAddQuestion}
                 disabled={isSavingOrder}
             />
@@ -411,7 +594,7 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                             Total: {questions.length} Pertanyaan
                         </span>
                         <span className="text-xs text-gray-400 italic hidden sm:inline">
-                            Drag icon grip untuk mengubah urutan
+                            Tarik ikon di samping pertanyaan untuk mengubah urutan
                         </span>
                     </div>
 
@@ -434,7 +617,7 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                                 >
                                     <div
                                         className="cursor-move text-gray-400 hover:text-gray-600 p-1 mt-0.5 shrink-0"
-                                        title="Drag untuk pindah posisi"
+                                        title="Tarik untuk memindahkan posisi"
                                     >
                                         <GripVertical size={20} />
                                     </div>
@@ -452,12 +635,12 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
 
                                         <div className="flex items-center gap-2 shrink-0 sm:self-start ml-7 sm:ml-0">
                                             <Tag className="text-xs m-0 h-fit bg-gray-50 border-gray-200 text-gray-500">
-                                                {q.questionType}
+                                                {getQuestionnaireQuestionTypeLabel(q.questionType)}
                                             </Tag>
                                             {q.status === 'publish' ? (
-                                                <Tag color="success" className="text-xs m-0 h-fit">Published</Tag>
+                                                <Tag color="success" className="text-xs m-0 h-fit">Terbit</Tag>
                                             ) : (
-                                                <Tag color="warning" className="text-xs m-0 h-fit">Draft</Tag>
+                                                <Tag color="warning" className="text-xs m-0 h-fit">Konsep</Tag>
                                             )}
                                         </div>
                                     </div>
@@ -469,21 +652,21 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                                                 items: [
                                                     {
                                                         key: 'edit',
-                                                        label: 'Edit',
+                                                        label: 'Ubah',
                                                         icon: <Edit size={14} />,
                                                         onClick: () => openEditModal(q)
                                                     },
                                                     { type: 'divider' },
                                                     {
                                                         key: 'publish',
-                                                        label: 'Set Publish',
+                                                        label: 'Terbitkan',
                                                         icon: <CheckCircle size={14} className="text-green-500" />,
                                                         disabled: q.status === 'publish',
                                                         onClick: () => handleChangeStatus(q.id, 'publish')
                                                     },
                                                     {
                                                         key: 'draft',
-                                                        label: 'Set Draft',
+                                                        label: 'Jadikan Konsep',
                                                         icon: <XCircle size={14} className="text-yellow-500" />,
                                                         disabled: q.status === 'draft',
                                                         onClick: () => handleChangeStatus(q.id, 'draft')
@@ -564,6 +747,7 @@ export default function QuestionManager({ questionnaireId }: QuestionManagerProp
                 onCancel={() => setIsEditModalOpen(false)}
                 onSave={handleSaveEdit}
                 loading={isSavingEdit}
+                questionnaire={questionnaire}
             />
         </div>
     );

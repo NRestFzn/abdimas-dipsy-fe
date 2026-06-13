@@ -22,7 +22,7 @@ export const getRTDashboardColumns = ({
         align: 'center',
     },
     {
-        title: 'Submit Kuisioner',
+        title: 'Pengisian Kuisioner',
         dataIndex: 'submitCount',
         key: 'submitCount',
         align: 'center',

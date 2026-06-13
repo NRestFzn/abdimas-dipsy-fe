@@ -9,6 +9,8 @@ import {
 import {adminMedisService} from '../../../../../service/adminMedisService';
 import type {SubmissionDetailResponse} from '../../../../../types/adminMedisService';
 import ResultPieChart from '../../../../../components/Charts/ResultPieChart';
+import QuestionnaireScoreSummary from '../../../../../components/QuestionnaireScoreSummary';
+import {getQuestionnaireResultLabel} from '../../../../../utils/questionnaireDisplay';
 
 const {Title, Text, Paragraph} = Typography;
 
@@ -50,7 +52,7 @@ export default function MedisResult() {
         const questions: QuestionResult[] = sortedAnswers.map((item) => ({
           no: item.questionnaireQuestion.order,
           question: item.questionnaireQuestion.questionText,
-          answer: item.answerValue === 'true' ? 'Ya' : 'Tidak',
+          answer: `${item.answerLabel || (item.answerValue === 'true' ? 'Ya' : item.answerValue === 'false' ? 'Tidak' : item.answerValue)}${item.score == null ? '' : ` (${item.score} poin)`}`,
         }));
 
         setMappedQuestions(questions);
@@ -66,6 +68,11 @@ export default function MedisResult() {
   const yaCount = detailData?.trueCount || 0;
   const tidakCount = detailData?.falseCount || 0;
   const isUnstable = detailData?.isMentalUnstable === true;
+  const resultLabel = getQuestionnaireResultLabel(
+    detailData?.resultLabel || (isUnstable ? 'Berisiko' : 'Stabil')
+  );
+  const isWeightedResult = detailData?.scoringResult?.scoringType === 'weighted_score';
+  const recommendation = detailData?.scoringResult?.recommendation;
 
   const columns = getMedisResultColumns();
 
@@ -73,7 +80,7 @@ export default function MedisResult() {
     return (
       <div className="h-[80vh] flex flex-col justify-center items-center">
         <Spin size="large" />
-        <p className="mt-4 text-gray-500">Memuat hasil tes warga...</p>
+        <p className="mt-4 text-gray-500">Memuat hasil pemeriksaan warga...</p>
       </div>
     );
   }
@@ -81,7 +88,7 @@ export default function MedisResult() {
   if (!detailData) {
     return (
       <div className="h-[80vh] flex flex-col justify-center items-center">
-        <Empty description="Data hasil tes tidak ditemukan" />
+        <Empty description="Data hasil pemeriksaan tidak ditemukan" />
         <Button className="mt-4" onClick={() => navigate(-1)}>
           Kembali
         </Button>
@@ -122,7 +129,7 @@ export default function MedisResult() {
                   color={isUnstable ? 'error' : 'success'}
                   className="px-3 py-1 text-sm rounded-full"
                 >
-                  Hasil Analisa Kesehatan Mental
+                  Hasil Pemeriksaan Kesehatan Mental
                 </Tag>
               </div>
 
@@ -143,7 +150,7 @@ export default function MedisResult() {
                   level={1}
                   className={`!m-0 !font-extrabold tracking-tight ${statusColor}`}
                 >
-                  {isUnstable ? 'BERISIKO' : 'STABIL'}
+                  {resultLabel.toUpperCase()}
                 </Title>
               </div>
 
@@ -153,12 +160,13 @@ export default function MedisResult() {
                     isUnstable ? 'text-red-700' : 'text-green-700'
                   }`}
                 >
-                  {isUnstable ? 'Perlu Perhatian Khusus' : 'Kondisi Stabil'}
+                  {resultLabel}
                 </h4>
                 <Paragraph className="!mb-0 text-gray-700 leading-relaxed">
-                  {isUnstable
-                    ? `Hasil tes ini menunjukkan adanya indikasi gangguan kesehatan mental. Disarankan untuk melakukan tindak lanjut atau konsultasi dengan tenaga profesional.`
-                    : `Hasil tes ini menunjukkan kondisi kesehatan mental yang cukup baik dan stabil. Tidak ditemukan indikasi gangguan yang signifikan.`}
+                  {recommendation ||
+                  (isUnstable
+                    ? `Hasil pemeriksaan ini menunjukkan adanya indikasi gangguan kesehatan mental. Disarankan untuk melakukan tindak lanjut atau konsultasi dengan tenaga profesional.`
+                    : `Hasil pemeriksaan ini menunjukkan kondisi kesehatan mental yang cukup baik dan stabil. Tidak ditemukan indikasi gangguan yang signifikan.`)}
                 </Paragraph>
               </div>
             </div>
@@ -167,11 +175,15 @@ export default function MedisResult() {
               <div className="w-full flex gap-x-2 items-center">
                 <FileText size={16} />
                 <Text strong className="text-gray-500 flex items-center gap-2">
-                  Statistik Jawaban
+                  {isWeightedResult ? 'Rincian Skor' : 'Statistik Jawaban'}
                 </Text>
               </div>
               <div className="w-full mt-4 flex justify-center">
-                <ResultPieChart yaCount={yaCount} tidakCount={tidakCount} />
+                {isWeightedResult && detailData.scoringResult ? (
+                  <QuestionnaireScoreSummary result={detailData.scoringResult} />
+                ) : (
+                  <ResultPieChart yaCount={yaCount} tidakCount={tidakCount} />
+                )}
               </div>
             </div>
           </div>

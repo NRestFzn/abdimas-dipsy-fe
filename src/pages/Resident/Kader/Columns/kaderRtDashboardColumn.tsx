@@ -44,7 +44,7 @@ export const getKaderRtDashboardColumn = (): ColumnsType<KaderWargaDataRow> => [
         },
     },
     {
-        title: 'Terakhir Submit',
+        title: 'Terakhir Mengisi',
         dataIndex: 'lastSubmissionDate',
         key: 'lastSubmissionDate',
         render: (date) => {

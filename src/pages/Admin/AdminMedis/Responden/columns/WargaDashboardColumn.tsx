@@ -88,7 +88,7 @@ export const getWargaMedisColumns = ({ onSeeDetail }: MedisColumnProps): Columns
         },
     },
     {
-        title: 'Terakhir Submit',
+        title: 'Terakhir Mengisi',
         dataIndex: 'lastSubmissionDate',
         key: 'lastSubmissionDate',
         render: (date) => (

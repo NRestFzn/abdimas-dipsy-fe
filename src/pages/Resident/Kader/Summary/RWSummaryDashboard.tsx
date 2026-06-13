@@ -68,7 +68,7 @@ export default function KaderResult() {
 
     const filterContent = (
         <div className="w-80 p-1">
-            <p className="mb-2 font-semibold text-gray-700">Filter Tanggal Submit</p>
+            <p className="mb-2 font-semibold text-gray-700">Saring Tanggal Pengisian</p>
             <RangePicker
                 className="w-full mb-4"
                 onChange={handleDateChange}
@@ -178,7 +178,7 @@ export default function KaderResult() {
                         }}
                         scroll={{ x: 800 }}
                         locale={{
-                            emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Belum ada data submit dari RT" />
+                            emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Belum ada data pengisian dari RT" />
                         }}
                         rowClassName="hover:bg-gray-50"
                     />

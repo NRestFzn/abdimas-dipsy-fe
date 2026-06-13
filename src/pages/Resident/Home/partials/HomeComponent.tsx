@@ -228,10 +228,10 @@ export const QuestionnaireCard = ({
               <span className="text-xs font-bold">Tersedia</span>
             </div>
           ) : (
-            <Tooltip title="Anda baru saja mengerjakan ini. Harap tunggu waktu cooldown berakhir.">
+            <Tooltip title="Anda baru saja mengerjakan kuesioner ini. Harap tunggu hingga masa tenggang berakhir.">
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100 cursor-help">
                 <AlertCircle size={12} />
-                <span className="text-xs font-bold">Cooldown</span>
+                <span className="text-xs font-bold">Masa Tenggang</span>
               </div>
             </Tooltip>
           )}

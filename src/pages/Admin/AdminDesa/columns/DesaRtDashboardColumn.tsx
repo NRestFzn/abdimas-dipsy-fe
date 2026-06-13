@@ -31,7 +31,7 @@ export const getDesaRtDashboardColumn = ({
         align: 'center',
     },
     {
-        title: 'Submit Kuisioner',
+        title: 'Pengisian Kuisioner',
         dataIndex: 'submitCount',
         key: 'submitCount',
         align: 'center',

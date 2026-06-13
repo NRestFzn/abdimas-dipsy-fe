@@ -46,7 +46,7 @@ export const getDesaWargaDashboardColumn = (): ColumnsType<DesaWargaDataRow> => 
     },
   },
   {
-    title: 'Terakhir Submit',
+    title: 'Terakhir Mengisi',
     dataIndex: 'lastSubmissionDate',
     key: 'lastSubmissionDate',
     render: (date) => {
