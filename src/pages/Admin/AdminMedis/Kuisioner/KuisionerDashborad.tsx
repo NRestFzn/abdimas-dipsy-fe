@@ -17,6 +17,7 @@ import { useAdminQuestionnaire, useQuestionnaireMutation } from "../../../../hoo
 import type { Questionnaire } from "../../../../types/Questionnaire/questionnaireTypes";
 import type { SorterResult } from "antd/es/table/interface";
 import CreateQuestionnaireModal from "./Partials/CreateQuestionnaireModal";
+import { getQuestionnaireStatusLabel } from "../../../../utils/questionnaireDisplay";
 
 export default function Kuisioner() {
   const { message, modal } = App.useApp();
@@ -36,6 +37,7 @@ export default function Kuisioner() {
   const {
     data: questionnaires,
     isLoading: loadQuestionnaires,
+    refetch: refetchQuestionnaires,
   } = useAdminQuestionnaire({
     title: debouncedSearch,
     page: pagination.current,
@@ -68,13 +70,15 @@ export default function Kuisioner() {
       riskThreshold: currentData.riskThreshold,
       cooldownInMinutes: currentData.cooldownInMinutes,
       CategoryId: currentData.CategoryId,
+      scoringType: currentData.scoringType,
+      scoringConfig: currentData.scoringConfig,
     };
 
     message.loading({ content: "Memperbarui status...", key: "statusUpdate" });
 
     updateMutation.mutate({ id, payload }, {
       onSuccess: () => {
-        message.success({ content: `Status berhasil diubah ke ${newStatus}`, key: "statusUpdate" });
+        message.success({ content: `Status berhasil diubah menjadi ${getQuestionnaireStatusLabel(newStatus)}`, key: "statusUpdate" });
       },
       onError: () => {
         message.error({ content: "Gagal mengubah status", key: "statusUpdate" });
@@ -136,7 +140,10 @@ export default function Kuisioner() {
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-4 mb-6 border-b border-gray-100 pb-4">
             <Button
-              onClick={() => setSelectedQuestionnaire(null)}
+              onClick={() => {
+                setSelectedQuestionnaire(null);
+                refetchQuestionnaires();
+              }}
               className="flex items-center"
             >
               <ArrowLeft size={18} />
@@ -150,7 +157,7 @@ export default function Kuisioner() {
             </div>
           </div>
 
-          <QuestionManager questionnaireId={selectedQuestionnaire.id} />
+          <QuestionManager questionnaire={selectedQuestionnaire} />
         </div>
       </div>
     );
@@ -162,7 +169,7 @@ export default function Kuisioner() {
 
   return (
     <div className="flex flex-col gap-6 p-6 w-full">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 m-0">
             Daftar Kuisioner
@@ -174,7 +181,7 @@ export default function Kuisioner() {
         <Button
           type="primary"
           icon={<Plus size={18} />}
-          className="!bg-[#70B748] !hover:bg-[#5a9639]"
+          className="self-end md:self-auto !bg-[#70B748] !hover:bg-[#5a9639]"
           onClick={openCreateModal}
         >
           Buat Kuisioner

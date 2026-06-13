@@ -8,6 +8,8 @@ export interface Questionnaire {
   createdAt: string;
   updatedAt: string;
   questions?: QuestionnaireQuestion[];
+  scoringType?: 'binary_threshold' | 'weighted_score';
+  scoringConfig?: import('./Questionnaire/questionnaireTypes').QuestionnaireScoringConfig | null;
 }
 
 export interface GetQuestionnaireParams {
@@ -70,6 +72,9 @@ export interface UserSummaryResponse {
     submissionId: string;
     submissionDate: string;
     trueCount: string;
+    score: number;
+    resultKey: string;
+    resultLabel: string;
     isMentalUnStable: number;
   }>;
 }
@@ -80,12 +85,18 @@ export interface SubmissionDetailResponse {
   falseCount: number;
   answeredCount: number;
   isMentalUnstable: boolean;
+  score: number;
+  resultKey: string;
+  resultLabel: string;
+  scoringResult: import('./Questionnaire/questionnaireTypes').QuestionnaireScoringResult | null;
   UserId: string;
   QuestionnaireId: string;
   createdAt: string;
   questionnaireAnswer: Array<{
     id: string;
     answerValue: string;
+    answerLabel?: string | null;
+    score?: number | null;
     questionnaireQuestion: {
       id: string;
       questionText: string;
@@ -117,6 +128,8 @@ export interface QuestionnaireQuestion {
   status: string;
   QuestionnaireId: string;
   order?: number;
+  scoringCategory?: string | null;
+  scoreOverrides?: Record<string, number> | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -127,6 +140,8 @@ export interface CreateQuestionPayload {
   status: 'publish' | 'draft';
   QuestionnaireId: string;
   order: number;
+  scoringCategory?: string | null;
+  scoreOverrides?: Record<string, number> | null;
 }
 
 export interface BulkUpdateQuestionPayload {
@@ -135,6 +150,8 @@ export interface BulkUpdateQuestionPayload {
   questionType: string;
   status: 'publish' | 'draft';
   order: number;
+  scoringCategory?: string | null;
+  scoreOverrides?: Record<string, number> | null;
 }
 
 export interface ApiResponse<T> {
@@ -175,6 +192,8 @@ export interface CreateQuestionnairePayload {
   riskThreshold: number | 0;
   status: 'draft' | 'publish';
   cooldownInMinutes: number | 0;
+  scoringType?: 'binary_threshold' | 'weighted_score';
+  scoringConfig?: import('./Questionnaire/questionnaireTypes').QuestionnaireScoringConfig | null;
 }
 
 export interface UpdateQuestionnairePayload {
@@ -183,6 +202,8 @@ export interface UpdateQuestionnairePayload {
   status: 'draft' | 'publish';
   riskThreshold: number | 0;
   cooldownInMinutes: number | 0;
+  scoringType?: 'binary_threshold' | 'weighted_score';
+  scoringConfig?: import('./Questionnaire/questionnaireTypes').QuestionnaireScoringConfig | null;
 }
 
 export interface RTSummary {

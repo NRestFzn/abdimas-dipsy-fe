@@ -2,6 +2,7 @@ import { Button, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Eye } from "lucide-react";
 import type { Questionnaire } from "../../../../types/Questionnaire/questionnaireTypes";
+import { getQuestionnaireStatusLabel } from "../../../../utils/questionnaireDisplay";
 
 interface ColumnProps {
     pagination: { current: number; pageSize: number; };
@@ -40,16 +41,17 @@ export const getAdminDesaColumns = ({ pagination, onSeeDetail }: ColumnProps): C
             if (status === "draft") color = "warning";
             if (status === "archived") color = "error";
 
-            return <Tag color={color}>{status.toUpperCase()}</Tag>;
+            return <Tag color={color}>{getQuestionnaireStatusLabel(status)}</Tag>;
         },
     },
     {
-        title: "Threshold",
+        title: "Penilaian",
         dataIndex: "riskThreshold",
         key: "riskThreshold",
         align: "center",
         width: 100,
-        render: (val) => val ?? "-",
+        render: (val, record) =>
+            record.scoringType === "weighted_score" ? "Skor Berbobot" : `Ambang ${val ?? "-"}`,
     },
     {
         title: "Dibuat Pada",

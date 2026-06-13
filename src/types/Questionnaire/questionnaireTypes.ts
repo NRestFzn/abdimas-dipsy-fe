@@ -46,6 +46,8 @@ export interface Questionnaire {
     riskThreshold: number,
     cooldownInMinutes: number,
     CategoryId: string;
+    scoringType: QuestionnaireScoringType;
+    scoringConfig: QuestionnaireScoringConfig | null;
     category?: { id: string; name: string };
     questions?: Question[]
 
@@ -64,6 +66,8 @@ export interface QuestionnairePayload {
     riskThreshold: number;
     cooldownInMinutes: number;
     CategoryId: string;
+    scoringType: QuestionnaireScoringType;
+    scoringConfig: QuestionnaireScoringConfig | null;
 }
 
 export interface GetQuestionnaireParams {
@@ -107,6 +111,8 @@ export interface Question {
     status: string;
     order: number;
     QuestionnaireId: string;
+    scoringCategory?: string | null;
+    scoreOverrides?: Record<string, number> | null;
 }
 
 export interface QuestionnaireDetail {
@@ -115,4 +121,55 @@ export interface QuestionnaireDetail {
     description: string;
     status: string;
     questions: Question[];
+    scoringType: QuestionnaireScoringType;
+    scoringConfig: QuestionnaireScoringConfig | null;
+}
+
+export type QuestionnaireScoringType = "binary_threshold" | "weighted_score";
+
+export interface ScoringAnswerOption {
+    value: string;
+    label: string;
+    score: number;
+}
+
+export interface ScoringResultRange {
+    key: string;
+    label: string;
+    minScore: number;
+    maxScore: number;
+    isRisk: boolean;
+    recommendation?: string;
+}
+
+export interface ScoringCategory {
+    key: string;
+    label: string;
+    includeInTotal: boolean;
+    ranges: ScoringResultRange[];
+}
+
+export interface QuestionnaireScoringConfig {
+    answerOptions: ScoringAnswerOption[];
+    categories: ScoringCategory[];
+    total: {
+        label: string;
+        ranges: ScoringResultRange[];
+    };
+}
+
+export interface QuestionnaireScoringResult {
+    scoringType: QuestionnaireScoringType;
+    score: number;
+    resultKey: string;
+    resultLabel: string;
+    isRisk: boolean;
+    recommendation?: string;
+    categories: Array<{
+        key: string;
+        label: string;
+        includeInTotal: boolean;
+        score: number;
+        outcome: ScoringResultRange | null;
+    }>;
 }

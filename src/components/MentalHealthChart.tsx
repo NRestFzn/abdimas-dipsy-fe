@@ -41,7 +41,9 @@ export interface PerRtData {
 export interface SubmissionData {
 	submissionId: string;
 	submissionDate: string;
-	trueCount: string;
+	trueCount?: string;
+	score?: number;
+	resultLabel?: string;
 	isMentalUnStable: number;
 }
 
@@ -99,7 +101,7 @@ export default function MentalHealthChart({
 				.sort((a, b) => new Date(a.submissionDate).getTime() - new Date(b.submissionDate).getTime())
 				.map(item => ({
 					name: dayjs(item.submissionDate).format("DD MMM YYYY"),
-					"Skor Indikasi": parseInt(item.trueCount),
+					"Skor": Number(item.score ?? item.trueCount ?? 0),
 					status: item.isMentalUnStable === 1 ? "Berisiko" : "Stabil"
 				}));
 		}
@@ -189,7 +191,7 @@ export default function MentalHealthChart({
 					<Legend verticalAlign="top" height={36} />
 					<Line
 						type="monotone"
-						dataKey="Skor Indikasi"
+						dataKey="Skor"
 						stroke="#EF4444"
 						strokeWidth={3}
 						activeDot={{ r: 8 }}
@@ -388,7 +390,7 @@ export default function MentalHealthChart({
 							options={[
 								{ value: 'health_distribution', label: 'Distribusi Sehat vs Berisiko' },
 								{ value: 'risk_percentage', label: 'Persentase Risiko (%)' },
-								{ value: 'participation', label: 'Partisipasi (User vs Submit)' },
+								{ value: 'participation', label: 'Partisipasi Warga dan Pengisian' },
 							]}
 						/>
 					)}

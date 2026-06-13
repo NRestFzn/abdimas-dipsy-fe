@@ -2,6 +2,7 @@ import { Tag, Button, Space } from "antd";
 import { Eye } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
 import type { Questionnaire } from "../../../../../types/Questionnaire/questionnaireTypes";
+import { getQuestionnaireStatusLabel } from "../../../../../utils/questionnaireDisplay";
 
 interface ColumnProps {
     pagination: { current: number; pageSize: number };
@@ -49,7 +50,7 @@ export const getQuestionnaireColumns = ({
                 if (status === "published" || status === "publish") color = "green";
                 if (status === "draft") color = "orange";
                 if (status === "archived") color = "red";
-                return <Tag color={color}>{status.toUpperCase()}</Tag>;
+                return <Tag color={color}>{getQuestionnaireStatusLabel(status)}</Tag>;
             },
         },
         {

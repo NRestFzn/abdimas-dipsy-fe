@@ -87,7 +87,7 @@ export default function CategoryPage() {
 
     return (
         <div className="flex flex-col gap-6 p-6 w-full">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 m-0">Master Data Kategori</h1>
                     <p className="text-gray-500 m-0">Kelola kategori untuk kuisioner kesehatan mental</p>
@@ -95,7 +95,7 @@ export default function CategoryPage() {
                 <Button
                     type="primary"
                     icon={<Plus size={18} />}
-                    className="!bg-[#70B748] !hover:bg-[#5a9639]"
+                    className="self-end md:self-auto !bg-[#70B748] !hover:bg-[#5a9639]"
                     onClick={handleOpenCreate}
                 >
                     Tambah Kategori

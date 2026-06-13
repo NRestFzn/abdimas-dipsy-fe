@@ -182,7 +182,14 @@ export default function Quiz() {
                             index={index}
                             text={question.questionText}
                             type={question.questionType}
-                            options={question.options || []}
+                            options={
+                                quiz.scoringType === "weighted_score"
+                                    ? (quiz.scoringConfig?.answerOptions || []).map((option) => ({
+                                        label: option.label,
+                                        value: option.value,
+                                    }))
+                                    : []
+                            }
                             selectedAnswer={answers[question.id]}
                             onAnswer={handleAnswerChange}
                         />

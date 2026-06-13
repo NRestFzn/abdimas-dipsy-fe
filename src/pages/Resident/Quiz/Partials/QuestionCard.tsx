@@ -5,13 +5,18 @@ interface QuestionCardProps {
     index: number;
     text: string;
     type: string;
-    options: string[];
+    options: Array<{ label: string; value: string }>;
     selectedAnswer: string;
     onAnswer: (id: string, val: string) => void;
 }
 
 export const QuestionCard = ({ id, index, text,  options, selectedAnswer, onAnswer }: QuestionCardProps) => {
-    const safeOptions = Array.isArray(options) && options.length > 0 ? options : ["Ya", "Tidak"];
+    const safeOptions = Array.isArray(options) && options.length > 0
+        ? options
+        : [
+            { label: "Ya", value: "Ya" },
+            { label: "Tidak", value: "Tidak" },
+        ];
 
     return (
         <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-300 scroll-mt-24" id={`question-${id}`}>
@@ -27,11 +32,11 @@ export const QuestionCard = ({ id, index, text,  options, selectedAnswer, onAnsw
                     </h3>
 
                     <div className="flex flex-wrap gap-3">
-                        {safeOptions.map((option, idx) => {
-                            const isSelected = selectedAnswer === option;
+                        {safeOptions.map((option) => {
+                            const isSelected = selectedAnswer === option.value;
                             return (
                                 <label
-                                    key={idx}
+                                    key={option.value}
                                     className={`
                                         cursor-pointer relative flex items-center justify-center px-6 py-3 rounded-lg border transition-all duration-200 flex-1 sm:flex-none min-w-[100px] text-center select-none
                                         ${isSelected 
@@ -43,12 +48,12 @@ export const QuestionCard = ({ id, index, text,  options, selectedAnswer, onAnsw
                                     <input
                                         type="radio"
                                         name={id}
-                                        value={option}
+                                        value={option.value}
                                         checked={isSelected}
                                         onChange={(e) => onAnswer(id, e.target.value)}
                                         className="sr-only"
                                     />
-                                    <span className="font-medium">{option}</span>
+                                    <span className="font-medium">{option.label}</span>
                                     
                                     {isSelected && (
                                         <div className="absolute -top-2 -right-2 bg-white text-[#70B748] rounded-full p-0.5 shadow-sm border border-green-100">

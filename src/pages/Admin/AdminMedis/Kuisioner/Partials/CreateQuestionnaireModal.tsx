@@ -1,9 +1,11 @@
-import { Modal, Form, Input, InputNumber, Select, Space, Button, Spin, message } from "antd";
+import { Modal, Form, Input, InputNumber, Select, Space, Button, Spin, message, Divider } from "antd";
 import { useEffect } from "react";
 import { useQuestionnaireMutation } from "../../../../../hooks/Questionnaire/useQuestionnaire";
 import type { Questionnaire } from "../../../../../types/Questionnaire/questionnaireTypes";
 import { useInfiniteSelectOptions } from "../../../../../hooks/Common/useInfiniteSelectOptions";
 import { useCategory } from "../../../../../hooks/MasterData/useCategory";
+import ScoringConfigurationFields from "./ScoringConfigurationFields";
+import { createDefaultWeightedScoringConfig } from "../scoringDefaults";
 
 const ONE_HOUR = 60;
 const ONE_DAY = 1440; // 24 * 60
@@ -19,6 +21,7 @@ interface CreateQuestionnaireModalProps {
 
 export default function CreateQuestionnaireModal({ open, onCancel, editingData }: CreateQuestionnaireModalProps) {
     const [form] = Form.useForm();
+    const scoringType = Form.useWatch("scoringType", form);
 
     const { createMutation, updateMutation } = useQuestionnaireMutation();
     const { infiniteCategories } = useCategory();
@@ -68,6 +71,8 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
                     title: editingData.title,
                     description: editingData.description,
                     riskThreshold: editingData.riskThreshold,
+                    scoringType: editingData.scoringType || "binary_threshold",
+                    scoringConfig: editingData.scoringConfig || null,
                     status: editingData.status,
                     CategoryId: editingData.CategoryId,
                     tempDuration: displayValue,
@@ -78,6 +83,8 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
                 form.setFieldsValue({
                     status: "draft",
                     riskThreshold: 0,
+                    scoringType: "binary_threshold",
+                    scoringConfig: null,
                     tempUnit: 1,
                     tempDuration: 0,
                 });
@@ -93,14 +100,16 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
         const payload = {
             title: values.title,
             description: values.description,
-            status: "draft" as "draft" | "publish",
-            riskThreshold: Number(values.riskThreshold),
+            status: values.status as "draft" | "publish",
+            riskThreshold: values.scoringType === "binary_threshold" ? Number(values.riskThreshold) : 0,
+            scoringType: values.scoringType,
+            scoringConfig: values.scoringType === "weighted_score" ? values.scoringConfig : null,
             cooldownInMinutes: calculatedMinutes,
             CategoryId: values.CategoryId,
         };
 
         if (isEditMode && editingData) {
-            updateMutation.mutate({ id: editingData.id, payload: { ...payload, status: values.status } }, {
+            updateMutation.mutate({ id: editingData.id, payload }, {
                 onSuccess: () => {
                     message.success("Kuisioner berhasil diperbarui")
                     onCancel()
@@ -129,11 +138,12 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
 
     return (
         <Modal
-            title={isEditMode ? "Edit Kuisioner" : "Buat Kuisioner Baru"}
+            title={isEditMode ? "Ubah Kuisioner" : "Buat Kuisioner Baru"}
             open={open}
             onCancel={onCancel}
             footer={null}
             destroyOnHidden
+            width={1000}
         >
             <Form form={form} layout="vertical" onFinish={handleSave}>
                 <Form.Item
@@ -159,13 +169,47 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
                     />
                 </Form.Item>
 
-                <Form.Item label="Deskripsi" name="description">
+                <Form.Item
+                    label="Deskripsi"
+                    name="description"
+                    rules={[{ required: true, message: "Deskripsi wajib diisi" }]}
+                >
                     <Input.TextArea rows={3} placeholder="Deskripsi singkat..." />
                 </Form.Item>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <Form.Item label="Risk Threshold" name="riskThreshold">
-                        <InputNumber min={0} className="!w-full" placeholder="0" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Form.Item
+                        label="Status"
+                        name="status"
+                        rules={[{ required: true, message: "Status wajib dipilih" }]}
+                    >
+                        <Select
+                            options={[
+                                { value: "draft", label: "Konsep" },
+                                { value: "publish", label: "Terbit" },
+                            ]}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Metode Penilaian"
+                        name="scoringType"
+                        rules={[{ required: true, message: "Metode penilaian wajib dipilih" }]}
+                    >
+                        <Select
+                            options={[
+                                { value: "binary_threshold", label: "Ambang Ya/Tidak" },
+                                { value: "weighted_score", label: "Skor Berbobot & Rentang Hasil" },
+                            ]}
+                            onChange={(value) => {
+                                if (value === "weighted_score" && !form.getFieldValue("scoringConfig")) {
+                                    form.setFieldValue(
+                                        "scoringConfig",
+                                        createDefaultWeightedScoringConfig()
+                                    );
+                                }
+                            }}
+                        />
                     </Form.Item>
 
                     <Form.Item label="Masa Tenggang" required className="flex-1">
@@ -196,12 +240,20 @@ export default function CreateQuestionnaireModal({ open, onCancel, editingData }
                     </Form.Item>
                 </div>
 
-                {/* <Form.Item label="Status" name="status">
-                    <Select>
-                        <Select.Option value="draft">Draft</Select.Option>
-                        <Select.Option value="publish">Publish</Select.Option>
-                    </Select>
-                </Form.Item> */}
+                {scoringType === "binary_threshold" ? (
+                    <Form.Item
+                        label="Ambang Jawaban Ya Berisiko"
+                        name="riskThreshold"
+                        rules={[{ required: true, message: "Ambang risiko wajib diisi" }]}
+                    >
+                        <InputNumber min={0} className="!w-full" placeholder="0" />
+                    </Form.Item>
+                ) : (
+                    <>
+                        <Divider titlePlacement="start">Konfigurasi Penilaian</Divider>
+                        <ScoringConfigurationFields />
+                    </>
+                )}
 
                 <div className="flex justify-end gap-2 mt-4">
                     <Button onClick={onCancel}>Batal</Button>
