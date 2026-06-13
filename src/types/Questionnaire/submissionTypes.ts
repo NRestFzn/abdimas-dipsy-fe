@@ -64,3 +64,10 @@ export interface RtSummaryData {
     summarize: SummaryStats;
     users: RtUserItem[];
 }
+
+export interface SubmissionScore {
+    score: number;
+    resultKey: string;
+    resultLabel: string;
+    isMentalUnStable: boolean;
+}

@@ -3,6 +3,7 @@ import type { HookAPI } from "antd/es/modal/useModal";
 import { CheckCircle, Clock, Edit, Eye, MoreHorizontal, Settings, Trash2, XCircle } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
 import type { Questionnaire } from "../../../../../types/Questionnaire/questionnaireTypes";
+import { getQuestionnaireStatusLabel } from "../../../../../utils/questionnaireDisplay";
 
 interface KuisionerColumnProps {
   pagination: { current: number; pageSize: number };
@@ -85,14 +86,20 @@ export const getKuisionerColumns = ({
       }
     },
     {
-      title: "Threshold",
+      title: "Penilaian",
       dataIndex: "riskThreshold",
       key: "riskThreshold",
       align: "center",
       width: 150,
+      render: (value, record) =>
+        record.scoringType === "weighted_score" ? (
+          <Tag color="cyan">Skor Berbobot</Tag>
+        ) : (
+          <span>Ambang {value}</span>
+        ),
     },
     {
-      title: "Cooldown",
+      title: "Masa Tenggang",
       dataIndex: "cooldownInMinutes",
       key: "cooldownInMinutes",
       width: 150,
@@ -115,7 +122,7 @@ export const getKuisionerColumns = ({
         if (status === "draft") color = "warning";
         if (status === "archived") color = "error";
 
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
+        return <Tag color={color}>{getQuestionnaireStatusLabel(status)}</Tag>;
       },
     },
     {
@@ -161,13 +168,13 @@ export const getKuisionerColumns = ({
           },
           {
             key: 'preview',
-            label: 'Preview Tampilan',
+            label: 'Pratinjau Tampilan',
             icon: <Eye size={16} />,
             onClick: () => onPreview(record.id)
           },
           {
             key: 'edit',
-            label: 'Edit Kuisioner',
+            label: 'Ubah Kuisioner',
             icon: <Edit size={16} />,
             onClick: () => onEditData(record)
           },
@@ -177,7 +184,7 @@ export const getKuisionerColumns = ({
           {
             key: 'status',
             disabled: record.status !== 'publish' && isQuestionsEmpty,
-            label: record.status === 'publish' ? 'Ubah ke Draft' : 'Ubah ke Publish',
+            label: record.status === 'publish' ? 'Jadikan Konsep' : 'Terbitkan',
             icon: record.status === 'publish' ? <XCircle size={16} className="text-orange-500" /> : <CheckCircle size={16} className="text-green-500" />,
             onClick: () => onEditStatus(record.id, record.status)
           },

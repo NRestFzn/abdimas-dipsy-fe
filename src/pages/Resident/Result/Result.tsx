@@ -5,6 +5,9 @@ import { AlertCircle, ArrowLeft, CheckCircle2, FileText } from "lucide-react";
 import { Button, Card, Empty, Spin, Table, Tag, Typography } from "antd";
 import { getUserResultColumns } from "./columns/ResultColumn";
 import ResultPieChart from "../../../components/Charts/ResultPieChart";
+import QuestionnaireScoreSummary from "../../../components/QuestionnaireScoreSummary";
+import type { QuestionnaireScoringResult } from "../../../types/Questionnaire/questionnaireTypes";
+import { getQuestionnaireResultLabel } from "../../../utils/questionnaireDisplay";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -16,6 +19,8 @@ interface QuestionnaireQuestion {
 
 interface QuestionnaireAnswerItem {
   answerValue: string;
+  answerLabel?: string | null;
+  score?: number | null;
   questionnaireQuestion: QuestionnaireQuestion;
 }
 
@@ -35,6 +40,8 @@ export default function Result() {
   >([]);
   const [questionnaireId, setQuestionnaireId] = useState<string>();
   const [questionnaireResult, setQuestionnaireResult] = useState<any>();
+  const [submissionResult, setSubmissionResult] = useState<any>();
+  const [scoringResult, setScoringResult] = useState<QuestionnaireScoringResult | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -45,13 +52,21 @@ export default function Result() {
 
           if (response?.data?.questionnaireAnswer) {
             const transformed = response.data.questionnaireAnswer.map(
-              (item: { answerValue: string; questionnaireQuestion: any }) => ({
+              (item: { answerValue: string; answerLabel?: string | null; score?: number | null; questionnaireQuestion: any }) => ({
                 ...item,
-                answerValue: item.answerValue === 'true' ? 'Ya' : 'Tidak',
+                answerValue:
+                  item.answerLabel ||
+                  (item.answerValue === 'true'
+                    ? 'Ya'
+                    : item.answerValue === 'false'
+                      ? 'Tidak'
+                      : item.answerValue),
               })
             );
 
             setQuestionnaireAnswer(transformed);
+            setSubmissionResult(response.data);
+            setScoringResult(response.data.scoringResult || null);
 
             if (response.data.QuestionnaireId) {
               setQuestionnaireId(response.data.QuestionnaireId);
@@ -100,13 +115,22 @@ export default function Result() {
   const tidakCount = questionnaireAnswer.filter(
     (q) => q.answerValue === 'Tidak'
   ).length;
-  const isUnstable = questionnaireResult?.isMentalUnStable == 1;
+  const isUnstable =
+    submissionResult?.isMentalUnstable ??
+    questionnaireResult?.isMentalUnStable == 1;
+  const resultLabel = getQuestionnaireResultLabel(
+    submissionResult?.resultLabel ||
+    questionnaireResult?.resultLabel ||
+    (isUnstable ? "Berisiko" : "Stabil")
+  );
+  const isWeightedResult = scoringResult?.scoringType === "weighted_score";
+  const recommendation = scoringResult?.recommendation;
 
   const tableDataSource: MappedQuestionData[] = questionnaireAnswer.map(
     (item, index) => ({
       no: index + 1,
       question: item.questionnaireQuestion.questionText,
-      answer: item.answerValue,
+      answer: item.score == null ? item.answerValue : `${item.answerValue} (${item.score} poin)`,
     })
   );
 
@@ -116,7 +140,7 @@ export default function Result() {
     return (
       <div className="h-screen flex flex-col justify-center items-center bg-gray-50">
         <Spin size="large" />
-        <p className="mt-4 text-gray-500">Memuat hasil tes...</p>
+        <p className="mt-4 text-gray-500">Memuat hasil pemeriksaan...</p>
       </div>
     );
   }
@@ -124,7 +148,7 @@ export default function Result() {
   if (!questionnaireAnswer || questionnaireAnswer.length === 0) {
     return (
       <div className="h-screen flex flex-col justify-center items-center bg-gray-50">
-        <Empty description="Data hasil tes tidak ditemukan" />
+        <Empty description="Data hasil pemeriksaan tidak ditemukan" />
         <Button className="mt-4" onClick={() => navigate('/')}>
           Kembali ke Beranda
         </Button>
@@ -163,7 +187,7 @@ export default function Result() {
             <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center max-lg:p-3">
               <div className="flex items-center gap-2 mb-4">
                 <Tag color={isUnstable ? "error" : "success"} className="px-3 py-1 text-sm rounded-full">
-                  hasil analisa kesehatan mental
+                  Hasil Pemeriksaan Kesehatan Mental
                 </Tag>
               </div>
 
@@ -174,18 +198,19 @@ export default function Result() {
               <div className="flex items-center gap-4 mb-6">
                 <StatusIcon className={`w-10 h-10 max-lg:hidden ${statusColor}`} />
                 <Title level={1} className={`!m-0 !font-extrabold tracking-tight ${statusColor}`}>
-                  {isUnstable ? "BERISIKO" : "STABIL"}
+                  {resultLabel.toUpperCase()}
                 </Title>
               </div>
 
               <div className={`p-6 rounded-xl border ${statusBg} mb-6`}>
                 <h4 className={`font-semibold text-lg mb-2 ${isUnstable ? 'text-red-700' : 'text-green-700'}`}>
-                  {isUnstable ? "Berisiko" : "Stabil"}
+                  {resultLabel}
                 </h4>
                 <Paragraph className="!mb-0 text-gray-700 leading-relaxed">
-                  {isUnstable
-                    ? "Hasil tes menunjukkan adanya beberapa hal yang perlu kamu perhatikan lebih lanjut. Tidak ada salahnya untuk mencoba lebih peduli pada kondisi diri sendiri dan luangkan waktu untuk beristirahat sejenak."
-                    : "Hasil tes menunjukkan kondisi kamu saat ini cukup baik. Tetap jaga pola hidup yang sehat dan luangkan waktu untuk berkumpul bersama keluarga agar pikiran tetap tenang."}
+                  {recommendation ||
+                  (isUnstable
+                    ? "Hasil pemeriksaan menunjukkan adanya beberapa hal yang perlu kamu perhatikan lebih lanjut. Tidak ada salahnya untuk mencoba lebih peduli pada kondisi diri sendiri dan luangkan waktu untuk beristirahat sejenak."
+                    : "Hasil pemeriksaan menunjukkan kondisi kamu saat ini cukup baik. Tetap jaga pola hidup yang sehat dan luangkan waktu untuk berkumpul bersama keluarga agar pikiran tetap tenang.")}
                 </Paragraph>
               </div>
             </div>
@@ -194,11 +219,15 @@ export default function Result() {
               <div className="w-full flex gap-x-2 items-center">
                 <FileText size={16} />
                 <Text strong className="text-gray-500 flex items-center gap-2">
-                  Statistik Jawaban
+                  {isWeightedResult ? "Rincian Skor" : "Statistik Jawaban"}
                 </Text>
               </div>
               <div className="w-full mt-4">
-                <ResultPieChart yaCount={yaCount} tidakCount={tidakCount} />
+                {isWeightedResult && scoringResult ? (
+                  <QuestionnaireScoreSummary result={scoringResult} />
+                ) : (
+                  <ResultPieChart yaCount={yaCount} tidakCount={tidakCount} />
+                )}
               </div>
             </div>
           </div>

@@ -128,7 +128,7 @@ export default function Submissions() {
 
     const filterContent = (
         <div className="w-80 p-1">
-            <p className="mb-2 font-semibold text-gray-700">Filter Tanggal Tes</p>
+            <p className="mb-2 font-semibold text-gray-700">Saring Tanggal Pengisian</p>
             <RangePicker
                 className="w-full mb-4"
                 onChange={handleDateChange}

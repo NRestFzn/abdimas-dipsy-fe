@@ -1,11 +1,14 @@
 import { Button, Tag } from "antd";
 import { Eye } from "lucide-react";
 import type { ColumnsType } from "antd/es/table";
+import { getQuestionnaireResultLabel } from "../../../../../utils/questionnaireDisplay";
 
 export interface SubmissionRow {
     submissionId: string;
     submissionDate: string;
     trueCount: string;
+    score?: number;
+    resultLabel?: string;
     isMentalUnStable: number;
 }
 
@@ -24,7 +27,7 @@ export const getSubmissionsColumns = ({
         render: (_, __, index) => index + 1,
     },
     {
-        title: 'Tanggal Tes',
+        title: 'Tanggal Pengisian',
         dataIndex: 'submissionDate',
         key: 'submissionDate',
         render: (date) => (
@@ -41,13 +44,22 @@ export const getSubmissionsColumns = ({
         ),
     },
     {
+        title: 'Skor',
+        dataIndex: 'score',
+        key: 'score',
+        align: 'center',
+        render: (score, record) => score ?? record.trueCount ?? "-",
+    },
+    {
         title: 'Kondisi Mental',
         dataIndex: 'isMentalUnStable',
         key: 'isMentalUnStable',
         align: 'center',
-        render: (isUnstable: number) => {
+        render: (isUnstable: number, record) => {
             const color = isUnstable === 1 ? "error" : "success";
-            const text = isUnstable === 1 ? "Berisiko" : "Stabil";
+            const text = getQuestionnaireResultLabel(
+                record.resultLabel || (isUnstable === 1 ? "Berisiko" : "Stabil")
+            );
             
             return (
                 <Tag color={color} className="min-w-[80px] text-center py-1 text-sm">
